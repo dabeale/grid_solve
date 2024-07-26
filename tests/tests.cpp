@@ -1,6 +1,6 @@
 
-#include "test_index.h"
-#include "test_box.h"
+#include "test_index.hpp"
+#include "test_box.hpp"
 
 int main(int args, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;

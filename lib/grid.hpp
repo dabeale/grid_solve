@@ -2,8 +2,8 @@
 #ifndef _GS_GRID_
 #define _GS_GRID_
 
-#include "index.h"
-#include "concepts.h"
+#include "index.hpp"
+#include "concepts.hpp"
 
 namespace gs{
 /**

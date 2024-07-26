@@ -1,6 +1,6 @@
 
-#include "index.h"
-#include "tools.h"
+#include "index.hpp"
+#include "tools.hpp"
 
 using namespace gs;
 

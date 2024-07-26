@@ -1,6 +1,6 @@
 
-#include "box.h"
-#include "tools.h"
+#include "box.hpp"
+#include "tools.hpp"
 
 using namespace gs;
 

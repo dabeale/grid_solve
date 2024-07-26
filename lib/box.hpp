@@ -4,8 +4,8 @@
 
 #include <iostream>
 
-#include "index.h"
-#include "tools.h"
+#include "index.hpp"
+#include "tools.hpp"
 
 namespace gs {
 /**
