@@ -3,7 +3,9 @@
 #define _GS_BOX_
 
 #include <iostream>
+#include <algorithm>
 
+#include "dimensions.hpp"
 #include "index.hpp"
 #include "tools.hpp"
 
@@ -34,15 +36,17 @@ public:
         m_corners(corners), m_level(level)
     {}
 
+    enum PosNeg {
+        POSITIVE=1,
+        NEGATIVE=-1
+    };
     /**
-     * Find the neighbour box in the specified dimension
+     * Change the box to its neighbour in the specified dimension.
      */
-    box<N, T> neighbour(const T dim, const typename index<N,T>::PosNeg direction) const{
-        std::array<index<N, T>, m_nCorners> newCorners;
-        for (T i = 0; i < m_nCorners; ++i){
-            newCorners[i] = m_corners[i].neighbour(dim, direction);
+    void to_neighbour(const T dim, const PosNeg direction){
+        for(T i = 0; i < m_nCorners; ++i){
+            m_corners[i][dim]+=static_cast<T>(direction);
         }
-        return box<N,T>(newCorners, m_level);
     }
 
     /**
@@ -56,7 +60,9 @@ public:
      * Find all of the subpoints after binary subdivision.
      * This does not include the corners of the box.
      */
-    std::array<index<N, T>, m_nSubPoints - m_nCorners> subpoints(){
+    std::array<index<N, T>, m_nSubPoints - m_nCorners> subpoints(
+        const dimensions<N,T>& dimensions
+    ){
          std::array<index<N, T>, m_nSubPoints - m_nCorners> innerPoints;
          std::array<T, N> ternary;
          T k = 0;
@@ -69,7 +75,10 @@ public:
                 acc *= 3;
             }
             if (!allEdge && k < m_nSubPoints - m_nCorners){
-                innerPoints[k++] = m_corners[0] + index<N,T>(ternary, m_level-1);
+                innerPoints[k] = m_corners[0];
+                innerPoints[k].set_level(dimensions, m_level-1);
+                innerPoints[k] += index<N,T>(ternary, m_level-1);
+                k++;
             }
          }
          return innerPoints;
@@ -90,7 +99,6 @@ std::ostream& operator<<(std::ostream& os, const box<N, T>& boxVar)
     }
     return os;
 }
-
 }
 
 #endif

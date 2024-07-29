@@ -10,7 +10,7 @@ namespace gs{
  * A grid of objects of arbitrary dimension.
  */
 template<int N, class T, class S=uint32_t>
-requires RandomAccessContainer<T> && Iterable<T> && std::is_integral<S>::value
+requires random_access_container<T> && iterable<T> && std::is_integral<S>::value
 class grid {
     T m_storage;
     std::array<S, T> m_dimensions;

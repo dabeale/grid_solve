@@ -7,10 +7,12 @@
 #include <array>
 
 #include "concepts.hpp"
+#include "dimensions.hpp"
 
 namespace gs {
 /**
- * \brief An index within a grid
+ * \brief An index within a grid.
+ * 
  */
 template<int N, typename T=uint32_t>
 requires std::is_integral<T>::value
@@ -23,52 +25,47 @@ public:
     index(const T level): m_level(level){
         m_indices.fill(0);
     }
-    index(const std::array<T, N> indices, const T level):
-        m_level(level){
-        for (T i = 0; i < N; ++i){
-            m_indices[i] = indices[i]*(1 << m_level);
-        }
+    index(const std::array<T, N> indices, const T level): m_level(level), m_indices(indices){}
+
+    /**
+     * Change the level of the index.
+     */
+    void set_level(const dimensions<N,T>& dimensions, const T level){
+        m_indices = dimensions.ind2sub(
+            dimensions.sub2ind(m_indices, m_level),
+            level
+        );
+        m_level = level;
     }
 
     /**
-     * An enum specifying which side the neighbour
-     * should be on.
+     * Add to another index.
      */
-    enum PosNeg{
-        POSITIVE=1,
-        NEGATIVE=-1
-    };
-    /**
-     * Get the neighbour of the index in the
-     * specified dimension.
-     */
-    index<N,T> neighbour(const T dim, const PosNeg posNeg) const {
-        index<N,T> newIndices(*this);
-        newIndices.m_indices[dim] += static_cast<int>(posNeg)* (1 << m_level);
-        return newIndices;
-    }
-
-    /**
-     * Get a one dimensional index representation.
-     */
-    T sub2ind(const std::array<T, N>& dimensions) const {
-        T retInd = m_indices[N-1];
-        T coef = dimensions[N-1];
-        for (T i=2; i<=N; ++i){
-            retInd += coef*m_indices[N-i];
-            coef *= dimensions[N-i];
-        }
-        return retInd;
-    }
-
-    index<N,T> operator+(const index<N,T>& other){
+    index<N,T> operator+(index<N,T> other) const{
         index<N,T> newRet;
-        for (T k=0; k<N; ++k){
-            newRet.m_indices[k] = m_indices[k] + other.m_indices[k];
-        }
+        newRet += other;
         return newRet;
     }
+    /**
+     * Add to another index.
+     */
+    const index<N,T>& operator+=(index<N,T> other){
+        for (T k=0; k<N; ++k){
+            m_indices[k] += other.m_indices[k];
+        }
+        return *this;
+    }
+
+    /**
+     * Return the index at the current level.
+     */
     const T& operator[](const T i) const {return m_indices[i];}
+    T& operator[](const T i) {return m_indices[i];}
+
+    /**
+     * Return the index at the lowest level.
+     */
+    T operator()(const T i) const {return m_indices[i]*(1 << m_level);}
     auto begin() -> decltype(m_indices.begin()){return m_indices.begin();}
     auto end() -> decltype(m_indices.end()){return m_indices.end();}
     auto begin() const -> decltype(m_indices.begin()){return m_indices.begin();}
@@ -90,14 +87,13 @@ std::ostream& operator<<(std::ostream& os, const index<N, T>& boxVar)
     return os;
 }
 template<int N, typename T, typename S>
-requires RandomAccessContainer<T> && std::is_integral<S>::value
+requires random_access_container<T> && std::is_integral<S>::value
 bool operator==(index<N, S> ind, T arr){
     for (S i = 0; i < N; ++i){
-        if (arr[i] != ind[i]) return false;
+        if (arr[i] != ind(i)) return false;
     }
     return true;
 }
-
 }
 
 #endif
