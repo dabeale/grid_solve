@@ -2,6 +2,10 @@
 #ifndef _GS_GRID_
 #define _GS_GRID_
 
+#include <functional>
+
+#include "dimensions.hpp"
+#include "box.hpp"
 #include "index.hpp"
 #include "concepts.hpp"
 
@@ -13,15 +17,22 @@ template<int N, class T, class S=uint32_t>
 requires random_access_container<T> && iterable<T> && std::is_integral<S>::value
 class grid {
     T m_storage;
-    std::array<S, T> m_dimensions;
+    dimensions<N, S> m_dimensions;
 
 public:
     grid() = delete;
-    grid(const std::array<S, T> dimensions): m_dimensions(dimensions) {}
-    grid(const std::array<S, T> dimensions, const T storage): grid(dimensions), m_storage(storage) {}
+    grid(const dimensions<N, S> dimensions): m_dimensions(dimensions) {}
+    grid(const dimensions<N, S> dimensions, const T storage): m_dimensions(dimensions), m_storage(storage) {}
 
-    auto operator[](const index<N, S>& i) -> decltype(m_storage[i]) const {
-        return m_storage[i.sub2ind(m_dimensions)];
+    void iterate(
+        std::function< void(box<N, S>&) > lambda,
+        const S level
+    ){
+        const S max_ind = m_dimensions.max_ind(level);
+        for(S i=0; i<max_ind; ++i){
+            box<N, S> box(m_dimensions, level, i);
+            lambda(box);
+        }
     }
 };
 }

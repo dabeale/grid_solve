@@ -28,21 +28,37 @@ public:
     index(const std::array<T, N> indices, const T level): m_level(level), m_indices(indices){}
 
     /**
+     * Return the level of the index.
+     */
+    T get_level() const {
+        return m_level;
+    }
+
+    /**
      * Change the level of the index.
      */
-    void set_level(const dimensions<N,T>& dimensions, const T level){
-        m_indices = dimensions.ind2sub(
-            dimensions.sub2ind(m_indices, m_level),
-            level
-        );
+    void set_level(const T level){
+        T mult = (1 << (level - m_level));
+        for (auto& pt : m_indices){
+            pt = pt * mult;
+        }
         m_level = level;
+    }
+
+    /**
+     * Create a new index of specified level and return it.
+     */
+    index<N, T> at_level(const T level) const {
+        index<N, T> newIndex(*this);
+        newIndex.set_level(level);
+        return newIndex;
     }
 
     /**
      * Add to another index.
      */
     index<N,T> operator+(index<N,T> other) const{
-        index<N,T> newRet;
+        index<N,T> newRet(*this);
         newRet += other;
         return newRet;
     }
@@ -90,7 +106,7 @@ template<int N, typename T, typename S>
 requires random_access_container<T> && std::is_integral<S>::value
 bool operator==(index<N, S> ind, T arr){
     for (S i = 0; i < N; ++i){
-        if (arr[i] != ind(i)) return false;
+        if (arr[i] != ind[i]) return false;
     }
     return true;
 }

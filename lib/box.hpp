@@ -20,16 +20,13 @@ class box {
     T m_level; ///< The box level
 
 public:
-    static constexpr T m_nCorners = pow<2,N>(); ///< The number of corners
+    static constexpr T m_nCorners = pow<2,N>();   ///< The number of corners
     static constexpr T m_nSubPoints = pow<3,N>(); ///< The number of subpoints
 
-    box(const T level, const T offset=0): m_level(level) {
-        for (T i = 0; i<m_nCorners; ++i){
-            std::array<T, N> indices;
-            for (T j = 0; j < N; ++j){
-                indices[j] = ((((1 << j) & i) >> j) + ((offset & (1 << j)) >> j));
-            }
-            m_corners[i] = index<N,T>(indices, level);
+    box(const dimensions<N,T>& dimensions, const T level, const T offset=0): m_level(level) {
+        index<N,T> offsetIndex(dimensions.ind2sub(offset, level), level);
+        for (T i = 0; i < m_nCorners; ++i){
+            m_corners[i] = index<N,T>(dimensions.ind2sub(i), level) + offsetIndex;
         }
     }
     box(const std::array<index<N, T>, m_nCorners> corners, const T level):
@@ -52,8 +49,8 @@ public:
     /**
      * Find all of the subboxes after binary subdivision.
      */
-    box<N,T> subbox(const T ind) const{
-        return box<N,T>(m_level - 1, ind);
+    box<N,T> subbox(const dimensions<N,T>& dimensions, const T ind) const{
+        return box<N,T>(dimensions, m_level + 1, ind);
     }
 
     /**
@@ -76,7 +73,7 @@ public:
             }
             if (!allEdge && k < m_nSubPoints - m_nCorners){
                 innerPoints[k] = m_corners[0];
-                innerPoints[k].set_level(dimensions, m_level-1);
+                innerPoints[k].set_level(m_level-1);
                 innerPoints[k] += index<N,T>(ternary, m_level-1);
                 k++;
             }

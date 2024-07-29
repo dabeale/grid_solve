@@ -36,6 +36,13 @@ public:
     }
 
     /**
+     * Get the maximum level.
+     */
+    T max_level() const {
+        return m_maxLevel;
+    }
+
+    /**
      * Get the maximum index at the specified level.
      */
     T max_ind(const T level) const {

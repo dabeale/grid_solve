@@ -2,10 +2,12 @@
 #include "test_index.hpp"
 #include "test_box.hpp"
 #include "test_dimensions.hpp"
+#include "test_grid.hpp"
 
 int main(int args, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
+    error += test_grid();
     error += test_index_call();
     error += test_index_subscript();
     error += test_dimensions_sub2ind();
