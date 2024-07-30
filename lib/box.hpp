@@ -18,19 +18,20 @@ requires std::is_integral<T>::value
 class box {
     std::array<index<N, T>, pow<2,N>()> m_corners; ///< The corners
     T m_level; ///< The box level
+    dimensions<N,T> m_dimensions; ///< The dimensions of the box
 
 public:
     static constexpr T m_nCorners = pow<2,N>();   ///< The number of corners
     static constexpr T m_nSubPoints = pow<3,N>(); ///< The number of subpoints
 
-    box(const dimensions<N,T>& dimensions, const T level, const T offset=0): m_level(level) {
-        index<N,T> offsetIndex(dimensions.ind2sub(offset, level), level);
+    box(const dimensions<N,T> dimensions, const T level, const T offset=0): m_level(level), m_dimensions(dimensions) {
+        const index<N,T> offsetIndex(dimensions.ind2sub(offset, level), level);
         for (T i = 0; i < m_nCorners; ++i){
             m_corners[i] = index<N,T>(dimensions.ind2sub(i), level) + offsetIndex;
         }
     }
-    box(const std::array<index<N, T>, m_nCorners> corners, const T level):
-        m_corners(corners), m_level(level)
+    box(const dimensions<N,T> dimensions, const std::array<index<N, T>, m_nCorners> corners, const T level):
+        m_corners(corners), m_level(level), m_dimensions(dimensions)
     {}
 
     enum PosNeg {
@@ -49,17 +50,15 @@ public:
     /**
      * Find all of the subboxes after binary subdivision.
      */
-    box<N,T> subbox(const dimensions<N,T>& dimensions, const T ind) const{
-        return box<N,T>(dimensions, m_level + 1, ind);
+    box<N,T> subbox(const T ind) const{
+        return box<N,T>(m_dimensions, m_level + 1, ind);
     }
 
     /**
      * Find all of the subpoints after binary subdivision.
      * This does not include the corners of the box.
      */
-    std::array<index<N, T>, m_nSubPoints - m_nCorners> subpoints(
-        const dimensions<N,T>& dimensions
-    ){
+    std::array<index<N, T>, m_nSubPoints - m_nCorners> subpoints(){
          std::array<index<N, T>, m_nSubPoints - m_nCorners> innerPoints;
          std::array<T, N> ternary;
          T k = 0;
