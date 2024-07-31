@@ -4,10 +4,14 @@
 #include "test_dimensions.hpp"
 #include "test_grid.hpp"
 #include "test_fmm.hpp"
+#include "test_math.hpp"
 
 int main(int args, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
+    error += test_vector();
+    error += test_matrix();
+    error += test_tensor();
     error += testq_fmm_exp2_1d();
     error += test_grid();
     error += test_index_call();
