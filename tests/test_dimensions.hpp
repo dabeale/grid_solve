@@ -1,6 +1,6 @@
 
-#include "dimensions.hpp"
-#include "tools.hpp"
+#include "base/dimensions.hpp"
+#include "base/tools.hpp"
 
 using namespace gs;
 

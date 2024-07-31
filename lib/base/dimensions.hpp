@@ -6,7 +6,7 @@
 #include <inttypes.h>
 #include <array>
 
-#include "concepts.hpp"
+#include "base/concepts.hpp"
 
 namespace gs {
 /**

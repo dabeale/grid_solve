@@ -1,7 +1,7 @@
 
 #include <set>
 
-#include "grid.hpp"
+#include "base/grid.hpp"
 
 using namespace gs;
 
@@ -9,11 +9,11 @@ int test_grid(){
     std::cout << "Test grid" << std::endl;
     int retVal = 0;
     dimensions<3> dims({2,2,2}, 2);
-    grid<3, std::vector<double>> grid(dims);
+    grid<3, double, double> grid(dims);
     {
         uint32_t nPts = 0;
         std::set<uint32_t> allVals;
-        grid.iterate([&](box<3>& in){
+        grid.iterate([&](box<3>& in, double&){
             for (auto corner : in){
                 for (auto x : corner.at_level(2)){
                     allVals.insert(x);
@@ -36,7 +36,7 @@ int test_grid(){
     {
         uint32_t nPts = 0;
         std::set<uint32_t> allVals;
-        grid.iterate([&](box<3>& in){
+        grid.iterate([&](box<3>& in, double&){
             for (auto corner : in){
                 for (auto x : corner.at_level(2)){
                     allVals.insert(x);
@@ -55,7 +55,7 @@ int test_grid(){
     {
         uint32_t nPts = 0;
         std::set<uint32_t> allVals;
-        grid.iterate([&](box<3>& in){
+        grid.iterate([&](box<3>& in, double&){
             for (auto corner : in){
                 for (auto x : corner.at_level(2)){
                     allVals.insert(x);

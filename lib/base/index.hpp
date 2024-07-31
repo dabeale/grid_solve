@@ -6,8 +6,8 @@
 #include <inttypes.h>
 #include <array>
 
-#include "concepts.hpp"
-#include "dimensions.hpp"
+#include "base/concepts.hpp"
+#include "base/dimensions.hpp"
 
 namespace gs {
 /**

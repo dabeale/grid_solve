@@ -5,9 +5,9 @@
 #include <iostream>
 #include <algorithm>
 
-#include "dimensions.hpp"
-#include "index.hpp"
-#include "tools.hpp"
+#include "base/dimensions.hpp"
+#include "base/index.hpp"
+#include "base/tools.hpp"
 
 namespace gs {
 /**
@@ -33,6 +33,13 @@ public:
     box(const dimensions<N,T> dimensions, const std::array<index<N, T>, m_nCorners> corners, const T level):
         m_corners(corners), m_level(level), m_dimensions(dimensions)
     {}
+
+    /**
+     * Get the current level.
+     */
+    T get_level() const {
+        return m_level;
+    }
 
     enum PosNeg {
         POSITIVE=1,
