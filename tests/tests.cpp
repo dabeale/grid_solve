@@ -12,6 +12,7 @@ int main(int args, char* argv[]){
     error += test_vector();
     error += test_matrix();
     error += test_tensor();
+    error += test_polynomial();
     error += testq_fmm_exp2_1d();
     error += test_grid();
     error += test_index_call();

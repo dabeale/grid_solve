@@ -47,6 +47,23 @@ public:
         return out;
     }
 };
+
+/**
+ * The outer product of a vector into an equi-tensor.
+ */
+template<typename T, size_t N, size_t K>
+equi_tensor<T, N, K> tensor_outer(const vector<T,K>& vec){
+    equi_tensor<T, N, K> out;
+    for(size_t i=0; i<pow<K, N>(); ++i){
+        auto indArr = equi_tensor<T, N, K>::base::m_dims.ind2sub(i);
+        T mult = 1.0;
+        for(size_t k=0; k<N; ++k){
+            mult*=vec(indArr[k]);
+        }
+        static_cast<vector<T, equi_tensor<T, N, K>::base::m_nElems>>(out)(i) = mult;
+    }
+    return out;
+}
 }
 
 #endif

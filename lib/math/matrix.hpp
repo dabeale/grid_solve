@@ -47,11 +47,11 @@ vector<T,M> operator*(const matrix<T,M,N>& mat, const vector<T,N>& vec ){
     return ret;
 }
 
-template<typename T, size_t M, size_t N>
-matrix<T,M,N> outer(const vector<T,M>& vec){
-    matrix<T,M,N> ret;
+template<typename T, size_t M>
+matrix<T,M,M> matrix_outer(const vector<T,M>& vec){
+    matrix<T,M,M> ret;
     for(size_t i=0; i<M; ++i){
-        for(size_t j=0; j<N; ++j){
+        for(size_t j=0; j<M; ++j){
             ret(i,j) += vec(i)*vec(j);
         }
     }

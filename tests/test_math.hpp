@@ -4,6 +4,7 @@
 #include "math/matrix.hpp"
 #include "math/tensor.hpp"
 #include "math/equi_tensor.hpp"
+#include "math/polynomial.hpp"
 
 using namespace gs;
 
@@ -79,6 +80,21 @@ int test_vector(){
             4,10,16
         });
         retVal += assert_bool((mat*vec - expected).norm2() < 1e-8,"(mat*vec - expected).norm2() < 1e-8");
+    }
+    return retVal;
+}
+
+int test_polynomial(){
+    std::cout << "Test polynomial" << std::endl;
+    int retVal = 0;
+    {
+        polynomial<double, 2, 3> mat;
+        std::array<vector<double,3>, 1> inVec{
+            vector<double,3>({1,2,3})
+        };
+        mat.fill(inVec);
+        auto eval = mat.evaluate(vector<double,3>({6,2,1}));
+        retVal += assert_bool(std::abs(eval - 183) < 1e-8, "std::abs(eval - 183) < 1e-8");
     }
     return retVal;
 }
