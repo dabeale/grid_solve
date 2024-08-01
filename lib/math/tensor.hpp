@@ -2,7 +2,8 @@
 #ifndef _GS_TENSOR_
 #define _GS_TENSOR_
 
-#include "vector.hpp"
+#include "math/vector.hpp"
+#include "base/dimensions.hpp"
 
 namespace gs {
 /**
@@ -10,41 +11,26 @@ namespace gs {
  */
 template<typename T, size_t... Dims>
 class tensor: public vector<T, mult<Dims...>()> {
+protected:
     static constexpr size_t m_nSize = sizeof...(Dims);
     static constexpr size_t m_nElems = mult<Dims...>();
-    std::array<size_t, m_nSize> m_coefs;
-    void init_coefs() {
-        m_coefs = {Dims...};
-        for(size_t i=1; i<m_nSize; ++i){
-            m_coefs[m_nSize-i-1] *= m_coefs[m_nSize-i];
-        }
-    }
+    dimensions<m_nSize, size_t> m_dims;
 public:
-    tensor() {
-        init_coefs();
-    }
-    tensor(std::initializer_list<T> inList): vector<T, m_nElems>(inList) {
-        init_coefs();
-    }
+    tensor(): m_dims({Dims...},0) {}
+    tensor(std::initializer_list<T> inList): vector<T, m_nElems>(inList), m_dims({Dims...}, 0) {}
     template<typename... Indices>
     requires (sizeof...(Indices) == m_nSize)
     T& operator()(Indices... inds){
-        std::array<size_t, m_nSize> inputInds{inds...};
-        T linInd = inputInds[m_nSize-1];
-        for(size_t i = 0; i < m_nSize-1; ++i){
-            linInd += inputInds[i]*m_coefs[i+1];
-        }
-        return vector<T, m_nElems>::operator()(linInd);
+        return vector<T, m_nElems>::operator()(
+            m_dims.sub2ind({inds...})
+        );
     }
     template<typename... Indices>
     requires (sizeof...(Indices) == m_nSize)
     const T& operator()(Indices... inds) const {
-        std::array<size_t, m_nSize> inputInds{inds...};
-        T linInd = inputInds[m_nSize-1];
-        for(size_t i = 0; i < m_nSize-1; ++i){
-            linInd += inputInds[i]*m_coefs[i+1];
-        }
-        return vector<T, m_nElems>::operator()(linInd);
+        return vector<T, m_nElems>::operator()(
+            m_dims.sub2ind({inds...})
+        );
     }
 };
 }

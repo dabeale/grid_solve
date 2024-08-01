@@ -3,6 +3,7 @@
 #include "base/tools.hpp"
 #include "math/matrix.hpp"
 #include "math/tensor.hpp"
+#include "math/equi_tensor.hpp"
 
 using namespace gs;
 
@@ -34,7 +35,7 @@ int test_tensor(){
     std::cout << "Test tensor" << std::endl;
     int retVal = 0;
     {
-        tensor<double, 3u, 3u> tens({
+        auto tens = equi_tensor<double, 2, 3>({
             1,2,3,
             4,5,6,
             7,8,9
@@ -49,6 +50,15 @@ int test_tensor(){
                 retVal += assert_bool(std::abs(tens(i,j) - expected(i,j)) < 1e-8, "std::abs(tens(i,j) - expected(i,j)) < 1e-8");
             }
         }
+    }
+    {
+        auto tens = equi_tensor<double, 2, 3>({
+            1,2,3,
+            4,5,6,
+            7,8,9
+        });
+        vector<double,3u> vec({1,2,3});
+        retVal += assert_bool(std::abs(tens.inner(vec) - 228) < 1e-8, "std::abs(tens.inner(vec) - 228) < 1e-8");
     }
     return retVal;
 }
