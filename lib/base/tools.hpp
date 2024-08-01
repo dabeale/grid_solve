@@ -2,6 +2,7 @@
 #ifndef _GS_TOOLS_
 #define _GS_TOOLS_
 
+#include <iostream>
 #include <string>
 
 namespace gs {
@@ -37,6 +38,22 @@ constexpr size_t mult(){
     else {
         return mult<Vals...>()*Val;
     }
+}
+/**
+ * Remove the specified index from an array.
+ */
+template<typename T, size_t N, typename... Args>
+std::array<T, N-sizeof...(Args)> remove_i(const std::array<T, N>& ain, Args... args ){
+    std::array<T, N-sizeof...(Args)> ret;
+    size_t ind = 0;
+    for(size_t i=0; i<N && ind < N-sizeof...(Args); ++i){
+        bool bAdd = true;
+        ([&]{bAdd &= (i!=args);}(), ...);
+        if(bAdd){
+            ret[ind++] = ain[i];
+        }
+    }
+    return ret;
 }
 }
 

@@ -96,5 +96,23 @@ int test_polynomial(){
         auto eval = mat.evaluate(vector<double,3>({6,2,1}));
         retVal += assert_bool(std::abs(eval - 183) < 1e-8, "std::abs(eval - 183) < 1e-8");
     }
+    {
+        polynomial<double, 3, 2> mat;
+        std::array<vector<double,2>, 1> inVec{
+            vector<double,2>({1,2})
+        };
+        mat.fill(inVec);
+        auto eval = mat.evaluate(vector<double,2>({1,0}));
+        retVal += assert_bool(std::abs(eval - 4) < 1e-8, "std::abs(eval - 4) < 1e-8");
+    }
+    {
+        polynomial<double, 3, 2> mat;
+        std::array<vector<double,2>, 1> inVec{
+            vector<double,2>({1,2})
+        };
+        mat.fill(inVec);
+        auto eval = mat.evaluate(vector<double,2>({0,1}));
+        retVal += assert_bool(std::abs(eval - 15) < 1e-8, "std::abs(eval - 15) < 1e-8");
+    }
     return retVal;
 }

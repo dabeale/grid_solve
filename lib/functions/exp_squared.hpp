@@ -4,49 +4,94 @@
 
 #include <cmath>
 
-#include "concepts.hpp"
+#include "base/dimensions.hpp"
+#include "math/matrix.hpp"
+#include "math/vector.hpp"
+#include "base/concepts.hpp"
+#include "math/equi_tensor.hpp"
 
 namespace gs {
 /**
  * The Exp Squared covariance function.
  */
-template<int N, typename T, class Vector, class Matrix>
-requires std::is_floating_point<T>::value && is_vector<Vector> && is_matrix<Matrix>
-class exp_squared {
-    T m_sigma_squared;
-
-    /**
-     * Coefficients of the first derivative with respect to x_i
-     */
-    Vector dy_coef(const Vector& x, const Vector& y) const {
-        return (x - y) / m_sigma_squared;
-    }
-
-    /**
-     * Coefficients of the second derivative with respect to x_i, x_j
-     */
-    Matrix ddy_coef(const Vector& x, const Vector& y) const {
-        Matrix ret(outer(x - y) / m_sigma_squared);
-        for (size_t i=0; i<N; ++i){
-            ret(i,i) += 1;
-        }
-        return ret / m_sigma_squared;
-    }
+template<typename T, size_t M, size_t D>
+class exp_squared: public exp_squared<T, M, D-1> {
+protected:
+    dimensions<D> m_dimensions;
 public:
-    exp_squared(T sigma): m_sigma_squared(sigma*sigma) {}
+    exp_squared(T sigma = 1): exp_squared<T, M, D-1>(sigma), m_dimensions(M, 0) {}
 
-    T operator()(const Vector& x, const Vector& y){
-        return std::exp( - (x-y).norm2() / (2*m_sigma_squared) );
-    }
-
-    template<int K>
-    std::pair<Vector, Matrix> approx_coef(const std::array<Vector, K>& xVals, const Vector& center) {
-        std::pair<Vector, Matrix> coefs;
-        for(size_t i=0; i<K; ++i) {
-            coefs.first += xVals[i] - center;
-            coefs.second += outer(xVals[i] - center);
+    equi_tensor<T, D, M> operator()(const vector<T, M>& x, const vector<T, M>& y) const{
+        equi_tensor<T, D, M> ret;
+        const auto pTens = exp_squared<T, M, D-1>::operator()(x,y);
+        const auto ppTens = exp_squared<T, M, D-2>::operator()(x,y);
+        const auto dCoef = exp_squared<T, M, 0>::d_coef(x,y);
+        const auto& pDims = exp_squared<T, M, D-1>::m_dimensions;
+        const auto& ppDims = exp_squared<T, M, D-2>::m_dimensions;
+        for(size_t i=0; i<pow<M, D>(); ++i){
+            auto index = m_dimensions.ind2sub(i);
+            ret[i] = pTens[
+                pDims.sub2ind(remove_i<uint32_t, M>(index, 0))
+            ]*dCoef[index[0]];
+            for(size_t j=1; j<M; ++j){
+                for(size_t k=j+1; k<M; ++k){
+                    if (index[j] == index[k]){
+                        ret[i] += ppTens[
+                            ppDims.sub2ind(remove_i<uint32_t, M>(index, j, k))
+                        ] / exp_squared<T, M, 0>::m_sigma_squared;
+                    }
+                }
+            }
         }
-        return coefs;
+        return ret;
+    }
+};
+
+template<typename T, size_t M>
+class exp_squared<T, M, 2>: public exp_squared<T, M, 1> {
+protected:
+    dimensions<2> m_dimensions;
+public:
+    exp_squared(T sigma = 1): exp_squared<T, M, 1>(sigma), m_dimensions(M, 0) {}
+
+    matrix<T, M, M> operator()(const vector<T, M>& x, const vector<T, M>& y) const {
+        T fEval = exp_squared<T, M, 0>::operator()(x,y);
+        matrix<T, M, M> ret( 
+            matrix_outer(
+                exp_squared<T, M, 1>::operator()(x,y),
+                exp_squared<T, M, 0>::d_coef(x,y)
+            )
+        );
+        for(size_t m=0; m<M; ++m){
+            ret(m,m) -= fEval / exp_squared<T, M, 0>::m_sigma_squared;
+        }
+        return ret;
+    }
+};
+
+template<typename T, size_t M>
+class exp_squared<T, M, 1>: public exp_squared<T, M, 0> {
+protected:
+    dimensions<1> m_dimensions;
+public:
+    exp_squared(T sigma = 1): exp_squared<T, M, 0>(sigma), m_dimensions(M, 0) {}
+
+    vector<T, M> operator()(const vector<T, M>& x, const vector<T, M>& y) const {
+        return exp_squared<T, M, 0>::d_coef(x,y)*exp_squared<T, M, 0>::operator()(x,y);
+    }
+};
+
+template<typename T, size_t M>
+class exp_squared<T, M, 0> {
+protected:
+    T m_sigma_squared;
+public:
+    exp_squared(T sigma = 1): m_sigma_squared(sigma*sigma) {}
+    vector<T, M> d_coef(const vector<T, M>& x, const vector<T, M>& y) const {
+        return (x-y)/(-m_sigma_squared);
+    }
+    T operator()(const vector<T, M>& x, const vector<T, M>& y) const{
+        return std::exp( - (x-y).norm2() / (2*m_sigma_squared) );
     }
 };
 }

@@ -5,10 +5,12 @@
 #include "test_grid.hpp"
 #include "test_fmm.hpp"
 #include "test_math.hpp"
+#include "test_functions.hpp"
 
 int main(int args, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
+    error += test_exp();
     error += test_vector();
     error += test_matrix();
     error += test_tensor();

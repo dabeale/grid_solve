@@ -18,6 +18,7 @@ protected:
 public:
     tensor(): m_dims({Dims...},0) {}
     tensor(std::initializer_list<T> inList): vector<T, m_nElems>(inList), m_dims({Dims...}, 0) {}
+    const dimensions<m_nSize, size_t>& get_dims() const {return m_dims;}
     template<typename... Indices>
     requires (sizeof...(Indices) == m_nSize)
     T& operator()(Indices... inds){

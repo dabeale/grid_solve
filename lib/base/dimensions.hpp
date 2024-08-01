@@ -23,6 +23,9 @@ class dimensions {
 public:
     dimensions() {}
     dimensions(std::array<T, N> dimensions, T maxLevel): m_maxLevel(maxLevel), m_dimensions(dimensions) {}
+    dimensions(T dimensions, T maxLevel): m_maxLevel(maxLevel) {
+        m_dimensions.fill(dimensions);
+    }
 
     /**
      * Get the dimensions at the specified level.

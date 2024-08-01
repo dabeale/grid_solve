@@ -31,6 +31,12 @@ public:
     const T& operator()(const size_t i) const {
         return m_array[i];
     }
+    T& operator[](const size_t i){
+        return m_array[i];
+    }
+    const T& operator[](const size_t i) const {
+        return m_array[i];
+    }
     const vector<T,M>& operator+=(const vector<T,M>& other){
         for(size_t i=0; i<M; ++i) m_array[i] += other.m_array[i];
         return *this;
@@ -55,11 +61,17 @@ public:
         for(size_t i=0; i<M; ++i) m_array[i] /= c;
         return *this;
     }
-    vector<T,M> operator+(const vector<T,M>& other){
+    vector<T,M> operator+(const vector<T,M>& other) const{
         return (vector<T,M>(*this) += other);
     }
-    vector<T,M> operator-(const vector<T,M>& other){
+    vector<T,M> operator-(const vector<T,M>& other) const{
         return (vector<T,M>(*this) -= other);
+    }
+    vector<T,M> operator/(const T& val) const{
+        return (vector<T,M>(*this) /= val);
+    }
+    vector<T,M> operator*(const T& val) const{
+        return (vector<T,M>(*this) *= val);
     }
     T dot(const vector<T,M>& other) const{
         T c = 0;

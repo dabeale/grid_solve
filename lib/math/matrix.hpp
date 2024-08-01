@@ -6,7 +6,7 @@
 #include <cmath>
 #include <array>
 
-#include "vector.hpp"
+#include "math/vector.hpp"
 
 namespace gs {
 /**
@@ -53,6 +53,17 @@ matrix<T,M,M> matrix_outer(const vector<T,M>& vec){
     for(size_t i=0; i<M; ++i){
         for(size_t j=0; j<M; ++j){
             ret(i,j) += vec(i)*vec(j);
+        }
+    }
+    return ret;
+}
+
+template<typename T, size_t M, size_t N>
+matrix<T,M,N> matrix_outer(const vector<T,M>& vecA, const vector<T,N>& vecB){
+    matrix<T,M,N> ret;
+    for(size_t i=0; i<M; ++i){
+        for(size_t j=0; j<N; ++j){
+            ret(i,j) += vecA(i)*vecB(j);
         }
     }
     return ret;

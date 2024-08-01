@@ -4,9 +4,9 @@
 
 #include <array>
 
-#include "equi_tensor.hpp"
-#include "matrix.hpp"
-#include "vector.hpp"
+#include "math/equi_tensor.hpp"
+#include "math/matrix.hpp"
+#include "math/vector.hpp"
 
 namespace gs {
 /**
@@ -25,7 +25,7 @@ public:
     template<size_t K>
     void fill(const std::array<vector<T, N>, K>& vals){
         for(size_t k=0; k<K; ++k){
-            m_coeff += tensor_outer<T, D, K>(vals[k]);
+            m_coeff += tensor_outer<T, D, N>(vals[k]);
         }
         polynomial<T, D-1, N>::fill(vals);
     }

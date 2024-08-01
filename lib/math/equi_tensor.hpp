@@ -25,12 +25,13 @@ public:
  * than a full pack.
  * 
  * For example, tensor<double, M, M, M> is the same as
- * equi_tensor<double, M, 3>.
+ * equi_tensor<double, 3, M>.
  */
 template<typename T, size_t N, size_t K>
 class equi_tensor: public equi_tensor_base<T, N, K>::type {
-    using base = equi_tensor_base<T, N, K>::type;
 public:
+    using base = equi_tensor_base<T, N, K>::type;
+
     /**
      * The full inner product for the tensor.
      */
@@ -55,12 +56,12 @@ template<typename T, size_t N, size_t K>
 equi_tensor<T, N, K> tensor_outer(const vector<T,K>& vec){
     equi_tensor<T, N, K> out;
     for(size_t i=0; i<pow<K, N>(); ++i){
-        auto indArr = equi_tensor<T, N, K>::base::m_dims.ind2sub(i);
+        auto indArr = out.get_dims().ind2sub(i);
         T mult = 1.0;
         for(size_t k=0; k<N; ++k){
             mult*=vec(indArr[k]);
         }
-        static_cast<vector<T, equi_tensor<T, N, K>::base::m_nElems>>(out)(i) = mult;
+        out[i] = mult;
     }
     return out;
 }
