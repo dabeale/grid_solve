@@ -11,18 +11,29 @@
 
 namespace gs {
 /**
- * \brief A box in a grid.
+ * \brief A box (hypercube) in the grid.
+ * 
+ * The box is an N-dimensional hypercube. Each corner contains
+ * and index which can be used to access elements of a grid.
+ * The indices are specified at a particular level of a 2^N tree,
+ * and so the box does that also. At the lowest level it contains
+ * the 2^N corners of the grid, but it can be divided by a factor 
+ * of 2 in each dimension to access higher levels. 
+ * 
+ * The template parameters,
+ *      N - The number of dimensions of the box
+ *      T - The integral type.
  */
 template<int N, typename T=uint32_t>
 requires std::is_integral<T>::value
 class box {
-    std::array<index<N, T>, pow<2,N>()> m_corners; ///< The corners
-    T m_level; ///< The box level
-    dimensions<N,T> m_dimensions; ///< The dimensions of the box
+    std::array<index<N, T>, pow<2,N>()> m_corners; ///< The corners.
+    T m_level; ///< The box level.
+    dimensions<N,T> m_dimensions; ///< The dimensions of the box.
 
 public:
-    static constexpr T m_nCorners = pow<2,N>();   ///< The number of corners
-    static constexpr T m_nSubPoints = pow<3,N>(); ///< The number of subpoints
+    static constexpr T m_nCorners = pow<2,N>();   ///< The number of corners.
+    static constexpr T m_nSubPoints = pow<3,N>(); ///< The number of subpoints.
 
     box(const dimensions<N,T> dimensions, const T level, const T offset=0): m_level(level), m_dimensions(dimensions) {
         const index<N,T> offsetIndex(dimensions.ind2sub(offset, level), level);
@@ -35,7 +46,7 @@ public:
     {}
 
     /**
-     * Get the current level.
+     * \brief Get the current level.
      */
     T get_level() const {
         return m_level;
@@ -46,7 +57,7 @@ public:
         NEGATIVE=-1
     };
     /**
-     * Change the box to its neighbour in the specified dimension.
+     * \brief Change the box to its neighbour in the specified dimension.
      */
     void to_neighbour(const T dim, const PosNeg direction){
         for(T i = 0; i < m_nCorners; ++i){
@@ -55,14 +66,15 @@ public:
     }
 
     /**
-     * Find all of the subboxes after binary subdivision.
+     * \brief A subbox after binary subdivision.
      */
     box<N,T> subbox(const T ind) const{
         return box<N,T>(m_dimensions, m_level + 1, ind);
     }
 
     /**
-     * Find all of the subpoints after binary subdivision.
+     * \brief Find all of the subpoints after binary subdivision.
+     * 
      * This does not include the corners of the box.
      */
     std::array<index<N, T>, m_nSubPoints - m_nCorners> subpoints(){

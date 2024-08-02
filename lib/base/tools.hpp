@@ -7,7 +7,7 @@
 
 namespace gs {
 /**
- * Print a message if the predicate is false.
+ * \brief Print a message if the predicate is false.
  */
 bool assert_bool(bool val, std::string errMessage){
     if ( ! val ){
@@ -16,7 +16,7 @@ bool assert_bool(bool val, std::string errMessage){
     return ! val;
 }
 /**
- * Compute power using the pre-compiler.
+ * \brief Compute power using the pre-compiler.
  */
 template<size_t Base, size_t Exponent>
 constexpr size_t pow(){
@@ -28,7 +28,7 @@ constexpr size_t pow(){
     }
 }
 /**
- * Compute mutliplication using pre-compiler
+ * \brief Compute multiplication using the pre-compiler.
  */
 template<size_t Val, size_t... Vals>
 constexpr size_t mult(){
@@ -40,7 +40,7 @@ constexpr size_t mult(){
     }
 }
 /**
- * Remove the specified index from an array.
+ * \brief Remove the specified indices from an array.
  */
 template<typename T, size_t N, typename... Args>
 std::array<T, N-sizeof...(Args)> remove_i(const std::array<T, N>& ain, Args... args ){

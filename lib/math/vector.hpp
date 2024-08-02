@@ -8,7 +8,18 @@
 
 namespace gs {
 /**
- * A stack allocated vector.
+ * \brief A stack allocated vector.
+ * 
+ * The stack allocated vector is simply a stl array, with standard 
+ * vector operations defined on it, such as +, -, dot, and norm2.
+ * 
+ * The vector provides the base class for all higher dimensional
+ * tensors. Elements can be access using the call operator, or the 
+ * subscript operator.
+ * 
+ * The template parameters,
+ *      T - The base type (e.g. double or float).
+ *      M - The number of dimensions.
  */
 template<typename T, size_t M>
 class vector {

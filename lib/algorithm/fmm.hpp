@@ -7,6 +7,12 @@
 
 namespace gs {
 
+/**
+ * \brief A vector field.
+ * 
+ * The vector field provides the set of default template values for the 
+ * fmm algorithm.
+ */
 template<int N, typename T> 
 class vector_field {
 public:
@@ -19,7 +25,35 @@ public:
 };
 
 /**
- * The Fast Multipole Method.
+ * \brief The Fast Multipole Method.
+ * 
+ * The Fast Multipole Method is a method which arose from electrostatics.
+ * The principle is to enable fast computation of problems which require 
+ * comparing each point in the grid to each point, leading to at least O(N^2)
+ * complexity.
+ * 
+ * Assuming that the function which is used to compare points is analytic, the
+ * principle is to use Taylor's theorem to approximate the function when comparing
+ * points which are distant from each other, and only compute the precise value 
+ * for nearby points. The algorithm splits the grid in to a 2^N tree (a quad-tree in 2D,
+ * and an oct-tree in 3D), and parses the tree top-to-bottom and back up again computing 
+ * the solution.
+ * 
+ * In the most general sense, the algorithm computes matrix multiplication on a grid,
+ * for matrices which are generated from analytic functions such as covariance functions
+ * and smoothed derivatives. It can also be used to invert a matrix as well.
+ * 
+ * The template parameters,
+ *      N           - The number of dimensions of the underlying grid.
+ *      T           - The base integral type.
+ *      FFarField   - The far field equation which takes a pre-computed value
+ *                    in each box, and produces an grid value for each input point.
+ *      FNearField  - The near field equation which takes a list of points (at corners 
+ *                    of granular boxes), and produces an output value for each point.
+ *      FBoxWeight  - A function which takes a list of points in a box and produces a
+ *                    box value, to be used as a weight in the far field equation.
+ *      GridElement - The element type to be stored at each point in the grid.
+ *      BoxElement  - The element type to be stored at each box in the tree.
  */
 template<
     int N,
@@ -37,10 +71,10 @@ requires (
     std::invocable<FBoxWeight&, const std::array<GridElement, pow<2,N>()>&, BoxElement&>
 )
 class fmm {
-    grid<N, GridElement, BoxElement, T> m_grid;
-    FFarField m_farFieldFunc;
-    FNearField m_nearFieldFunc;
-    FBoxWeight m_boxWeightFunc;
+    grid<N, GridElement, BoxElement, T> m_grid; ///< The underlying grid.
+    FFarField m_farFieldFunc; ///< The far field function.
+    FNearField m_nearFieldFunc; ///< The near field function.
+    FBoxWeight m_boxWeightFunc; ///< The box weight function.
 
 public:
     fmm(
@@ -55,7 +89,14 @@ public:
         m_boxWeightFunc(boxWeightFunc){}
 
     /**
-     * Compute the solution.
+     * \brief Compute the solution.
+     * 
+     * The algorithm iterates each level of the tree in coarse-to-fine and
+     * fine-to-coarse direction. In the fine-to-coarse traversal, the weights
+     * to each of the boxes are computed and stored. In the coarse-to-fine 
+     * traversal the corners of the box are used to compute the solution using
+     * the far-field equation in all of the levels apart from the finest, 
+     * the near field equation is used at the finest level.
      */
     void compute(T nIters=2){
         for (T it; it < nIters; ++it){

@@ -6,7 +6,7 @@
 
 namespace gs {
 /**
- * A means to traverse the grid.
+ * \brief A means to traverse the grid.
  */
 enum PatternComponent {
     FINE_TO_COARSE,
@@ -14,7 +14,7 @@ enum PatternComponent {
 };
 
 /**
- * A V traversal pattern.
+ * \brief A V traversal pattern.
  */
 std::vector<PatternComponent> v_pattern(){
     return {
@@ -23,7 +23,7 @@ std::vector<PatternComponent> v_pattern(){
     };
 }
 /**
- * A /\ traversal pattern.
+ * \brief A /\ traversal pattern.
  */
 std::vector<PatternComponent> inverse_v_pattern(){
     return {

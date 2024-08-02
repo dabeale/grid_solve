@@ -21,7 +21,7 @@ int test_dimensions_sub2ind_inversion(){
     std::cout << "Test dimensions sub2ind inversion" << std::endl;
     dimensions<3> dims({3,4,5}, 5);
     int retVal = 0;
-    for (int i=0; i<3*4*5; ++i){
+    for (uint32_t i=0; i<3*4*5; ++i){
         retVal += assert_bool(dims.sub2ind(dims.ind2sub(i)) == i, "dims.sub2ind(dims.ind2sub(i)) == i");
     }
     return retVal;

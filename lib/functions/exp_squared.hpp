@@ -12,15 +12,36 @@
 
 namespace gs {
 /**
- * The Exp Squared covariance function.
+ * \brief The Exp-Squared covariance function.
+ * 
+ * The Exp-Squared covariance function is defined as,
+ *                /  -|| x - y ||^2   \
+ *   f(x,y) = exp |  ---------------- |
+ *                \     2*sigma       /
+ * The implementation computes both the function and
+ * its multivariate derivatives on the stack. 
+ * 
+ * The template parameters,
+ *      T - The base type (e.g. double).
+ *      M - The number of dimensions in the input vectors.
+ *      D - The degree of the derivative.
+ *          (evaluation of the object at D returns a D-Tensor).
  */
 template<typename T, size_t M, size_t D>
 class exp_squared: public exp_squared<T, M, D-1> {
 protected:
-    dimensions<D> m_dimensions;
+    dimensions<D> m_dimensions; ///< The dimensions of the tensor.
 public:
     exp_squared(T sigma = 1): exp_squared<T, M, D-1>(sigma), m_dimensions(M, 0) {}
 
+    /**
+     * \brief Evaluate the function / derivative.
+     * 
+     * Depending on the value of D, return the evaluation of 
+     * the exp_squared covariance function at x and y. When D==0
+     * this is simply the function itself, but at higher values
+     * it is the Dth derivative.
+     */
     equi_tensor<T, D, M> operator()(const vector<T, M>& x, const vector<T, M>& y) const{
         equi_tensor<T, D, M> ret;
         const auto pTens = exp_squared<T, M, D-1>::operator()(x,y);
@@ -31,7 +52,7 @@ public:
         for(size_t i=0; i<pow<M, D>(); ++i){
             auto index = m_dimensions.ind2sub(i);
             ret[i] = pTens[
-                pDims.sub2ind(remove_i<uint32_t, M>(index, 0))
+                pDims.sub2ind(remove_i<uint32_t, M>(index, 0u))
             ]*dCoef[index[0]];
             for(size_t j=1; j<M; ++j){
                 for(size_t k=j+1; k<M; ++k){
@@ -47,6 +68,9 @@ public:
     }
 };
 
+/**
+ * The specialisation of exp_squared for the second derivative.
+ */
 template<typename T, size_t M>
 class exp_squared<T, M, 2>: public exp_squared<T, M, 1> {
 protected:
@@ -69,6 +93,9 @@ public:
     }
 };
 
+/**
+ * The specialisation of exp_squared for the first derivative.
+ */
 template<typename T, size_t M>
 class exp_squared<T, M, 1>: public exp_squared<T, M, 0> {
 protected:
@@ -81,6 +108,9 @@ public:
     }
 };
 
+/**
+ * The specialisation of exp_squared for the zeroth derivative.
+ */
 template<typename T, size_t M>
 class exp_squared<T, M, 0> {
 protected:

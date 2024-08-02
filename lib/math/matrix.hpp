@@ -10,7 +10,17 @@
 
 namespace gs {
 /**
- * A stack allocated matrix.
+ * \brief A stack allocated matrix.
+ * 
+ * The stack allocated matrix is a matrix which is allocated on the
+ * stack. It inherits from a vector, and so all of the basic operations,
+ * such as +,-,* etc, inherit from that class. Specific operations such
+ * as matrix multiply are also implemented in this class.
+ * 
+ * The template parameters,
+ *      T - The base type (e.g. double or float).
+ *      M - The number of rows.
+ *      N - The number of columns.
  */
 template<typename T, size_t M, size_t N>
 class matrix: public vector<T, M * N> {

@@ -10,7 +10,22 @@
 
 namespace gs {
 /**
- * A stack allocated polynomial.
+ * \brief A stack allocated polynomial.
+ * 
+ * The multivariate polynomial contains every coefficient 
+ * for each monomial, upto the specified degree. Since the
+ * polynomial is stack allocated, the degree must be known
+ * at compile time. Recursive inheritance is used to store
+ * each of the coefficients, which are tensors of dimension 
+ * equal to the respective degree.
+ * 
+ * For example, a second order polynomial is,
+ *  f(x) = a + x^t b + x^t C x
+ * 
+ * The template parameters,
+ *      T - The base type (e.g. double or float).
+ *      D - The degree.
+ *      N - The number of input dimensions.
  */
 template<typename T, size_t D, size_t N>
 class polynomial : public polynomial<T, D-1, N>{
@@ -18,7 +33,8 @@ protected:
     equi_tensor<T, D, N> m_coeff;
 public:
     /**
-     * Fill the parameters using a collection of vectors.
+     * \brief Fill the parameters using a collection of vectors.
+     * 
      * The parameters a computed as the sum of the inner 
      * products of the vectors.
      */
@@ -30,7 +46,7 @@ public:
         polynomial<T, D-1, N>::fill(vals);
     }
     /**
-     * Evaluate the polynomial at the specified vector.
+     * \brief Evaluate the polynomial at the specified vector.
      */
     T evaluate(const vector<T, N>& vin){
         return m_coeff.inner(vin) + polynomial<T, D-1, N>::evaluate(vin);

@@ -10,25 +10,39 @@
 
 namespace gs {
 /**
- * \brief The dimensions of the grid.
+ * \brief Dimensions for an N-dimensional hypercube.
  * 
- * The dimensions must be in multiples of 2.
+ * The dimensions object specifies the size in each dimension
+ * of a hypercube type object (tensor or grid). It can be of
+ * arbitrary dimension itself, and provides a means to convert
+ * between an index (coordinate) and an integral type (int). This
+ * makes it easy to enumerate all the boxes and indexes at a particular
+ * level on a 2^n tree.
+ * 
+ * The dimensions object is initialised with the dimensions at the
+ * lowest level of the tree, with a maximum level. For example, dimensions
+ * {1,2} specify a rectangle of length 2 and width 1. At level 2, the dimensions
+ * are {2,4} and so on. 
+ * 
+ * The template parameters,
+ *      N - The number of dimensions of the box
+ *      T - The integral type.
  */
 template<int N, typename T=uint32_t>
-requires std::is_integral<T>::value
+requires std::is_integral<T>::value && (N > 0)
 class dimensions {
-    std::array<T, N> m_dimensions;
-    T m_maxLevel;
+    std::array<T, N> m_dimensions; ///< The base array storage for the dimensions.
+    T m_maxLevel; ///< The maximum allowed level.
 
 public:
-    dimensions() {}
-    dimensions(std::array<T, N> dimensions, T maxLevel): m_maxLevel(maxLevel), m_dimensions(dimensions) {}
-    dimensions(T dimensions, T maxLevel): m_maxLevel(maxLevel) {
+    dimensions(): m_dimensions{}, m_maxLevel(0) {m_dimensions.fill(0);}
+    dimensions(std::array<T, N> dimensions, T maxLevel):  m_dimensions(dimensions), m_maxLevel(maxLevel) {}
+    dimensions(T dimensions, T maxLevel): m_dimensions{}, m_maxLevel(maxLevel) {
         m_dimensions.fill(dimensions);
     }
 
     /**
-     * Get the dimensions at the specified level.
+     * \brief Get the dimensions at the specified level.
      */
     std::array<T, N> level_dims(const T level) const {
         std::array<T, N> levelDims;
@@ -39,26 +53,26 @@ public:
     }
 
     /**
-     * Get the maximum level.
+     * \brief Get the maximum level.
      */
     T max_level() const {
         return m_maxLevel;
     }
 
     /**
-     * Get the maximum index at the specified level.
+     * \brief Get the maximum index at the specified level.
      */
     T max_ind(const T level) const {
-        const auto levelDims = dimensions<N,T>::level_dims(level);
+        const std::array<T, N> levelDims = dimensions<N,T>::level_dims(level);
         T total = 1;
-        for (const auto& dim : levelDims){
+        for (const auto dim : levelDims){
             total *= dim;
         }
         return total;
     }
 
     /**
-     * Get the grid dimensions from an index, at the specified level.
+     * \brief Get the grid dimensions from an index, at the specified level.
      */
     std::array<T, N> ind2sub(const T ind, const T level=0) const {
         T coef = 1;
@@ -73,7 +87,7 @@ public:
     }
 
     /**
-     * Get a one dimensional index representation, at the specified level.
+     * \brief Get a one dimensional index representation, at the specified level.
      */
     T sub2ind(const std::array<T, N>& indices, const T level=0) const {
         const auto levelDims = dimensions<N,T>::level_dims(level);

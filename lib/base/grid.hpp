@@ -12,21 +12,41 @@
 
 namespace gs{
 /**
- * A grid of objects of arbitrary dimension.
+ * \brief A grid of objects of arbitrary dimension.
+ * 
+ * The grid is a heap-allocated, contiguous N-dimensional tensor, 
+ * which can be used for computing the solutions to analytic equations 
+ * defined on the grid.
+ * 
+ * The grid is defined by an arbitrary number of dimensions, of arbitrary
+ * size. An object is stored at each point, and can be traversed point-by-point
+ * but also at any particular level in its associated 2^n-tree. The tree levels
+ * area accessed using a box, and objects can be stored and retrieved
+ * at each level.
+ * 
+ * The tree is parsed using the iterate method, which will iterate all of
+ * the points using the specified pattern. For example, in the fmm algorithm
+ * it is parsed from the lowest level to the top and back again.
+ * 
+ *  * The template parameters,
+ *      M           - The number of dimensions of the grid.
+ *      GridElement - The object to store at each point.
+ *      BoxElement  - The object to store at each level.
+ *      S           - The integral type to use.
  */
 template<int N, class GridElement, class BoxElement, class S=uint32_t>
 requires std::is_integral<S>::value
 class grid {
-    std::vector<GridElement> m_gridStorage;
-    std::vector<std::vector<BoxElement>> m_boxStorage;
-    dimensions<N, S> m_dimensions;
+    std::vector<GridElement> m_gridStorage; ///< Storage at each of the points in the grid.
+    std::vector<std::vector<BoxElement>> m_boxStorage; ///< Storage at each level of the 2^N tree.
+    dimensions<N, S> m_dimensions; ///< The dimensions of the grid.
 
 public:
     grid() = delete;
     grid(const dimensions<N, S> dimensions):
-        m_dimensions(dimensions),
         m_gridStorage(dimensions.max_ind(dimensions.max_level())),
-        m_boxStorage(dimensions.max_level()+1) 
+        m_boxStorage(dimensions.max_level()+1),
+        m_dimensions(dimensions)
     {
         S i=0;
         for(auto& boxStore : m_boxStorage){
@@ -35,7 +55,7 @@ public:
     }
 
     /**
-     * Get the dimensions of the grid.
+     * \brief Get the dimensions of the grid.
      */
     const dimensions<N, S>& get_dimensions() const {
         return m_dimensions;
@@ -60,7 +80,7 @@ public:
     }
 
     /**
-     * Get the corner values of the box in terms of
+     * \brief Get the corner values of the box in terms of
      * the grid storage object.
      */
     std::array<GridElement, pow<2,N>()> get_corner_values(const box<N, S>& box){

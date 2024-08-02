@@ -7,7 +7,24 @@
 
 namespace gs {
 /**
- * A stack allocated tensor.
+ * \brief A stack allocated tensor.
+ * 
+ * The stack allocated tensor is a tensor of arbitrary
+ * dimension. It inherits from a vector, and so it shares 
+ * all of the basic operations such as +,-,* etc. 
+ * 
+ * The elements are obtained using the call operator, with 
+ * variadic inputs.
+ * 
+ * For example, a 3D tensor could be allocated as follows,
+ * tensor<double, 3,5,7> tens;
+ * 
+ * The elements would then be obtained using, for example,
+ * auto val = tens(0,1,5);
+ * 
+ * The template parameters,
+ *      T       - The base type (e.g. double or float).
+ *      Dims... - The dimensions.
  */
 template<typename T, size_t... Dims>
 class tensor: public vector<T, mult<Dims...>()> {
