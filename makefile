@@ -3,14 +3,16 @@ INCLUDE=-Ilib -Itests
 RFLAGS=-Ofast -Wall -fanalyzer -Wno-analyzer-possible-null-dereference -Wno-analyzer-null-dereference
 DFLAGS=-g -Og -Wall
 
-all: test_release test_debug
+all: bin bin/test_release bin/test_debug
 
-test_release: tests/tests.cpp
+bin/test_release: tests/tests.cpp
 	$(CXX) $(INCLUDE) $(RFLAGS) -o $@ $< $(LDLIBS)
 
-test_debug: tests/tests.cpp
+bin/test_debug: tests/tests.cpp
 	$(CXX) $(INCLUDE) $(DFLAGS) -o $@ $< $(LDLIBS)
 
+bin:
+	-mkdir bin
+
 clean:
-	-rm -f test_release
-	-rm -f test_debug
+	-rm -rf bin
