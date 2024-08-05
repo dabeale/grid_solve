@@ -5,6 +5,8 @@
 #include "math/tensor.hpp"
 #include "math/equi_tensor.hpp"
 #include "math/polynomial.hpp"
+#include "math/taylor.hpp"
+#include "functions/exp_squared.hpp"
 
 using namespace gs;
 
@@ -113,6 +115,38 @@ int test_polynomial(){
         mat.fill(inVec);
         auto eval = mat.evaluate(vector<double,2>({0,1}));
         retVal += assert_bool(std::abs(eval - 15) < 1e-8, "std::abs(eval - 15) < 1e-8");
+    }
+    return retVal;
+}
+
+int test_taylor(){
+    std::cout << "Test taylor" << std::endl;
+    int retVal = 0;
+    {
+        taylor<double, 3, 2, exp_squared> tlor{
+            exp_squared<double, 3, 2>()
+        };
+        exp_squared<double, 3> comp;
+        for(double pert : {0.1, 0.2, -0.1, 0.001}){
+            {
+                vector<double, 3> val({1+pert,2,3});
+                auto expected = comp(val, {2,2,3});
+                auto estimate = tlor.estimate(val, {1,2,3}, {2,2,3});
+                retVal += assert_bool(std::abs(expected - estimate) < 1e-2, "std::abs(expected - estimate) < 1e-2");
+            }
+            {
+                vector<double, 3> val({1,2+pert,3});
+                auto expected = comp(val, {2,2,3});
+                auto estimate = tlor.estimate(val, {1,2,3}, {2,2,3});
+                retVal += assert_bool(std::abs(expected - estimate) < 1e-2, "std::abs(expected - estimate) < 1e-2");
+            }
+            {
+                vector<double, 3> val({1,2,3+pert});
+                auto expected = comp(val, {2,2,3});
+                auto estimate = tlor.estimate(val, {1,2,3}, {2,2,3});
+                retVal += assert_bool(std::abs(expected - estimate) < 1e-2, "std::abs(expected - estimate) < 1e-2");
+            }
+        }
     }
     return retVal;
 }

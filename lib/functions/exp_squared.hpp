@@ -27,7 +27,7 @@ namespace gs {
  *      D - The degree of the derivative.
  *          (evaluation of the object at D returns a D-Tensor).
  */
-template<typename T, size_t M, size_t D>
+template<typename T, size_t M, size_t D=0>
 class exp_squared: public exp_squared<T, M, D-1> {
 protected:
     dimensions<D> m_dimensions; ///< The dimensions of the tensor.
@@ -52,13 +52,13 @@ public:
         for(size_t i=0; i<pow<M, D>(); ++i){
             auto index = m_dimensions.ind2sub(i);
             ret[i] = pTens[
-                pDims.sub2ind(remove_i<uint32_t, M>(index, 0u))
+                pDims.sub2ind(remove_i<uint32_t, D>(index, 0u))
             ]*dCoef[index[0]];
             for(size_t j=1; j<M; ++j){
                 for(size_t k=j+1; k<M; ++k){
                     if (index[j] == index[k]){
                         ret[i] += ppTens[
-                            ppDims.sub2ind(remove_i<uint32_t, M>(index, j, k))
+                            ppDims.sub2ind(remove_i<uint32_t, D>(index, j, k))
                         ] / exp_squared<T, M, 0>::m_sigma_squared;
                     }
                 }

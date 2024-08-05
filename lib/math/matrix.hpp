@@ -95,6 +95,20 @@ std::ostream& operator<<(std::ostream& os, const matrix<T, M, N>& mat)
     }
     return os;
 }
+
+/**
+ * \brief Matrix concept.
+ */
+template<typename T>
+concept is_matrix = requires(T m, T n) {
+    m(int(), int());
+    { m+n } -> std::same_as<T>;
+    { m*n } -> std::same_as<T>;
+    m+double();
+    m*double();
+    m/double();
+    m-double();
+};
 }
 
 #endif

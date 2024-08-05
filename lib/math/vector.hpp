@@ -106,6 +106,18 @@ std::ostream& operator<<(std::ostream& os, const vector<T, M>& vec)
     os << vec(M-1) << "]";
     return os;
 }
+/**
+ * \brief Vector concept.
+ */
+template<typename T>
+concept is_vector = random_access<T> && requires(T m, T n) {
+    m(int());
+    { m+n } -> std::same_as<T>;
+    m+double();
+    m*double();
+    m/double();
+    m-double();
+};
 }
 
 #endif

@@ -34,31 +34,6 @@ concept random_access = requires(T t) {
     t[int()];
 };
 /**
- * \brief Vector concept.
- */
-template<typename T>
-concept is_vector = random_access<T> && requires(T m, T n) {
-    m(int());
-    { m+n } -> std::same_as<T>;
-    m+double();
-    m*double();
-    m/double();
-    m-double();
-};
-/**
- * \brief Matrix concept.
- */
-template<typename T>
-concept is_matrix = requires(T m, T n) {
-    m(int(), int());
-    { m+n } -> std::same_as<T>;
-    { m*n } -> std::same_as<T>;
-    m+double();
-    m*double();
-    m/double();
-    m-double();
-};
-/**
  * \brief Random access container concept.
  */
 template<typename T>
