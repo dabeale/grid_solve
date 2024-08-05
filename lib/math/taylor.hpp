@@ -14,9 +14,9 @@ namespace gs {
  * Converting the function into a polynomial is not only a potentially
  * efficient way to compute it, but also allows one to separate variables
  * which are coupled through a non-linear function (such as in exp_squared).
- * Doing so means that we can compute a multi-body type O(N^2) algorithm, in which
- * every point is compared with every other point, into an O(N) algorith in which
- * every point is only once.
+ * Doing so means that we can convert a multi-body type O(N^2) algorithm, in which
+ * every point is compared with every other point, into an O(N) algorithm in which
+ * every point is only evaluated once (the FMM for example).
  * 
  * The template parameters,
  *      T - The base type (e.g. double or float).
