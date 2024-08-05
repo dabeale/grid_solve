@@ -123,8 +123,8 @@ int test_taylor(){
     std::cout << "Test taylor" << std::endl;
     int retVal = 0;
     {
-        taylor<double, 3, 2, exp_squared> tlor{
-            exp_squared<double, 3, 2>()
+        taylor<double, 3, 5, exp_squared> tlor{
+            exp_squared<double, 3, 5>()
         };
         exp_squared<double, 3> comp;
         for(double pert : {0.1, 0.2, -0.1, 0.001}){
@@ -132,19 +132,47 @@ int test_taylor(){
                 vector<double, 3> val({1+pert,2,3});
                 auto expected = comp(val, {2,2,3});
                 auto estimate = tlor.estimate(val, {1,2,3}, {2,2,3});
-                retVal += assert_bool(std::abs(expected - estimate) < 1e-2, "std::abs(expected - estimate) < 1e-2");
+                retVal += assert_bool(std::abs(expected - estimate) < 1e-6, "std::abs(expected - estimate) < 1e-6");
             }
             {
                 vector<double, 3> val({1,2+pert,3});
                 auto expected = comp(val, {2,2,3});
                 auto estimate = tlor.estimate(val, {1,2,3}, {2,2,3});
-                retVal += assert_bool(std::abs(expected - estimate) < 1e-2, "std::abs(expected - estimate) < 1e-2");
+                retVal += assert_bool(std::abs(expected - estimate) < 1e-6, "std::abs(expected - estimate) < 1e-6");
             }
             {
                 vector<double, 3> val({1,2,3+pert});
                 auto expected = comp(val, {2,2,3});
                 auto estimate = tlor.estimate(val, {1,2,3}, {2,2,3});
-                retVal += assert_bool(std::abs(expected - estimate) < 1e-2, "std::abs(expected - estimate) < 1e-2");
+                retVal += assert_bool(std::abs(expected - estimate) < 1e-6, "std::abs(expected - estimate) < 1e-6");
+            }
+        }
+        {
+            taylor<double, 3, 2, exp_squared> tlora{ exp_squared<double, 3, 2>() };
+            taylor<double, 3, 5, exp_squared> tlorb{ exp_squared<double, 3, 5>() };
+            taylor<double, 3, 10, exp_squared> tlorc{ exp_squared<double, 3, 10>() };
+            exp_squared<double, 3> comp;
+            for(double pert : {0.1, 0.2, -0.1, 0.001}){
+                {
+                    vector<double, 3> val({1+pert,2,3});
+                    auto expected = comp(val, {2,2,3});
+                    auto estimatea = tlora.estimate(val, {1,2,3}, {2,2,3});
+                    auto estimateb = tlorb.estimate(val, {1,2,3}, {2,2,3});
+                    auto estimatec = tlorc.estimate(val, {1,2,3}, {2,2,3});
+                    retVal += assert_bool(
+                        std::abs(expected - estimatea) < 1e-2,
+                        "std::abs(expected - estimatea) < 1e-2"
+                    );
+                    retVal += assert_bool(
+                        std::abs(expected - estimateb) < std::abs(expected - estimatea),
+                        "std::abs(expected - estimateb) < std::abs(expected - estimatea)"
+                    );
+                    // Use <= because beyond a certain precision they are the same.
+                    retVal += assert_bool(
+                        std::abs(expected - estimatec) <= std::abs(expected - estimateb),
+                        "std::abs(expected - estimatec) <= std::abs(expected - estimateb)"
+                    );
+                }
             }
         }
     }

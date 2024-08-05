@@ -45,6 +45,7 @@ constexpr size_t mult(){
 template<typename T, size_t N, typename... Args>
 std::array<T, N-sizeof...(Args)> remove_i(const std::array<T, N>& ain, Args... args ){
     std::array<T, N-sizeof...(Args)> ret;
+    ret.fill(0);
     size_t ind = 0;
     for(size_t i=0; i<N && ind < N-sizeof...(Args); ++i){
         bool bAdd = true;

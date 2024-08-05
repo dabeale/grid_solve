@@ -40,8 +40,13 @@ int test_exp(){
         for(size_t i=0; i<3; ++i){
             for(size_t j=0; j<3; ++j){
                 for(size_t k=0; k<3; ++k){
-                    // I'm unsure about this value - but the maths appears correct.
-                    retVal += assert_bool(std::abs(eVal(i,j,k) - 0.010738894981108941) < 1e-10, "std::abs(eVal - 0.010738894981108941) < 1e-10");
+                    if (i==j && i==k){
+                        retVal += assert_bool(std::abs(eVal(i,j,k) + 0.118128) < 1e-5, "std::abs(eVal + 0.118128) < 1e-5");
+                    } else if (i==j || i==k || k==j) {
+                        retVal += assert_bool(std::abs(eVal(i,j,k) + 0.0322167) < 1e-5, "std::abs(eVal + 0.0322167) < 1e-5");
+                    } else {
+                        retVal += assert_bool(std::abs(eVal(i,j,k) - 0.0107389) < 1e-5, "std::abs(eVal - 0.0107389) < 1e-5");
+                    }
                 }
             }
         }

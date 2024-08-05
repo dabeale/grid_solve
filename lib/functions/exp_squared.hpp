@@ -54,13 +54,11 @@ public:
             ret[i] = pTens[
                 pDims.sub2ind(remove_i<uint32_t, D>(index, 0u))
             ]*dCoef[index[0]];
-            for(size_t j=1; j<M; ++j){
-                for(size_t k=j+1; k<M; ++k){
-                    if (index[j] == index[k]){
-                        ret[i] += ppTens[
-                            ppDims.sub2ind(remove_i<uint32_t, D>(index, j, k))
-                        ] / exp_squared<T, M, 0>::m_sigma_squared;
-                    }
+            for(size_t k=1; k<D; ++k){
+                if (index[0] == index[k]){
+                    ret[i] -= ppTens[
+                        ppDims.sub2ind(remove_i<uint32_t, D>(index, 0u, k))
+                    ] / exp_squared<T, M, 0>::m_sigma_squared;
                 }
             }
         }
