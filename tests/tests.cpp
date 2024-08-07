@@ -11,7 +11,8 @@
 int main(int args, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
-    error += test_taylor_coefficients();
+    error += test_taylor_coefficients_inner();
+    error += test_taylor_coefficients_squared();
     error += test_taylor_estimation();
     error += test_exp();
     error += test_vector();

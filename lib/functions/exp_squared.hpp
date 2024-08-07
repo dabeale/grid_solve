@@ -17,7 +17,7 @@ namespace gs {
  * The Exp-Squared covariance function is defined as,
  *                /  -|| x - y ||^2   \
  *   f(x,y) = exp |  ---------------- |
- *                \     2*sigma       /
+ *                \     2*sigma^      /
  * The implementation computes both the function and
  * its multivariate derivatives on the stack. 
  * 

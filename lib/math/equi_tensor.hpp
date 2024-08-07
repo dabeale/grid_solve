@@ -42,7 +42,7 @@ class equi_tensor: public equi_tensor_base<T, N, K>::type {
 public:
     using base = equi_tensor_base<T, N, K>::type;
     equi_tensor(): base() {}
-    equi_tensor(const vector<T, N>& vec): base(vec) {}
+    equi_tensor(const vector<T, pow<K,N>()>& vec): base(vec) {}
     equi_tensor(std::initializer_list<T> inList): base(inList) {}
     /**
      * \brief The full inner product for the tensor.
