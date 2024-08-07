@@ -42,17 +42,61 @@ public:
      */
     template<size_t K=D>
     T estimate(const vector<T, M>& x, const vector<T, M>& cx, const vector<T, M>& y){
+        const auto fAtY = static_cast<F<T, M, K>>(m_function)(cx, y);
         if constexpr ( K == 0 ) {
-            return static_cast<F<T, M, K>>(m_function)(cx, y);
+            return fAtY;
         }
         else if constexpr ( K == 1 ){
-            return static_cast<F<T, M, K>>(m_function)(cx, y).dot(x-cx) + estimate<K-1>(x,cx,y);
+            return fAtY.dot(x-cx) + estimate<K-1>(x,cx,y);
         }
         else if constexpr ( K == 2 ){
-            return 0.5*(static_cast<F<T, M, K>>(m_function)(cx, y)*(x-cx)).dot(x-cx) + estimate<K-1>(x,cx,y);
+            return 0.5*(fAtY*(x-cx)).dot(x-cx) + estimate<K-1>(x,cx,y);
         }
         else {
-            return (1.0/factorial<K>())*static_cast<F<T, M, K>>(m_function)(cx, y).inner(x-cx) + estimate<K-1>(x,cx,y);
+            return (
+                (1.0/factorial<K>())*fAtY.inner(x-cx) + 
+                estimate<K-1>(x,cx,y)
+            );
+        }
+    }
+
+    /**
+     * \brief Produce the Taylor estimate of the input function.
+     * 
+     * Supposing that the function to be estimated is f(x,y), the Taylor
+     * expansion about a center c, for the variable x and constant y, is,
+     * 
+     *   f(x,y) ~ f(c,y) + Jf(c,y)(x-c) + (x-c)^T Hf(c,y) (x-c) + h.o.t.
+     * 
+     * Supposing that there are several values x_0, ..., x_N \in R^M, and 
+     * values a_0, ..., a_N \in R, then it follows that,
+     * that,
+     *  ___                              / ___           \
+     *  \    f(x_i,y) a_i = (Na)f(c,y) + | \  (x_i-c) a_i | Jf(c,y) + <Q, Hf(c,y)>_F + h.o.t.
+     *  /__ i                            \ /__ i         /
+     * 
+     * Where,
+     *       ___
+     *  Q =  \   (x_i-c)(x_i-c)^T 
+     *       /__ i
+     *  a = the sum over a_i
+     * and <.,.>_F is the Frobenius inner product.
+     * 
+     * The coefficients of the derivatives of f are a multivariate polynomial, which
+     * can be computed independently of y and c, and ultimately the function estimate.
+     */                                                  
+    template<size_t K=D>
+    T estimate(const polynomial<T, M, D>& polyCoefs, const vector<T, M>& cx, const vector<T, M>& y){
+        const auto& funcRef = static_cast<F<T, M, K>>(m_function);
+        const auto& polyCoefsRef = static_cast<polynomial<T, M, K>>(polyCoefs);
+        if constexpr ( K == 0 ) {
+            return funcRef(cx, y)*polyCoefsRef.coeffs();
+        }
+        else {
+            return (
+                (1.0/factorial<K>())*polyCoefsRef.coeffs().dot(funcRef(cx, y)) +
+                estimate<K-1>(polyCoefs,cx,y)
+            );
         }
     }
 };

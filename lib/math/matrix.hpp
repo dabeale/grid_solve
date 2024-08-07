@@ -25,6 +25,8 @@ namespace gs {
 template<typename T, size_t M, size_t N>
 class matrix: public vector<T, M * N> {
 public:
+    matrix(): vector<T, M * N>() {}
+    matrix(const vector<T, M * N>& vec): vector<T, M * N>(vec) {}
     T& operator()(const size_t i, const size_t j){
         return vector<T, M * N>::operator()(N*i + j);
     }

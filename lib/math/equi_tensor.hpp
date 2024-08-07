@@ -41,7 +41,9 @@ template<typename T, size_t N, size_t K>
 class equi_tensor: public equi_tensor_base<T, N, K>::type {
 public:
     using base = equi_tensor_base<T, N, K>::type;
-
+    equi_tensor(): base() {}
+    equi_tensor(const vector<T, N>& vec): base(vec) {}
+    equi_tensor(std::initializer_list<T> inList): base(inList) {}
     /**
      * \brief The full inner product for the tensor.
      * 
@@ -49,7 +51,7 @@ public:
      * inner product is the dot product. If it is a matrix A
      * then the inner product is x^T A x for input vector x.
      */
-    T inner(const vector<T,K>& vec){
+    T inner(const vector<T,K>& vec) const{
         T out = 0;
         for(size_t i=0; i<pow<K, N>(); ++i){
             auto indArr = base::m_dims.ind2sub(i);

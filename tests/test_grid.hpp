@@ -28,10 +28,10 @@ int test_grid(){
         // defining the boundry of the 2 segments, and that we should
         // expect to see 3 values (including the boundary points).
         //
-        retVal += assert_bool(allVals.size() == 3, "allVals.size() == 3");
-        retVal += assert_bool(allVals.find(0) != allVals.end(), "allVals.find(0) != allVals.end()");
-        retVal += assert_bool(allVals.find(4) != allVals.end(), "allVals.find(4) != allVals.end()");
-        retVal += assert_bool(allVals.find(8) != allVals.end(), "allVals.find(8) != allVals.end()");
+        retVal += ASSERT_BOOL(allVals.size() == 3);
+        retVal += ASSERT_BOOL(allVals.find(0) != allVals.end());
+        retVal += ASSERT_BOOL(allVals.find(4) != allVals.end());
+        retVal += ASSERT_BOOL(allVals.find(8) != allVals.end());
     }
     {
         uint32_t nPts = 0;
@@ -44,13 +44,13 @@ int test_grid(){
             }
             ++nPts;
         }, 1);
-        retVal += assert_bool(nPts == 64, "nPts == 64");
-        retVal += assert_bool(allVals.size() == 5, "allVals.size() == 5");
-        retVal += assert_bool(allVals.find(0) != allVals.end(), "allVals.find(0) != allVals.end()");
-        retVal += assert_bool(allVals.find(2) != allVals.end(), "allVals.find(2) != allVals.end()");
-        retVal += assert_bool(allVals.find(4) != allVals.end(), "allVals.find(4) != allVals.end()");
-        retVal += assert_bool(allVals.find(6) != allVals.end(), "allVals.find(6) != allVals.end()");
-        retVal += assert_bool(allVals.find(8) != allVals.end(), "allVals.find(8) != allVals.end()");
+        retVal += ASSERT_BOOL(nPts == 64);
+        retVal += ASSERT_BOOL(allVals.size() == 5);
+        retVal += ASSERT_BOOL(allVals.find(0) != allVals.end());
+        retVal += ASSERT_BOOL(allVals.find(2) != allVals.end());
+        retVal += ASSERT_BOOL(allVals.find(4) != allVals.end());
+        retVal += ASSERT_BOOL(allVals.find(6) != allVals.end());
+        retVal += ASSERT_BOOL(allVals.find(8) != allVals.end());
     }
     {
         uint32_t nPts = 0;
@@ -63,10 +63,10 @@ int test_grid(){
             }
             ++nPts;
         }, 2);
-        retVal += assert_bool(nPts == 512, "nPts == 512");
-        retVal += assert_bool(allVals.size() == 9, "allVals.size() == 9");
+        retVal += ASSERT_BOOL(nPts == 512);
+        retVal += ASSERT_BOOL(allVals.size() == 9);
         for( int i=0; i<=8; ++i){
-            retVal += assert_bool(allVals.find(i) != allVals.end(), "allVals.find(i) != allVals.end()");
+            retVal += ASSERT_BOOL(allVals.find(i) != allVals.end());
         }
     }
     return retVal;

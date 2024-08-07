@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 
+#define ASSERT_BOOL(value) assert_bool(value, #value);
+
 namespace gs {
 /**
  * \brief Print a message if the predicate is false.

@@ -33,7 +33,8 @@ protected:
     static constexpr size_t m_nElems = mult<Dims...>();
     dimensions<m_nSize, size_t> m_dims;
 public:
-    tensor(): m_dims({Dims...},0) {}
+    tensor(): vector<T, m_nElems>(), m_dims({Dims...},0) {}
+    tensor(const vector<T, m_nElems>& vec): vector<T, m_nElems>(vec), m_dims({Dims...}, 0) {}
     tensor(std::initializer_list<T> inList): vector<T, m_nElems>(inList), m_dims({Dims...}, 0) {}
     const dimensions<m_nSize, size_t>& get_dims() const {return m_dims;}
     template<typename... Indices>

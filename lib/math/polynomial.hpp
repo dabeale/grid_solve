@@ -24,79 +24,136 @@ namespace gs {
  * 
  * The template parameters,
  *      T - The base type (e.g. double or float).
- *      D - The degree.
  *      N - The number of input dimensions.
+ *      D - The degree.
  */
-template<typename T, size_t D, size_t N>
-class polynomial : public polynomial<T, D-1, N>{
+template<typename T, size_t N, size_t D>
+class polynomial : public polynomial<T, N, D-1>{
 protected:
     equi_tensor<T, D, N> m_coeff;
 public:
+    polynomial(): polynomial<T, N, D-1>(), m_coeff() {}
+    template<size_t K>
+    polynomial(
+        const std::array<vector<T, N>, K>& vectorVals,
+        const std::array<T, K>& tVals
+    ) { fill(vectorVals, tVals); }
     /**
      * \brief Fill the parameters using a collection of vectors.
      * 
      * The parameters a computed as the sum of the inner 
-     * products of the vectors.
+     * products of the weighted vectors. Computing the parameters
+     * in this way, is a principle component of the Taylor's expansion.
      */
     template<size_t K>
-    void fill(const std::array<vector<T, N>, K>& vals){
+    void fill(
+        const std::array<vector<T, N>, K>& vectorVals,
+        const std::array<T, K>& tVals
+    ){
         for(size_t k=0; k<K; ++k){
-            m_coeff += tensor_outer<T, D, N>(vals[k]);
+            m_coeff += tensor_outer<T, D, N>(vectorVals[k])*tVals[k];
         }
-        polynomial<T, D-1, N>::fill(vals);
+        polynomial<T, N, D-1>::fill(vectorVals, tVals);
     }
     /**
      * \brief Evaluate the polynomial at the specified vector.
      */
     T evaluate(const vector<T, N>& vin){
-        return m_coeff.inner(vin) + polynomial<T, D-1, N>::evaluate(vin);
+        return m_coeff.inner(vin) + polynomial<T, N, D-1>::evaluate(vin);
+    }
+
+    /**
+     * \brief Return the coefficients of the polynomial at the
+     * current degree.
+     */
+    const equi_tensor<T, D, N>& coeffs() const{
+        return m_coeff;
     }
 };
 
 template<typename T, size_t N>
-class polynomial<T, 2, N>: polynomial<T, 1, N> {
+class polynomial<T, N, 2>: public polynomial<T, N, 1> {
 protected:
     matrix<T, N, N> m_coeff;
 public:
+    polynomial(): polynomial<T, N, 1>(), m_coeff() {}
     template<size_t K>
-    void fill(const std::array<vector<T, N>, K>& vals){
+    polynomial(
+        const std::array<vector<T, N>, K>& vectorVals,
+        const std::array<T, K>& tVals
+    ) { fill(vectorVals, tVals); }
+    template<size_t K>
+    void fill(
+        const std::array<vector<T, N>, K>& vectorVals,
+        const std::array<T, K>& tVals
+    ){
         for(size_t k=0; k<K; ++k){
-            m_coeff += matrix_outer<T, N>(vals[k]);
+            m_coeff += matrix_outer<T, N>(vectorVals[k])*tVals[k];
         }
-        polynomial<T, 1, N>::fill(vals);
+        polynomial<T, N, 1>::fill(vectorVals, tVals);
     }
     T evaluate(const vector<T, N>& vin){
-        return (m_coeff*vin).dot(vin) + polynomial<T, 1, N>::evaluate(vin);
+        return (m_coeff*vin).dot(vin) + polynomial<T, N, 1>::evaluate(vin);
+    }
+    const matrix<T, N, N>& coeffs() const{
+        return m_coeff;
     }
 };
 
 template<typename T, size_t N>
-class polynomial<T, 1, N>: polynomial<T, 0, N> {
+class polynomial<T, N, 1>: public polynomial<T, N, 0> {
 protected:
     vector<T, N> m_coeff;
 public:
+    polynomial(): polynomial<T, N, 0>(), m_coeff() {}
     template<size_t K>
-    void fill(const std::array<vector<T, N>, K>& vals){
+    polynomial(
+        const std::array<vector<T, N>, K>& vectorVals,
+        const std::array<T, K>& tVals
+    ) { fill(vectorVals, tVals); }
+    template<size_t K>
+    void fill(
+        const std::array<vector<T, N>, K>& vectorVals,
+        const std::array<T, K>& tVals
+    ){
         for(size_t k=0; k<K; ++k){
-            m_coeff += vals[k];
+            m_coeff += vectorVals[k]*tVals[k];
         }
-        polynomial<T, 0, N>::fill(vals);
+        polynomial<T, N, 0>::fill(vectorVals, tVals);
     }
     T evaluate(const vector<T, N>& vin){
-        return m_coeff.dot(vin) + polynomial<T, 0, N>::evaluate(vin);
+        return m_coeff.dot(vin) + polynomial<T, N, 0>::evaluate(vin);
+    }
+    const vector<T, N>& coeffs() const{
+        return m_coeff;
     }
 };
 
 template<typename T, size_t N>
-class polynomial<T, 0, N> {
+class polynomial<T, N, 0> {
 protected:
     T m_coeff;
 public:
+    polynomial(): m_coeff(0.0) {}
     template<size_t K>
-    void fill(const std::array<vector<T, N>, K>&){
-        m_coeff = 1.0;
+    polynomial(
+        const std::array<vector<T, N>, K>& vectorVals,
+        const std::array<T, K>& tVals
+    ) { fill(vectorVals, tVals); }
+    template<size_t K>
+    void fill(
+        const std::array<vector<T, N>, K>&,
+        const std::array<T, K>& tVals
+    ){
+        m_coeff = 0.0;
+        for(size_t k=0; k<K; ++k){
+            m_coeff += tVals[k];
+        }
     }
     T evaluate(const vector<T, N>&){
+        return m_coeff;
+    }
+    const T& coeffs() const {
         return m_coeff;
     }
 };
