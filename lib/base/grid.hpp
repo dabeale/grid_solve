@@ -55,12 +55,36 @@ public:
     }
 
     /**
+     * \brief Set the grid storage.
+     */
+    void set_grid(const std::vector<GridElement>& grid){
+        m_gridStorage = grid;
+    }
+
+    /**
+     * \brief Get the size of the grid.
+     */
+    size_t size() const { return m_gridStorage.size(); }
+
+    /**
      * \brief Get the dimensions of the grid.
      */
     const dimensions<N, S>& get_dimensions() const {
         return m_dimensions;
     }
 
+    /**
+     * \brief Access the grid storage using an integer.
+     */
+    GridElement& operator[](const S i) {return m_gridStorage[i];}
+    /**
+     * \brief Access the grid storage using an integer.
+     */
+    const GridElement& operator[](const S i) const {return m_gridStorage[i];}
+
+    /**
+     * \brief Access the grid storage using an index.
+     */
     GridElement& operator[](const index<N, S>& index) {
         return m_gridStorage[
             m_dimensions.sub2ind(
@@ -70,6 +94,9 @@ public:
         ];
     }
 
+    /**
+     * \brief Access the grid storage using an index.
+     */
     const GridElement& operator[] (const index<N, S>& index) const {
         return m_gridStorage[
             m_dimensions.sub2ind(

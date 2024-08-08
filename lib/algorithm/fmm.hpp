@@ -130,6 +130,9 @@ public:
         }
     }
 
+    size_t grid_size() const{return m_grid.size();}
+    GridElement& operator[](const T i){return m_grid[i];}
+    const GridElement& operator[](const T i) const {return m_grid[i];}
     GridElement& operator[](const index<N, T>& i){return m_grid[i];}
     const GridElement& operator[](const index<N, T>& i) const {return m_grid[i];}
     auto begin() -> decltype(m_grid.begin()){return m_grid.begin();}

@@ -6,6 +6,11 @@
 #include "math/vector.hpp"
 
 namespace gs {
+
+template< typename T, size_t M, size_t D, template < typename, size_t, size_t > class F >
+requires requires(F<T, M, D> f) {
+    { f(vector<T,M>(), vector<T,M>()) } -> std::convertible_to<vector<T, pow<M,D>()>>;
+}
 /**
  * \brief Taylors expansion of a multivariate function.
  * 
@@ -24,10 +29,6 @@ namespace gs {
  *      D - The degree of polynomial to estimate to.
  *      F - The input function type (must be callable).
  */
-template< typename T, size_t M, size_t D, template < typename, size_t, size_t > class F >
-requires requires(F<T, M, D> f) {
-    { f(vector<T,M>(), vector<T,M>()) } -> std::convertible_to<vector<T, pow<M,D>()>>;
-}
 class taylor {
     F<T, M, D> m_function; ///< The function to approximate.
 
@@ -68,8 +69,8 @@ public:
      * 
      *   f(x,y) ~ f(c,y) + Jf(c,y)(x-c) + (1/2)*(x-c)^T Hf(c,y) (x-c) + h.o.t.
      * 
-     * Supposing that there are several values x_0, ..., x_N \in R^M, and 
-     * values a_0, ..., a_N \in R, then it follows that,
+     * Supposing that there are several values x_0, ..., x_N in R^M, and 
+     * values a_0, ..., a_N in R, then it follows that,
      * that,
      *  ___                              / ___           \
      *  \    f(x_i,y) a_i = (Na)f(c,y) + | \  (x_i-c) a_i | Jf(c,y) + (1/2)*<Q, Hf(c,y)>_F + h.o.t.
