@@ -2,11 +2,9 @@
 #include "base/dimensions.hpp"
 #include "base/tools.hpp"
 
-using namespace gs;
-
 int test_dimensions_sub2ind(){
     std::cout << "Test dimensions sub2ind" << std::endl;
-    dimensions<3> dims({3,4,5}, 5);
+    gs::dimensions<3> dims({3,4,5}, 5);
     int retVal = 0;
     retVal += ASSERT_BOOL(dims.sub2ind({0,0,1}, 0) == 1);
     retVal += ASSERT_BOOL(dims.sub2ind({0,1,0}, 0) == 5);
@@ -19,7 +17,7 @@ int test_dimensions_sub2ind(){
 
 int test_dimensions_sub2ind_inversion(){
     std::cout << "Test dimensions sub2ind inversion" << std::endl;
-    dimensions<3> dims({3,4,5}, 5);
+    gs::dimensions<3> dims({3,4,5}, 5);
     int retVal = 0;
     for (uint32_t i=0; i<3*4*5; ++i){
         retVal += ASSERT_BOOL(dims.sub2ind(dims.ind2sub(i)) == i);

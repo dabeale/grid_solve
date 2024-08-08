@@ -5,7 +5,7 @@
 #include <iostream>
 #include <string>
 
-#define ASSERT_BOOL(value) assert_bool(value, #value);
+#define ASSERT_BOOL(value) gs::assert_bool(value, #value);
 
 namespace gs {
 /**

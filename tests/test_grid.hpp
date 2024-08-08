@@ -3,17 +3,15 @@
 
 #include "base/grid.hpp"
 
-using namespace gs;
-
 int test_grid(){
     std::cout << "Test grid" << std::endl;
     int retVal = 0;
-    dimensions<3> dims({2,2,2}, 2);
-    grid<3, double, double> grid(dims);
+    gs::dimensions<3> dims({2,2,2}, 2);
+    gs::grid<3, double, double> grid(dims);
     {
         uint32_t nPts = 0;
         std::set<uint32_t> allVals;
-        grid.iterate([&](box<3>& in, double&){
+        grid.iterate([&](gs::box<3>& in, double&){
             for (auto corner : in){
                 for (auto x : corner.at_level(2)){
                     allVals.insert(x);
@@ -21,7 +19,7 @@ int test_grid(){
             }
             ++nPts;
         }, 0);
-        retVal += assert_bool(nPts == 8, "nPts == 8");
+        retVal += ASSERT_BOOL(nPts == 8);
         //
         // Note that there are 8 boxes in level 0, each of which have
         // 4 corners. This means that each dimension contains 3 points
@@ -36,7 +34,7 @@ int test_grid(){
     {
         uint32_t nPts = 0;
         std::set<uint32_t> allVals;
-        grid.iterate([&](box<3>& in, double&){
+        grid.iterate([&](gs::box<3>& in, double&){
             for (auto corner : in){
                 for (auto x : corner.at_level(2)){
                     allVals.insert(x);
@@ -55,7 +53,7 @@ int test_grid(){
     {
         uint32_t nPts = 0;
         std::set<uint32_t> allVals;
-        grid.iterate([&](box<3>& in, double&){
+        grid.iterate([&](gs::box<3>& in, double&){
             for (auto corner : in){
                 for (auto x : corner.at_level(2)){
                     allVals.insert(x);
