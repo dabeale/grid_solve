@@ -13,7 +13,7 @@ Build the tests and run them in docker as follows,
 
 ```bash 
 docker build . -t grid_solve
-docker run --rm -it grid_solve
+docker run --rm grid_solve
 ```
 
 To build them locally, use `make all`, but ensure that gcc is installed with a major version of at least 11.
