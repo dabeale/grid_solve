@@ -66,13 +66,13 @@ public:
      * Supposing that the function to be estimated is f(x,y), the Taylor
      * expansion about a center c, for the variable x and constant y, is,
      * 
-     *   f(x,y) ~ f(c,y) + Jf(c,y)(x-c) + (x-c)^T Hf(c,y) (x-c) + h.o.t.
+     *   f(x,y) ~ f(c,y) + Jf(c,y)(x-c) + (1/2)*(x-c)^T Hf(c,y) (x-c) + h.o.t.
      * 
      * Supposing that there are several values x_0, ..., x_N \in R^M, and 
      * values a_0, ..., a_N \in R, then it follows that,
      * that,
      *  ___                              / ___           \
-     *  \    f(x_i,y) a_i = (Na)f(c,y) + | \  (x_i-c) a_i | Jf(c,y) + <Q, Hf(c,y)>_F + h.o.t.
+     *  \    f(x_i,y) a_i = (Na)f(c,y) + | \  (x_i-c) a_i | Jf(c,y) + (1/2)*<Q, Hf(c,y)>_F + h.o.t.
      *  /__ i                            \ /__ i         /
      * 
      * Where,
