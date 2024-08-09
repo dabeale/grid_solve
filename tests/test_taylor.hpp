@@ -168,13 +168,12 @@ int test_taylor_coefficients_inner(){
         // Create new weights so that we can approximate exp_squared
         // using exp_inner
         std::array<gs::vector<double, 3UL>, 4 > vVecsMinusCenter;
-        const double eYMinuC = expSquaredComp(yEvalPoint, center);
         for(size_t k=0; k<4ul; ++k){
             vVecsMinusCenter[k] = (vVecs[k] - center);
         }
         std::array<double, 4> tVecsWeighted;
         for(size_t k=0; k<4ul; ++k){
-            tVecsWeighted[k] = tVecs[k]*expSquaredComp(vVecs[k], center)*eYMinuC;
+            tVecsWeighted[k] = tVecs[k]*expSquaredComp(vVecs[k], center);
         }
         // Create the polynomial used for evaluation.
         gs::polynomial<double, 3, nDegree> poly(vVecsMinusCenter, tVecsWeighted);

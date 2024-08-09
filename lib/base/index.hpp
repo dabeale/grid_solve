@@ -94,14 +94,11 @@ public:
     const T& operator[](const T i) const {return m_indices[i];}
     T& operator[](const T i) {return m_indices[i];}
 
-    /**
-     * \brief Return the index at the lowest level.
-     */
-    T operator()(const T i) const {return m_indices[i]*(1 << m_level);}
     auto begin() -> decltype(m_indices.begin()){return m_indices.begin();}
     auto end() -> decltype(m_indices.end()){return m_indices.end();}
     auto begin() const -> decltype(m_indices.begin()){return m_indices.begin();}
     auto end() const -> decltype(m_indices.end()){return m_indices.end();}
+    operator const std::array<T, N>&(){ return m_indices; }
 };
 
 template<int N, typename T=uint32_t>

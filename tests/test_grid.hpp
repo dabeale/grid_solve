@@ -19,17 +19,13 @@ int test_grid(){
             }
             ++nPts;
         }, 0);
-        retVal += ASSERT_BOOL(nPts == 8);
         //
-        // Note that there are 8 boxes in level 0, each of which have
-        // 4 corners. This means that each dimension contains 3 points
-        // defining the boundry of the 2 segments, and that we should
-        // expect to see 3 values (including the boundary points).
+        // There is only 1 box in a 2x2 grid at level 0
         //
-        retVal += ASSERT_BOOL(allVals.size() == 3);
+        retVal += ASSERT_BOOL(nPts == 1);
+        retVal += ASSERT_BOOL(allVals.size() == 2);
         retVal += ASSERT_BOOL(allVals.find(0) != allVals.end());
         retVal += ASSERT_BOOL(allVals.find(4) != allVals.end());
-        retVal += ASSERT_BOOL(allVals.find(8) != allVals.end());
     }
     {
         uint32_t nPts = 0;
@@ -42,13 +38,11 @@ int test_grid(){
             }
             ++nPts;
         }, 1);
-        retVal += ASSERT_BOOL(nPts == 64);
-        retVal += ASSERT_BOOL(allVals.size() == 5);
+        retVal += ASSERT_BOOL(nPts == 8);
+        retVal += ASSERT_BOOL(allVals.size() == 3);
         retVal += ASSERT_BOOL(allVals.find(0) != allVals.end());
         retVal += ASSERT_BOOL(allVals.find(2) != allVals.end());
         retVal += ASSERT_BOOL(allVals.find(4) != allVals.end());
-        retVal += ASSERT_BOOL(allVals.find(6) != allVals.end());
-        retVal += ASSERT_BOOL(allVals.find(8) != allVals.end());
     }
     {
         uint32_t nPts = 0;
@@ -61,9 +55,9 @@ int test_grid(){
             }
             ++nPts;
         }, 2);
-        retVal += ASSERT_BOOL(nPts == 512);
-        retVal += ASSERT_BOOL(allVals.size() == 9);
-        for( int i=0; i<=8; ++i){
+        retVal += ASSERT_BOOL(nPts == 64);
+        retVal += ASSERT_BOOL(allVals.size() == 5);
+        for( int i=0; i<=4; ++i){
             retVal += ASSERT_BOOL(allVals.find(i) != allVals.end());
         }
     }

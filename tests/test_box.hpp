@@ -1,4 +1,6 @@
 
+#include <set>
+
 #include "base/box.hpp"
 #include "base/tools.hpp"
 
@@ -36,26 +38,48 @@ int test_box(){
     retVal += ASSERT_BOOL(sbox0[6].at_level(3) == gs::index<3>({4,4,0}, 3));
     retVal += ASSERT_BOOL(sbox0[7].at_level(3) == gs::index<3>({4,4,4}, 3));
     auto sbox2 = testBox.subbox(2);
-    retVal += ASSERT_BOOL(sbox2[0].at_level(3) == gs::index<3>({0,0,8}, 3));
-    retVal += ASSERT_BOOL(sbox2[1].at_level(3) == gs::index<3>({0,0,12}, 3));
-    retVal += ASSERT_BOOL(sbox2[2].at_level(3) == gs::index<3>({0,4,8}, 3));
-    retVal += ASSERT_BOOL(sbox2[3].at_level(3) == gs::index<3>({0,4,12}, 3));
-    retVal += ASSERT_BOOL(sbox2[4].at_level(3) == gs::index<3>({4,0,8}, 3));
-    retVal += ASSERT_BOOL(sbox2[5].at_level(3) == gs::index<3>({4,0,12}, 3));
-    retVal += ASSERT_BOOL(sbox2[6].at_level(3) == gs::index<3>({4,4,8}, 3));
-    retVal += ASSERT_BOOL(sbox2[7].at_level(3) == gs::index<3>({4,4,12}, 3));
+    retVal += ASSERT_BOOL(sbox2[0].at_level(3) == gs::index<3>({0,4,0}, 3));
+    retVal += ASSERT_BOOL(sbox2[1].at_level(3) == gs::index<3>({0,4,4}, 3));
+    retVal += ASSERT_BOOL(sbox2[2].at_level(3) == gs::index<3>({0,8,0}, 3));
+    retVal += ASSERT_BOOL(sbox2[3].at_level(3) == gs::index<3>({0,8,4}, 3));
+    retVal += ASSERT_BOOL(sbox2[4].at_level(3) == gs::index<3>({4,4,0}, 3));
+    retVal += ASSERT_BOOL(sbox2[5].at_level(3) == gs::index<3>({4,4,4}, 3));
+    retVal += ASSERT_BOOL(sbox2[6].at_level(3) == gs::index<3>({4,8,0}, 3));
+    retVal += ASSERT_BOOL(sbox2[7].at_level(3) == gs::index<3>({4,8,4}, 3));
     return retVal;
 }
 
 int test_box_subpoints(){
     std::cout << "Test box subpoints" << std::endl;
     int retVal = 0;
-    gs::box<3> box(gs::dimensions<3>({2,2,2}, 3), 3);
-    for (auto sp : box.subpoints()){
+
+    // Create a box at the second lowest granularity.
+    gs::box<3> box(gs::dimensions<3>({2,2,2}, 4), 3);
+
+    std::set<uint32_t> corners;
+    for (size_t i=0; i< box.m_nCorners; ++i){
+        // Find the lowest granularity indices
+        auto pt = box[i].at_level(4);
+        // They should be in the lowest corner, with
+        // a factor of 2.
         for (uint8_t k = 0; k<3; ++k){
-            retVal += ASSERT_BOOL(sp(k) == 0 || sp(k) == 4 || sp(k) == 8);
+            retVal += ASSERT_BOOL(pt[k] == 0 || pt[k] == 2);
+            corners.insert(pt[k]);
         }
-        retVal += ASSERT_BOOL(sp(0) == 4 || sp(1) == 4 || sp(2) == 4);
     }
+    ASSERT_BOOL(corners.size() == 2);
+
+    std::set<uint32_t> innerPts;
+    for (auto sp : box.subpoints()){
+        auto pt = sp.at_level(4);
+        for (uint8_t k = 0; k<3; ++k){
+            retVal += ASSERT_BOOL(pt[k] == 0 || pt[k] == 1 || pt[k] == 2);
+            innerPts.insert(pt[k]);
+        }
+        // Ensure there are no corner points in the list
+        retVal += ASSERT_BOOL(pt[0] == 1 || pt[1] == 1 || pt[2] == 1);
+    }
+    ASSERT_BOOL(innerPts.size() == 3);
+
     return retVal;
 }

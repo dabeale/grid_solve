@@ -35,10 +35,14 @@ public:
     static constexpr T m_nCorners = pow<2,N>();   ///< The number of corners.
     static constexpr T m_nSubPoints = pow<3,N>(); ///< The number of subpoints.
 
-    box(const dimensions<N,T> dimensions, const T level, const T offset=0): m_level(level), m_dimensions(dimensions) {
-        const index<N,T> offsetIndex(dimensions.ind2sub(offset, level), level);
+    box(const dimensions<N,T> inDims, const T level, const T offset=0): m_level(level), m_dimensions(inDims) {
+        // There are 1 fewer boxes than points in each dimension
+        const dimensions<N,T> reducedDims = inDims.reduce();
+        // Create the start corner
+        const index<N,T> offsetIndex(reducedDims.ind2sub(offset, level), level);
+        // Add each of the corners a distance of 1 from the offset.
         for (T i = 0; i < m_nCorners; ++i){
-            m_corners[i] = index<N,T>(dimensions.ind2sub(i), level) + offsetIndex;
+            m_corners[i] = index<N,T>(inDims.ind2sub(i), level) + offsetIndex;
         }
     }
     box(const dimensions<N,T> dimensions, const std::array<index<N, T>, m_nCorners> corners, const T level):
@@ -77,7 +81,7 @@ public:
      * 
      * This does not include the corners of the box.
      */
-    std::array<index<N, T>, m_nSubPoints - m_nCorners> subpoints(){
+    std::array<index<N, T>, m_nSubPoints - m_nCorners> subpoints() const{
          std::array<index<N, T>, m_nSubPoints - m_nCorners> innerPoints;
          std::array<T, N> ternary;
          T k = 0;
@@ -91,8 +95,8 @@ public:
             }
             if (!allEdge && k < m_nSubPoints - m_nCorners){
                 innerPoints[k] = m_corners[0];
-                innerPoints[k].set_level(m_level-1);
-                innerPoints[k] += index<N,T>(ternary, m_level-1);
+                innerPoints[k].set_level(m_level+1);
+                innerPoints[k] += index<N,T>(ternary, m_level+1);
                 k++;
             }
          }

@@ -4,6 +4,7 @@
 
 #include "base/pattern.hpp"
 #include "base/grid.hpp"
+#include "math/polynomial.hpp"
 
 namespace gs {
 
@@ -12,16 +13,20 @@ namespace gs {
  * 
  * The vector field provides the set of default template values for the 
  * fmm algorithm.
+ * 
+ * The template parameters,
+ *      N           - The number of dimensions of the underlying grid.
+ *      T           - The unit type (e.g. double)
+ *      D           - The approximation degree.
  */
-template<int N, typename T> 
+template<int N, typename T, int D, typename S=uint32_t> 
 class vector_field {
 public:
-    using grid_val = std::pair<T, std::array<T, N>>;
-    using box_val = std::array<T, N>;
-    using point_list = std::array<grid_val, pow<2,N>()>;
-    using f_box_weight = std::function<void(const point_list&, box_val&)>;
-    using f_far_field = std::function<void(const box_val&, grid_val&)>;
-    using f_near_field = std::function<void(const point_list&, grid_val&)>;
+    using grid_val = std::tuple<T, T, vector<T, N>, int32_t>;
+    using box_val = std::pair<polynomial<T, N, D>, vector<T, N>>;
+    using f_box_weight = std::function<void(const box<N, S>&, box_val&, const grid<N, grid_val, box_val, S>&)>;
+    using f_far_field = std::function<void(const box<N, S>&, const box_val&, grid<N, grid_val, box_val, S>&)>;
+    using f_near_field = std::function<void(const box<N, S>&, grid<N, grid_val, box_val, S>&)>;
 };
 
 /**
@@ -58,17 +63,17 @@ public:
 template<
     int N,
     typename T=uint32_t,
-    class FFarField=vector_field<N, double>::f_far_field,
-    class FNearField=vector_field<N, double>::f_near_field,
-    class FBoxWeight=vector_field<N, double>::f_box_weight,
-    class GridElement=vector_field<N, double>::grid_val,
-    class BoxElement=vector_field<N, double>::box_val
+    class FFarField=vector_field<N, double, 2>::f_far_field,
+    class FNearField=vector_field<N, double, 2>::f_near_field,
+    class FBoxWeight=vector_field<N, double, 2>::f_box_weight,
+    class GridElement=vector_field<N, double, 2>::grid_val,
+    class BoxElement=vector_field<N, double, 2>::box_val
 >
 requires (
     std::is_integral<T>::value &&
-    std::invocable<FFarField&, const BoxElement&, GridElement&> &&
-    std::invocable<FNearField&, const std::array<GridElement, pow<2,N>()>&, GridElement&> &&
-    std::invocable<FBoxWeight&, const std::array<GridElement, pow<2,N>()>&, BoxElement&>
+    std::invocable<FFarField&, const box<N, T>&, const BoxElement&, grid<N, GridElement, BoxElement, T>&> &&
+    std::invocable<FNearField&, const box<N, T>&, grid<N, GridElement, BoxElement, T>&> &&
+    std::invocable<FBoxWeight&, const box<N, T>&, BoxElement&, const grid<N, GridElement, BoxElement, T>&>
 )
 class fmm {
     grid<N, GridElement, BoxElement, T> m_grid; ///< The underlying grid.
@@ -98,8 +103,8 @@ public:
      * the far-field equation in all of the levels apart from the finest, 
      * the near field equation is used at the finest level.
      */
-    void compute(T nIters=2){
-        for (T it; it < nIters; ++it){
+    void compute(const T nIters=1){
+        for (T it = 0; it < nIters; ++it){
             m_grid.iterate(
                 [&](box<N, T>& box, BoxElement& element, const PatternComponent pattern) {
                     switch (pattern) {
@@ -107,25 +112,21 @@ public:
                             // Use the far field function for all levels apart
                             // from the most granular.
                             if (box.get_level() < m_grid.get_dimensions().max_level()){
-                                for( const auto& corner : box){
-                                    m_farFieldFunc(element, m_grid[corner]);
-                                }
+                                m_farFieldFunc(box, element, m_grid);
                             }
                             else {
-                                for(const auto& corner : box){
-                                    m_nearFieldFunc(m_grid.get_corner_values(box), m_grid[corner]);
-                                }
+                                m_nearFieldFunc(box, m_grid);
                             }
                             break;
                         case FINE_TO_COARSE:
                             // Compute the box weights
-                            m_boxWeightFunc(m_grid.get_corner_values(box), element);
+                            m_boxWeightFunc(box, element, m_grid);
                             break;
                         default:
                             break;
                     }
                 },
-                v_pattern()
+                inverse_v_pattern()
             );
         }
     }

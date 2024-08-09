@@ -91,7 +91,7 @@ public:
         return y/m_sigma_squared;
     }
     T operator()(const vector<T, M>& x, const vector<T, M>& y) const{
-        return std::exp( x.dot(y) / m_sigma_squared );
+        return std::exp( (2*x.dot(y) - y.norm2()) / (2*m_sigma_squared) );
     }
 };
 }

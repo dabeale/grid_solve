@@ -90,12 +90,15 @@ public:
     T estimate(const polynomial<T, M, D>& polyCoefs, const vector<T, M>& cx, const vector<T, M>& y){
         const auto& funcRef = static_cast<F<T, M, K>>(m_function);
         const auto& polyCoefsRef = static_cast<polynomial<T, M, K>>(polyCoefs);
+        if(polyCoefs.coeffs().norm2() < 1e-13){
+            return 0;
+        }
         if constexpr ( K == 0 ) {
-            return funcRef(cx, y)*polyCoefsRef.coeffs();
+            return funcRef(cx, y - cx)*polyCoefsRef.coeffs();
         }
         else {
             return (
-                (1.0/factorial<K>())*polyCoefsRef.coeffs().dot(funcRef(cx, y)) +
+                (1.0/factorial<K>())*polyCoefsRef.coeffs().dot(funcRef(cx, y - cx)) +
                 estimate<K-1>(polyCoefs,cx,y)
             );
         }

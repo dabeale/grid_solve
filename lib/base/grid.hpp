@@ -50,7 +50,7 @@ public:
     {
         S i=0;
         for(auto& boxStore : m_boxStorage){
-            boxStore.resize(dimensions.max_ind(i++));
+            boxStore.resize(dimensions.reduce().max_ind(i++));
         }
     }
 
@@ -76,41 +76,45 @@ public:
     /**
      * \brief Access the grid storage using an integer.
      */
-    GridElement& operator[](const S i) {return m_gridStorage[i];}
+    GridElement& operator[](const S i) {
+        return m_gridStorage[i];
+    }
     /**
      * \brief Access the grid storage using an integer.
      */
-    const GridElement& operator[](const S i) const {return m_gridStorage[i];}
+    const GridElement& operator[](const S i) const {
+        return m_gridStorage[i];
+    }
 
     /**
      * \brief Access the grid storage using an index.
      */
     GridElement& operator[](const index<N, S>& index) {
-        return m_gridStorage[
+        return operator[](
             m_dimensions.sub2ind(
                 index.at_level(m_dimensions.max_level()),
                 m_dimensions.max_level()
             )
-        ];
+        );
     }
 
     /**
      * \brief Access the grid storage using an index.
      */
     const GridElement& operator[] (const index<N, S>& index) const {
-        return m_gridStorage[
+        return operator[](
             m_dimensions.sub2ind(
                 index.at_level(m_dimensions.max_level()),
                 m_dimensions.max_level()
             )
-        ];
+        );
     }
 
     /**
      * \brief Get the corner values of the box in terms of
      * the grid storage object.
      */
-    std::array<GridElement, pow<2,N>()> get_corner_values(const box<N, S>& box){
+    std::array<GridElement, pow<2,N>()> get_corner_values(const box<N, S>& box) const{
         std::array<GridElement, pow<2,N>()> gridValues;
         S iCorner=0;
         for(const auto& corner : box){
@@ -125,7 +129,7 @@ public:
     auto end() const -> decltype(m_gridStorage.end()){return m_gridStorage.end();}
 
     /**
-     * Iterate over every box at the specified level.
+     * \brief Iterate over every box at the specified level.
      */
     template<class F>
     requires std::invocable<F&, box<N, S>&, BoxElement&>
@@ -133,7 +137,7 @@ public:
         const F& callable,
         const S level
     ){
-        const S max_ind = m_dimensions.max_ind(level);
+        const S max_ind = m_dimensions.reduce().max_ind(level);
         for(S i=0; i<max_ind; ++i){
             box<N, S> box(m_dimensions, level, i);
             callable(box, m_boxStorage[level][i]);
@@ -141,7 +145,7 @@ public:
     }
 
     /**
-     * Iterate over every box at the specified level.
+     * \brief Iterate over every box at the specified level.
      */
     template<class F>
     requires std::invocable<F&, box<N, S>&, BoxElement&, PatternComponent>
@@ -152,7 +156,7 @@ public:
         const S max_level = m_dimensions.max_level();
         for(const auto pattern : pattern){
             switch(pattern){
-                case grid<N,GridElement,BoxElement,S>::FINE_TO_COARSE:
+                case COARSE_TO_FINE:
                     for(S i = 0; i <= max_level; ++i){
                         grid<N,GridElement,BoxElement,S>::iterate(
                             [&](box<N,S>& box, BoxElement& element){
@@ -161,7 +165,7 @@ public:
                         );
                     }
                     break;
-                case grid<N,GridElement,BoxElement,S>::COARSE_TO_FINE:
+                case FINE_TO_COARSE:
                     for(S i = 0; i <= max_level; ++i){
                         grid<N,GridElement,BoxElement,S>::iterate(
                             [&](box<N,S>& box, BoxElement& element){

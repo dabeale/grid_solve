@@ -53,6 +53,23 @@ public:
     }
 
     /**
+     * \brief Return a dimensions object which is reduced by
+     * one in every dimension.
+     * 
+     * Using this method allows easy conversion between indices for
+     * boxes and indices for points. In the former case there is
+     * one fewer coordinate in each dimension. For example, 
+     * a 3 by 3 grid, has 2 by 2 boxes.
+     */
+    dimensions<N,T> reduce() const {
+        dimensions<N,T> ret(*this);
+        for (T i=0; i<N; ++i){
+            ret.m_dimensions[i] = (m_dimensions[i] > 1) ? (m_dimensions[i] - 1) : 1;
+        }
+        return ret;
+    }
+
+    /**
      * \brief Get the maximum level.
      */
     T max_level() const {

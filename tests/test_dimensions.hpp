@@ -15,6 +15,15 @@ int test_dimensions_sub2ind(){
     return retVal;
 }
 
+int test_dimensions_sub2ind_simple(){
+    std::cout << "Test dimensions sub2ind simple" << std::endl;
+    gs::dimensions<2> dims({3,3}, 5);
+    int retVal = 0;
+    // At level 0 the index {2,2} is 3*2 + 2 = 8
+    retVal += ASSERT_BOOL(dims.sub2ind({2,2}, 0) == 8);
+    return retVal;
+}
+
 int test_dimensions_sub2ind_inversion(){
     std::cout << "Test dimensions sub2ind inversion" << std::endl;
     gs::dimensions<3> dims({3,4,5}, 5);

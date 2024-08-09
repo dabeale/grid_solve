@@ -94,6 +94,9 @@ public:
         for(size_t i=0; i<M; ++i) c += m_array[i]*m_array[i];
         return c;
     }
+    T norm() const {
+        return std::sqrt(norm2());
+    }
 };
 
 template<typename T, size_t M>
