@@ -126,9 +126,9 @@ int test_taylor_coefficients_inner(){
     // y values deviate from the center. In such an example, using Taylors
     // theorem directly creates a polynomial with a choice of center.
     // In using exp_inner, we expand exp_squared as follows,
-    //                         / (x - c)^T(x-c) \                                     //
-    // exp_squared(x,y) == exp | -------------- | * exp_squared(x,c) *exp_squared(y,c)
-    //                         \    sigma^2     /
+    //                         / (x - c)^T(x-c) - ||y-c||^2 \             //
+    // exp_squared(x,y) == exp | -------------------------  | * exp_squared(x,c)
+    //                         \          sigma^2           /
     // The left hand term on the right hand side is approximated, and the other two
     // terms are computed separately.
     //
