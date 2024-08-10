@@ -86,7 +86,7 @@ public:
      * The coefficients of the derivatives of f are a multivariate polynomial, which
      * can be computed independently of y and c, and ultimately the function estimate.
      */  
-    T estimate(const polynomial<T, M, D>& polyCoefs, const vector<T, M>& cx, const vector<T, M>& y){
+    T estimate(const polynomial<T, M, D>& polyCoefs, const vector<T, M>& cx, const vector<T, M>& y) const{
         const auto& funcRef = static_cast<F<T, M, K>>(m_function);
         const auto& polyCoefsRef = static_cast<polynomial<T, M, K>>(polyCoefs);
         if(polyCoefs.coeffs().norm2() < 1e-13){

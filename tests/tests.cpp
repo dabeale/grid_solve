@@ -11,8 +11,8 @@
 int main(int args, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
-    error += test_box_subpoints();
     error += testq_fmm_exp2_1d();
+    error += test_box_subpoints();
     error += test_box();
     error += test_grid();
     error += test_dimensions_sub2ind_simple();

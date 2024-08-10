@@ -26,14 +26,17 @@ class vector {
 protected:
     std::array<T, M> m_array; ///< The storage array.
 public:
-    vector() {
-        m_array.fill(0);
-    }
+    vector() {m_array.fill(0);}
     vector(std::initializer_list<T> inList) {
         size_t j=0;
         for(const auto i : inList){
-            m_array[j] = i;
-            j++;
+            m_array[j++] = i;
+        }
+    }
+    template<typename S>
+    vector( const std::array<S, M>& arr ){
+        for(size_t i=0; i<M; ++i){
+            m_array[i] = static_cast<T>(arr[i]);
         }
     }
 
@@ -131,6 +134,43 @@ public:
         return std::sqrt(norm2());
     }
 };
+
+template<typename T, size_t M, size_t K>
+requires (K > 0)
+/**
+ * \brief Compute the average over a collection of input vectors.
+ */
+vector<T, M> mean(const std::array<vector<T, M>, K>& arr){
+    vector<T, M> start=arr[0];
+    for(size_t i=1; i<K; ++i){
+        start += arr[i];
+    }
+    start /= static_cast<double>(K);
+    return start;
+}
+
+template<typename T, size_t M, size_t K>
+requires (K > 0)
+/**
+ * \brief Interpolate a collection of vectors using inverse dist squared.
+ */
+T interp(
+    const std::array<vector<T, M>, K>& arr,
+    const std::array<T, K>& vals,
+    const vector<T,M>& at
+){
+    std::array<double, K> weights;
+    T sum(0.0);
+    for(size_t k=0; k<K; ++k){
+        weights[k] = 1.0/(arr[k] - at).norm();
+        sum += weights[k];
+    }
+    T out(0.0);
+    for(size_t k=0; k<K; ++k){
+        out += (weights[k]/sum)*vals[k];
+    }
+    return out;
+}
 
 template<typename T, size_t M>
 /**
