@@ -9,6 +9,8 @@
 #include "base/concepts.hpp"
 
 namespace gs {
+template<int N, typename T=uint32_t>
+requires std::is_integral<T>::value && (N > 0)
 /**
  * \brief Dimensions for an N-dimensional hypercube.
  * 
@@ -28,8 +30,6 @@ namespace gs {
  *      N - The number of dimensions of the box
  *      T - The integral type.
  */
-template<int N, typename T=uint32_t>
-requires std::is_integral<T>::value && (N > 0)
 class dimensions {
     std::array<T, N> m_dimensions; ///< The base array storage for the dimensions.
     T m_maxLevel; ///< The maximum allowed level.

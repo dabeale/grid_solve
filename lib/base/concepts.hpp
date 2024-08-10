@@ -5,38 +5,42 @@
 #include <concepts>
 
 namespace gs {
+template<typename T>
 /**
  * \brief The container has value_type member.
  */
-template<typename T>
 concept has_value = T::value_type || true;
+
+template<typename T>
 /**
  * \brief Iterable concept.
  */
-template<typename T>
 concept iterable = requires(T t) {
     t.begin();
     t.end();
 };
+
+template<typename T>
 /**
  * \brief Resizable concept.
  */
-template<typename T>
 concept resizable = requires(T t) {
     t.size();
     t.resize(size_t());
 };
+
+template<typename T>
 /**
  * \brief Random access concept.
  */
-template<typename T>
 concept random_access = requires(T t) {
     t[int()];
 };
+
+template<typename T>
 /**
  * \brief Random access container concept.
  */
-template<typename T>
 concept random_access_container = iterable<T> && has_value<T> && random_access<T>;
 }
 

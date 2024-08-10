@@ -11,6 +11,7 @@
 #include "math/equi_tensor.hpp"
 
 namespace gs {
+template<typename T, size_t M, size_t D=0>
 /**
  * \brief The Exp Inner Product function.
  * 
@@ -27,7 +28,6 @@ namespace gs {
  *      D - The degree of the derivative.
  *          (evaluation of the object at D returns a D-Tensor).
  */
-template<typename T, size_t M, size_t D=0>
 class exp_inner: public exp_inner<T, M, D-1> {
 protected:
     dimensions<D> m_dimensions; ///< The dimensions of the tensor.
@@ -48,10 +48,10 @@ public:
     }
 };
 
-/**
- * The specialisation of exp_inner for the second derivative.
- */
 template<typename T, size_t M>
+/**
+ * \brief The specialisation of exp_inner for the second derivative.
+ */
 class exp_inner<T, M, 2>: public exp_inner<T, M, 1> {
 protected:
     dimensions<2> m_dimensions;
@@ -63,10 +63,10 @@ public:
     }
 };
 
-/**
- * The specialisation of exp_inner for the first derivative.
- */
 template<typename T, size_t M>
+/**
+ * \brief The specialisation of exp_inner for the first derivative.
+ */
 class exp_inner<T, M, 1>: public exp_inner<T, M, 0> {
 protected:
     dimensions<1> m_dimensions;
@@ -78,10 +78,11 @@ public:
     }
 };
 
-/**
- * The specialisation of exp_inner for the zeroth derivative.
- */
+
 template<typename T, size_t M>
+/**
+ * \brief The specialisation of exp_inner for the zeroth derivative.
+ */
 class exp_inner<T, M, 0> {
 protected:
     T m_sigma_squared;

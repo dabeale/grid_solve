@@ -10,6 +10,8 @@
 #include "base/dimensions.hpp"
 
 namespace gs {
+template<int N, typename T=uint32_t>
+requires std::is_integral<T>::value
 /**
  * \brief An index within a grid.
  * 
@@ -27,8 +29,6 @@ namespace gs {
  *      N - The number of dimensions of the box
  *      T - The integral type.
  */
-template<int N, typename T=uint32_t>
-requires std::is_integral<T>::value
 class index {
     std::array<T, N> m_indices; ///< The array of indices
     T m_level; ///< The level within the grid
@@ -88,20 +88,19 @@ public:
         return *this;
     }
 
-    /**
-     * \brief Return the index at the current level.
-     */
-    const T& operator[](const T i) const {return m_indices[i];}
-    T& operator[](const T i) {return m_indices[i];}
-
-    auto begin() -> decltype(m_indices.begin()){return m_indices.begin();}
-    auto end() -> decltype(m_indices.end()){return m_indices.end();}
-    auto begin() const -> decltype(m_indices.begin()){return m_indices.begin();}
-    auto end() const -> decltype(m_indices.end()){return m_indices.end();}
-    operator const std::array<T, N>&(){ return m_indices; }
+    const T& operator[](const T i) const {return m_indices[i];} ///< Access the ith index.
+    T& operator[](const T i) {return m_indices[i];} ///< Access the ith index.
+    auto begin() -> decltype(m_indices.begin()){return m_indices.begin();} ///< Return a begin iterator into the indices
+    auto end() -> decltype(m_indices.end()){return m_indices.end();} ///< Return the end iterator into the indices
+    auto begin() const -> decltype(m_indices.begin()){return m_indices.begin();} ///< Return a begin iterator into the indices
+    auto end() const -> decltype(m_indices.end()){return m_indices.end();} ///< Return the end iterator into the indices
+    operator const std::array<T, N>&(){ return m_indices; } ///< Cast the index to an array
 };
 
 template<int N, typename T=uint32_t>
+/**
+ * \brief Append the index to an output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const index<N, T>& boxVar)
 {
     os << "(";
@@ -117,6 +116,9 @@ std::ostream& operator<<(std::ostream& os, const index<N, T>& boxVar)
 }
 template<int N, typename T, typename S>
 requires random_access_container<T> && std::is_integral<S>::value
+/**
+ * \brief Equality operator for an index and array like structures.
+ */
 bool operator==(index<N, S> ind, T arr){
     for (S i = 0; i < N; ++i){
         if (arr[i] != ind[i]) return false;

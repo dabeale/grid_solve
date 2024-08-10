@@ -9,6 +9,8 @@
 #include "math/vector.hpp"
 
 namespace gs {
+
+template<typename T, size_t M, size_t N>
 /**
  * \brief A stack allocated matrix.
  * 
@@ -22,20 +24,29 @@ namespace gs {
  *      M - The number of rows.
  *      N - The number of columns.
  */
-template<typename T, size_t M, size_t N>
 class matrix: public vector<T, M * N> {
 public:
     matrix(): vector<T, M * N>() {}
     matrix(const vector<T, M * N>& vec): vector<T, M * N>(vec) {}
+
+    /**
+     * \brief Access the (i,j)th element of the matrix.
+     */
     T& operator()(const size_t i, const size_t j){
         return vector<T, M * N>::operator()(N*i + j);
     }
+    /**
+     * \brief Access the (i,j)th element of the matrix.
+     */
     const T& operator()(const size_t i, const size_t j) const {
         return vector<T, M * N>::operator()(N*i + j);
     }
 };
 
 template<typename T, size_t M, size_t N, size_t K>
+/**
+ * \brief Multiply two matrices.
+ */
 matrix<T,M,N> operator*(const matrix<T,M,K>& matA, const matrix<T,K,N>& matB ){
     matrix<T,M,N> ret;
     for(size_t i=0; i<M; ++i){
@@ -49,6 +60,9 @@ matrix<T,M,N> operator*(const matrix<T,M,K>& matA, const matrix<T,K,N>& matB ){
 }
 
 template<typename T, size_t M, size_t N>
+/**
+ * \brief Multiply a matrix and a vector.
+ */
 vector<T,M> operator*(const matrix<T,M,N>& mat, const vector<T,N>& vec ){
     vector<T,M> ret;
     for(size_t i=0; i<M; ++i){
@@ -60,6 +74,10 @@ vector<T,M> operator*(const matrix<T,M,N>& mat, const vector<T,N>& vec ){
 }
 
 template<typename T, size_t M>
+/**
+ * \brief Compute the vector outer product for a 
+ * single input vector.
+ */
 matrix<T,M,M> matrix_outer(const vector<T,M>& vec){
     matrix<T,M,M> ret;
     for(size_t i=0; i<M; ++i){
@@ -71,6 +89,10 @@ matrix<T,M,M> matrix_outer(const vector<T,M>& vec){
 }
 
 template<typename T, size_t M, size_t N>
+/**
+ * \brief Compute the vector outer product for a 
+ * pair if input vectors.
+ */
 matrix<T,M,N> matrix_outer(const vector<T,M>& vecA, const vector<T,N>& vecB){
     matrix<T,M,N> ret;
     for(size_t i=0; i<M; ++i){
@@ -82,6 +104,9 @@ matrix<T,M,N> matrix_outer(const vector<T,M>& vecA, const vector<T,N>& vecB){
 }
 
 template<typename T, size_t M, size_t N>
+/**
+ * \brief Append a matrix to an output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const matrix<T, M, N>& mat)
 {
     os << "[";
@@ -98,10 +123,10 @@ std::ostream& operator<<(std::ostream& os, const matrix<T, M, N>& mat)
     return os;
 }
 
+template<typename T>
 /**
  * \brief Matrix concept.
  */
-template<typename T>
 concept is_matrix = requires(T m, T n) {
     m(int(), int());
     { m+n } -> std::same_as<T>;

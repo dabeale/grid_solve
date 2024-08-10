@@ -8,6 +8,7 @@
 
 namespace gs {
 
+template<int N, typename T, int D, typename S=uint32_t> 
 /**
  * \brief A vector field.
  * 
@@ -19,7 +20,6 @@ namespace gs {
  *      T           - The unit type (e.g. double)
  *      D           - The approximation degree.
  */
-template<int N, typename T, int D, typename S=uint32_t> 
 class vector_field {
 public:
     using grid_val = std::tuple<T, T, vector<T, N>, int32_t>;
@@ -29,6 +29,21 @@ public:
     using f_near_field = std::function<void(const box<N, S>&, grid<N, grid_val, box_val, S>&)>;
 };
 
+template<
+    int N,
+    typename T=uint32_t,
+    class FFarField=vector_field<N, double, 2>::f_far_field,
+    class FNearField=vector_field<N, double, 2>::f_near_field,
+    class FBoxWeight=vector_field<N, double, 2>::f_box_weight,
+    class GridElement=vector_field<N, double, 2>::grid_val,
+    class BoxElement=vector_field<N, double, 2>::box_val
+>
+requires (
+    std::is_integral<T>::value &&
+    std::invocable<FFarField&, const box<N, T>&, const BoxElement&, grid<N, GridElement, BoxElement, T>&> &&
+    std::invocable<FNearField&, const box<N, T>&, grid<N, GridElement, BoxElement, T>&> &&
+    std::invocable<FBoxWeight&, const box<N, T>&, BoxElement&, const grid<N, GridElement, BoxElement, T>&>
+)
 /**
  * \brief The Fast Multipole Method.
  * 
@@ -60,21 +75,6 @@ public:
  *      GridElement - The element type to be stored at each point in the grid.
  *      BoxElement  - The element type to be stored at each box in the tree.
  */
-template<
-    int N,
-    typename T=uint32_t,
-    class FFarField=vector_field<N, double, 2>::f_far_field,
-    class FNearField=vector_field<N, double, 2>::f_near_field,
-    class FBoxWeight=vector_field<N, double, 2>::f_box_weight,
-    class GridElement=vector_field<N, double, 2>::grid_val,
-    class BoxElement=vector_field<N, double, 2>::box_val
->
-requires (
-    std::is_integral<T>::value &&
-    std::invocable<FFarField&, const box<N, T>&, const BoxElement&, grid<N, GridElement, BoxElement, T>&> &&
-    std::invocable<FNearField&, const box<N, T>&, grid<N, GridElement, BoxElement, T>&> &&
-    std::invocable<FBoxWeight&, const box<N, T>&, BoxElement&, const grid<N, GridElement, BoxElement, T>&>
-)
 class fmm {
     grid<N, GridElement, BoxElement, T> m_grid; ///< The underlying grid.
     FFarField m_farFieldFunc; ///< The far field function.
@@ -131,15 +131,15 @@ public:
         }
     }
 
-    size_t grid_size() const{return m_grid.size();}
-    GridElement& operator[](const T i){return m_grid[i];}
-    const GridElement& operator[](const T i) const {return m_grid[i];}
-    GridElement& operator[](const index<N, T>& i){return m_grid[i];}
-    const GridElement& operator[](const index<N, T>& i) const {return m_grid[i];}
-    auto begin() -> decltype(m_grid.begin()){return m_grid.begin();}
-    auto end() -> decltype(m_grid.end()){return m_grid.end();}
-    auto begin() const -> decltype(m_grid.begin()){return m_grid.begin();}
-    auto end() const -> decltype(m_grid.end()){return m_grid.end();}
+    size_t grid_size() const{return m_grid.size();} ///< Get the number of vertices in the grid
+    GridElement& operator[](const T i){return m_grid[i];} ///< Access the ith vertex of the grid
+    const GridElement& operator[](const T i) const {return m_grid[i];} ///< Access the ith vertex of the grid
+    GridElement& operator[](const index<N, T>& i){return m_grid[i];} ///< Access a vertex of the grid using an index
+    const GridElement& operator[](const index<N, T>& i) const {return m_grid[i];} ///< Access a vertex of the grid using an index
+    auto begin() -> decltype(m_grid.begin()){return m_grid.begin();} ///< Return a begin iterator into the vertices
+    auto end() -> decltype(m_grid.end()){return m_grid.end();} ///< Return the end iterator into the vertices
+    auto begin() const -> decltype(m_grid.begin()){return m_grid.begin();} ///< Return a begin iterator into the vertices
+    auto end() const -> decltype(m_grid.end()){return m_grid.end();} ///< Return the end iterator into the vertices
 };
 }
 

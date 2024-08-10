@@ -9,6 +9,7 @@
 #include "math/vector.hpp"
 
 namespace gs {
+template<typename T, size_t N, size_t D>
 /**
  * \brief A stack allocated polynomial.
  * 
@@ -27,7 +28,6 @@ namespace gs {
  *      N - The number of input dimensions.
  *      D - The degree.
  */
-template<typename T, size_t N, size_t D>
 class polynomial : public polynomial<T, N, D-1>{
 protected:
     equi_tensor<T, D, N> m_coeff;
@@ -38,6 +38,7 @@ public:
         const std::array<vector<T, N>, K>& vectorVals,
         const std::array<T, K>& tVals
     ) { fill(vectorVals, tVals); }
+    template<size_t K>
     /**
      * \brief Fill the parameters using a collection of vectors.
      * 
@@ -45,7 +46,6 @@ public:
      * products of the weighted vectors. Computing the parameters
      * in this way, is a principle component of the Taylor's expansion.
      */
-    template<size_t K>
     void fill(
         const std::array<vector<T, N>, K>& vectorVals,
         const std::array<T, K>& tVals
@@ -61,7 +61,6 @@ public:
     T evaluate(const vector<T, N>& vin){
         return m_coeff.inner(vin) + polynomial<T, N, D-1>::evaluate(vin);
     }
-
     /**
      * \brief Return the coefficients of the polynomial at the
      * current degree.
@@ -72,6 +71,9 @@ public:
 };
 
 template<typename T, size_t N>
+/**
+ * \brief Specialisation for a multivariate polynomial of order 2.
+ */
 class polynomial<T, N, 2>: public polynomial<T, N, 1> {
 protected:
     matrix<T, N, N> m_coeff;
@@ -101,6 +103,9 @@ public:
 };
 
 template<typename T, size_t N>
+/**
+ * \brief Specialisation for a multivariate polynomial of order 1.
+ */
 class polynomial<T, N, 1>: public polynomial<T, N, 0> {
 protected:
     vector<T, N> m_coeff;
@@ -130,6 +135,9 @@ public:
 };
 
 template<typename T, size_t N>
+/**
+ * \brief Specialisation for a multivariate polynomial of order 0.
+ */
 class polynomial<T, N, 0> {
 protected:
     T m_coeff;

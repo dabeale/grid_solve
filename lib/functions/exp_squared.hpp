@@ -11,6 +11,7 @@
 #include "math/equi_tensor.hpp"
 
 namespace gs {
+template<typename T, size_t M, size_t D=0>
 /**
  * \brief The Exp-Squared covariance function.
  * 
@@ -27,7 +28,6 @@ namespace gs {
  *      D - The degree of the derivative.
  *          (evaluation of the object at D returns a D-Tensor).
  */
-template<typename T, size_t M, size_t D=0>
 class exp_squared: public exp_squared<T, M, D-1> {
 protected:
     dimensions<D> m_dimensions; ///< The dimensions of the tensor.
@@ -66,10 +66,10 @@ public:
     }
 };
 
-/**
- * The specialisation of exp_squared for the second derivative.
- */
 template<typename T, size_t M>
+/**
+ * \brief The specialisation of exp_squared for the second derivative.
+ */
 class exp_squared<T, M, 2>: public exp_squared<T, M, 1> {
 protected:
     dimensions<2> m_dimensions;
@@ -91,10 +91,10 @@ public:
     }
 };
 
-/**
- * The specialisation of exp_squared for the first derivative.
- */
 template<typename T, size_t M>
+/**
+ * \brief The specialisation of exp_squared for the first derivative.
+ */
 class exp_squared<T, M, 1>: public exp_squared<T, M, 0> {
 protected:
     dimensions<1> m_dimensions;
@@ -106,13 +106,13 @@ public:
     }
 };
 
-/**
- * The specialisation of exp_squared for the zeroth derivative.
- */
 template<typename T, size_t M>
+/**
+ * \brief The specialisation of exp_squared for the zeroth derivative.
+ */
 class exp_squared<T, M, 0> {
 protected:
-    T m_sigma_squared;
+    T m_sigma_squared; ///< Sigma squared parameter (variance).
 public:
     exp_squared(T sigma = 1): m_sigma_squared(sigma*sigma) {}
     vector<T, M> d_coef(const vector<T, M>& x, const vector<T, M>& y) const {

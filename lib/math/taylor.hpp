@@ -6,7 +6,6 @@
 #include "math/vector.hpp"
 
 namespace gs {
-
 template< typename T, size_t M, size_t D, template < typename, size_t, size_t > class F >
 requires requires(F<T, M, D> f) {
     { f(vector<T,M>(), vector<T,M>()) } -> std::convertible_to<vector<T, pow<M,D>()>>;
@@ -35,13 +34,13 @@ class taylor {
 public:
     taylor(const F<T, M, D> func): m_function(func){}
 
+    template<size_t K=D>
     /**
      * \brief Produce the Taylor estimate of the input function.
      * 
      * Produce an estimate of the function with varying parameter x, fixed
      * parameter y, about the center cx.
      */
-    template<size_t K=D>
     T estimate(const vector<T, M>& x, const vector<T, M>& cx, const vector<T, M>& y){
         const auto fAtY = static_cast<F<T, M, K>>(m_function)(cx, y);
         if constexpr ( K == 0 ) {
@@ -60,7 +59,8 @@ public:
             );
         }
     }
-
+                                                
+    template<size_t K=D>
     /**
      * \brief Produce the Taylor estimate of the input function.
      * 
@@ -85,8 +85,7 @@ public:
      * 
      * The coefficients of the derivatives of f are a multivariate polynomial, which
      * can be computed independently of y and c, and ultimately the function estimate.
-     */                                                  
-    template<size_t K=D>
+     */  
     T estimate(const polynomial<T, M, D>& polyCoefs, const vector<T, M>& cx, const vector<T, M>& y){
         const auto& funcRef = static_cast<F<T, M, K>>(m_function);
         const auto& polyCoefsRef = static_cast<polynomial<T, M, K>>(polyCoefs);

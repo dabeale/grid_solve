@@ -10,6 +10,8 @@
 #include "base/tools.hpp"
 
 namespace gs {
+template<int N, typename T=uint32_t>
+requires std::is_integral<T>::value
 /**
  * \brief A box (hypercube) in the grid.
  * 
@@ -24,8 +26,6 @@ namespace gs {
  *      N - The number of dimensions of the box
  *      T - The integral type.
  */
-template<int N, typename T=uint32_t>
-requires std::is_integral<T>::value
 class box {
     std::array<index<N, T>, pow<2,N>()> m_corners; ///< The corners.
     T m_level; ///< The box level.
@@ -56,6 +56,9 @@ public:
         return m_level;
     }
 
+    /**
+     * \brief A neighbour direction of a box.
+     */
     enum PosNeg {
         POSITIVE=1,
         NEGATIVE=-1
@@ -103,14 +106,17 @@ public:
          return innerPoints;
     }
 
-    const auto& operator[](const T i) const{return m_corners[i];}
-    auto begin() -> decltype(m_corners.begin()){return m_corners.begin();}
-    auto end() -> decltype(m_corners.end()){return m_corners.end();}
-    auto begin() const -> decltype(m_corners.begin()){return m_corners.begin();}
-    auto end() const -> decltype(m_corners.end()){return m_corners.end();}
+    const auto& operator[](const T i) const{return m_corners[i];} ///< Access the ith corner of the box
+    auto begin() -> decltype(m_corners.begin()){return m_corners.begin();} ///< Return a begin iterator into the corners
+    auto end() -> decltype(m_corners.end()){return m_corners.end();} ///< Return the end iterator into the corners
+    auto begin() const -> decltype(m_corners.begin()){return m_corners.begin();} ///< Return a begin iterator into the corners
+    auto end() const -> decltype(m_corners.end()){return m_corners.end();} ///< Return the end iterator into the corners
 };
 
 template<int N, typename T=uint32_t>
+/**
+ * \brief Append the box to an output stream.
+ */
 std::ostream& operator<<(std::ostream& os, const box<N, T>& boxVar)
 {
     for (auto corner : boxVar){

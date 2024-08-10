@@ -17,10 +17,11 @@ bool assert_bool(bool val, std::string errMessage){
     }
     return ! val;
 }
+
+template<size_t Base, size_t Exponent>
 /**
  * \brief Compute power using the pre-compiler.
  */
-template<size_t Base, size_t Exponent>
 constexpr size_t pow(){
     if constexpr (Exponent == 0){
         return 1;
@@ -29,10 +30,11 @@ constexpr size_t pow(){
         return pow<Base, Exponent-1>()*Base;
     }
 }
+
+template<size_t Val, size_t... Vals>
 /**
  * \brief Compute multiplication using the pre-compiler.
  */
-template<size_t Val, size_t... Vals>
 constexpr size_t mult(){
     if constexpr (sizeof...(Vals) == 0){
         return Val;
@@ -41,10 +43,11 @@ constexpr size_t mult(){
         return mult<Vals...>()*Val;
     }
 }
+
+template<typename T, size_t N, typename... Args>
 /**
  * \brief Remove the specified indices from an array.
  */
-template<typename T, size_t N, typename... Args>
 std::array<T, N-sizeof...(Args)> remove_i(const std::array<T, N>& ain, Args... args ){
     std::array<T, N-sizeof...(Args)> ret;
     ret.fill(0);
@@ -58,10 +61,12 @@ std::array<T, N-sizeof...(Args)> remove_i(const std::array<T, N>& ain, Args... a
     }
     return ret;
 }
+
+template<size_t N>
 /**
  * \brief Compute the factorial using the pre-compiler.
  */
-template<size_t N> size_t factorial(){
+size_t factorial(){
     if constexpr (N==0 || N==1){
         return 1;
     }

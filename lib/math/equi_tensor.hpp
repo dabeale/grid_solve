@@ -5,6 +5,7 @@
 #include "math/tensor.hpp"
 
 namespace gs {
+template<typename T, size_t N, size_t K, size_t ...Ks>
 /**
  * \brief A base for the equi_tensor class.
  * 
@@ -13,15 +14,18 @@ namespace gs {
  * final type is available at the lowest level of the inheritance
  * heirarchy.
  */
-template<typename T, size_t N, size_t K, size_t ...Ks>
 class equi_tensor_base : public equi_tensor_base<T, N-1, K, K, Ks... >{};
 
 template<typename T, size_t K, size_t ...Ks>
+/**
+ * \brief Specialisation of equi_tensor_base at the lowest level.
+ */
 class equi_tensor_base<T, 1, K, Ks...> {
 public:
     using type = tensor<T, K, Ks...>;
 };
 
+template<typename T, size_t N, size_t K>
 /**
  * \brief A tensor in which all of the dimensions are equal.
  * 
@@ -37,7 +41,6 @@ public:
  *      N - The number of dimensions
  *      K - The size of each dimension.
  */
-template<typename T, size_t N, size_t K>
 class equi_tensor: public equi_tensor_base<T, N, K>::type {
 public:
     using base = equi_tensor_base<T, N, K>::type;
@@ -65,6 +68,7 @@ public:
     }
 };
 
+template<typename T, size_t N, size_t K>
 /**
  * \brief The outer product of a vector into an equi-tensor.
  * 
@@ -73,7 +77,6 @@ public:
  * x, then xx^T is the 2D outer product and (x_i)(x_j)(x_k) is the
  * 3D outer product, and so on.
  */
-template<typename T, size_t N, size_t K>
 equi_tensor<T, N, K> tensor_outer(const vector<T,K>& vec){
     equi_tensor<T, N, K> out;
     for(size_t i=0; i<pow<K, N>(); ++i){

@@ -11,6 +11,8 @@
 #include "base/pattern.hpp"
 
 namespace gs{
+template<int N, class GridElement, class BoxElement, class S=uint32_t>
+requires std::is_integral<S>::value
 /**
  * \brief A grid of objects of arbitrary dimension.
  * 
@@ -34,8 +36,6 @@ namespace gs{
  *      BoxElement  - The object to store at each level.
  *      S           - The integral type to use.
  */
-template<int N, class GridElement, class BoxElement, class S=uint32_t>
-requires std::is_integral<S>::value
 class grid {
     std::vector<GridElement> m_gridStorage; ///< Storage at each of the points in the grid.
     std::vector<std::vector<BoxElement>> m_boxStorage; ///< Storage at each level of the 2^N tree.
@@ -123,16 +123,16 @@ public:
         return gridValues;
     }
 
-    auto begin() -> decltype(m_gridStorage.begin()){return m_gridStorage.begin();}
-    auto end() -> decltype(m_gridStorage.end()){return m_gridStorage.end();}
-    auto begin() const -> decltype(m_gridStorage.begin()){return m_gridStorage.begin();}
-    auto end() const -> decltype(m_gridStorage.end()){return m_gridStorage.end();}
+    auto begin() -> decltype(m_gridStorage.begin()){return m_gridStorage.begin();} ///< Return a begin iterator into the vertices
+    auto end() -> decltype(m_gridStorage.end()){return m_gridStorage.end();} ///< Return the end iterator into the vertices
+    auto begin() const -> decltype(m_gridStorage.begin()){return m_gridStorage.begin();} ///< Return a begin iterator into the vertices
+    auto end() const -> decltype(m_gridStorage.end()){return m_gridStorage.end();} ///< Return the end iterator into the vertices
 
+    template<class F>
+    requires std::invocable<F&, box<N, S>&, BoxElement&>
     /**
      * \brief Iterate over every box at the specified level.
      */
-    template<class F>
-    requires std::invocable<F&, box<N, S>&, BoxElement&>
     void iterate(
         const F& callable,
         const S level
@@ -144,11 +144,11 @@ public:
         }
     }
 
+    template<class F>
+    requires std::invocable<F&, box<N, S>&, BoxElement&, PatternComponent>
     /**
      * \brief Iterate over every box at the specified level.
      */
-    template<class F>
-    requires std::invocable<F&, box<N, S>&, BoxElement&, PatternComponent>
     void iterate(
         const F& callable,
         const std::vector<PatternComponent>& pattern
