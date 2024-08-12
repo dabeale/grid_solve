@@ -8,40 +8,10 @@
 
 namespace gs {
 
-template<int N, typename T, int D, typename S=uint32_t> 
-/**
- * \brief A vector field.
- * 
- * The vector field provides the set of default template values for the 
- * fmm algorithm.
- * 
- * The template parameters,
- *      N           - The number of dimensions of the underlying grid.
- *      T           - The unit type (e.g. double)
- *      D           - The approximation degree.
- */
-class vector_field {
-public:
-    using grid_val = std::tuple<T, T, vector<T, N>, int32_t>;
-    using box_val = std::pair<polynomial<T, N, D>, vector<T, N>>;
-    using f_box_weight = std::function<void(const box<N, S>&, box_val&, const grid<N, grid_val, box_val, S>&)>;
-    using f_far_field = std::function<void(const box<N, S>&, const box_val&, grid<N, grid_val, box_val, S>&)>;
-    using f_near_field = std::function<void(const box<N, S>&, grid<N, grid_val, box_val, S>&)>;
-};
-
-template<
-    int N,
-    typename T=uint32_t,
-    class FFarField=vector_field<N, double, 2>::f_far_field,
-    class FNearField=vector_field<N, double, 2>::f_near_field,
-    class FBoxWeight=vector_field<N, double, 2>::f_box_weight,
-    class GridElement=vector_field<N, double, 2>::grid_val,
-    class BoxElement=vector_field<N, double, 2>::box_val
->
+template<int N, typename T, class FTraversal, class FBoxWeight,class GridElement,class BoxElement>
 requires (
     std::is_integral<T>::value &&
-    std::invocable<FFarField&, const box<N, T>&, const BoxElement&, grid<N, GridElement, BoxElement, T>&> &&
-    std::invocable<FNearField&, const box<N, T>&, grid<N, GridElement, BoxElement, T>&> &&
+    std::invocable<FTraversal&, const box<N, T>&, const BoxElement&, grid<N, GridElement, BoxElement, T>&> &&
     std::invocable<FBoxWeight&, const box<N, T>&, BoxElement&, const grid<N, GridElement, BoxElement, T>&>
 )
 /**
@@ -66,10 +36,7 @@ requires (
  * The template parameters,
  *      N           - The number of dimensions of the underlying grid.
  *      T           - The base integral type.
- *      FFarField   - The far field equation which takes a pre-computed value
- *                    in each box, and produces an grid value for each input point.
- *      FNearField  - The near field equation which takes a list of points (at corners 
- *                    of granular boxes), and produces an output value for each point.
+ *      FTraversal  - The function used to traverse each of the finest grid boxes.
  *      FBoxWeight  - A function which takes a list of points in a box and produces a
  *                    box value, to be used as a weight in the far field equation.
  *      GridElement - The element type to be stored at each point in the grid.
@@ -77,46 +44,35 @@ requires (
  */
 class fmm {
     grid<N, GridElement, BoxElement, T> m_grid; ///< The underlying grid.
-    FFarField m_farFieldFunc; ///< The far field function.
-    FNearField m_nearFieldFunc; ///< The near field function.
+    FTraversal m_fineTraversalFunc; ///< The traversal function for the fines level
     FBoxWeight m_boxWeightFunc; ///< The box weight function.
 
 public:
     fmm(
         const dimensions<N, T> dimensions,
-        FFarField farFieldFunc,
-        FNearField nearFieldFunc,
+        FTraversal fineTraversalFunc,
         FBoxWeight boxWeightFunc
     ) :
         m_grid(dimensions),
-        m_farFieldFunc(farFieldFunc),
-        m_nearFieldFunc(nearFieldFunc),
+        m_fineTraversalFunc(fineTraversalFunc),
         m_boxWeightFunc(boxWeightFunc){}
 
     /**
      * \brief Compute the solution.
      * 
      * The algorithm iterates each level of the tree in coarse-to-fine and
-     * fine-to-coarse direction. In the fine-to-coarse traversal, the weights
-     * to each of the boxes are computed and stored. In the coarse-to-fine 
-     * traversal the corners of the box are used to compute the solution using
-     * the far-field equation in all of the levels apart from the finest, 
-     * the near field equation is used at the finest level.
+     * then at each of the finest nodes, reach back up to the coarsest levels
+     * to get the multipoles. In the fine-to-coarse traversal, the weights
+     * to each of the boxes are computed and stored.
      */
     void compute(const T nIters=1){
         for (T it = 0; it < nIters; ++it){
             m_grid.iterate(
                 [&](box<N, T>& box, BoxElement& element, const PatternComponent pattern) {
                     switch (pattern) {
-                        case COARSE_TO_FINE:
-                            // Use the far field function for all levels apart
-                            // from the most granular.
-                            if (box.get_level() < m_grid.get_dimensions().max_level()){
-                                m_farFieldFunc(box, element, m_grid);
-                            }
-                            else {
-                                m_nearFieldFunc(box, m_grid);
-                            }
+                        case PARSE_FINEST:
+                            // Depth first at the finest nodes.
+                            m_fineTraversalFunc(box, element, m_grid);
                             break;
                         case FINE_TO_COARSE:
                             // Compute the box weights
@@ -126,7 +82,7 @@ public:
                             break;
                     }
                 },
-                inverse_v_pattern()
+                {FINE_TO_COARSE, PARSE_FINEST}
             );
         }
     }

@@ -16,7 +16,7 @@ int testq_fmm_exp2_1d(){
     const size_t nDegree = 2;
 
     // Set the standard deviation.
-    const double sigma = 10.0;
+    const double sigma = 5.0;
 
     // Set up FMM algorithm.
     gs::analytic_multiply<double, nDims, nDegree, gs::exp_squared_est> analyticMult(
@@ -28,7 +28,8 @@ int testq_fmm_exp2_1d(){
     // At level zero there are 2 points, and so at level 10 there are 2^11.
     const size_t size = gs::pow<2,11>();
     std::vector<double> inputVec(size, 0.0);
-    inputVec[500] = 1.0;
+    for(size_t i=0; i<60; ++i)
+        inputVec[970+i] = 1.0;
     analyticMult.initialise(inputVec);
 
     // Compute the solution
@@ -37,7 +38,7 @@ int testq_fmm_exp2_1d(){
     // Get output
     auto output = analyticMult.output();
 
-    retVal += ASSERT_BOOL(output[500] > 0);
+    retVal += ASSERT_BOOL(output[501] > 0);
     for(const auto v :analyticMult.output()){
         retVal += ASSERT_BOOL(!std::isnan(v) && !std::isinf(v) );
     }

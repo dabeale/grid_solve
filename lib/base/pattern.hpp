@@ -10,7 +10,8 @@ namespace gs {
  */
 enum PatternComponent {
     FINE_TO_COARSE,
-    COARSE_TO_FINE
+    COARSE_TO_FINE,
+    PARSE_FINEST
 };
 
 /**

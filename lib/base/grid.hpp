@@ -174,6 +174,13 @@ public:
                         );
                     }
                     break;
+                case PARSE_FINEST:
+                    grid<N,GridElement,BoxElement,S>::iterate(
+                        [&](box<N,S>& box, BoxElement& element){
+                            callable(box, element, pattern);
+                        }, max_level
+                    );
+                    break;
                 default:
                     break;
             }

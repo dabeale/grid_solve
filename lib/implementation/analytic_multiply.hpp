@@ -6,6 +6,26 @@
 #include "functions/exp_squared.hpp"
 
 namespace gs {
+template<int N, typename T, int D, typename S=uint32_t> 
+/**
+ * \brief A vector field.
+ * 
+ * The vector field provides the set of default template values for the 
+ * fmm algorithm.
+ * 
+ * The template parameters,
+ *      N           - The number of dimensions of the underlying grid.
+ *      T           - The unit type (e.g. double)
+ *      D           - The approximation degree.
+ */
+class vector_field {
+public:
+    using grid_val = std::tuple<T, T, vector<T, N>, int32_t>;
+    using box_val = std::pair<polynomial<T, N, D>, vector<T, N>>;
+    using f_box_weight = std::function<void(const box<N, S>&, box_val&, const grid<N, grid_val, box_val, S>&)>;
+    using f_traversal = std::function<void(const box<N, S>&, const box_val&, grid<N, grid_val, box_val, S>&)>;
+};
+
 template<typename T, size_t M, size_t D, template < typename, size_t, size_t > class FuncEstimator>
 requires (
     (M > 0) && (D > 0) &&
@@ -24,6 +44,8 @@ requires (
 class analytic_multiply  {
     static constexpr size_t nBoxCorners = pow<2,M>(); ///< The number of corners of each box.
 
+    using f_traversal = vector_field<M, T, D>::f_traversal; ///< The traversal function
+    using f_box_weight = vector_field<M, T, D>::f_box_weight; ///< The box weight function
     using grid_val = gs::vector_field<M,T,D>::grid_val; ///< A value in the grid
     using box_val = gs::vector_field<M,T,D>::box_val;   ///< A value stored in each box
     using box_corners = std::array<vector<T,M>, nBoxCorners>; ///< The corners of the box
@@ -47,7 +69,7 @@ class analytic_multiply  {
 
     dimensions<M> m_dimensions; ///< The dimensions.
     FuncEstimator<T,M,D> m_f_estimator; ///< The analytic function estimator.
-    fmm<M, uint32_t> m_fmm; ///< The FMM method.
+    fmm<M, uint32_t, f_traversal, f_box_weight, grid_val, box_val> m_fmm; ///< The FMM method.
 
 public:
     analytic_multiply(const dimensions<M> dims, FuncEstimator<T,M,D> f_estimator):
@@ -56,6 +78,7 @@ public:
         m_fmm(
             dims,
             [&](const gs::box<M>& boxImp, const box_val& boxVal, gs::grid<M, grid_val, box_val>& grid){
+                /** 
                 // Estimate the value at the grid point using taylor
                 const int32_t level = static_cast<int32_t>(boxImp.get_level());
                 for( const auto& corner : boxImp){
@@ -68,19 +91,9 @@ public:
                 }
     
                 const auto cornerVals = analytic_multiply::corner_vals(boxImp, grid);
-                // Interpolate into the lower level
-                for (const auto& subIndex : boxImp.subpoints()){
-                    std::get<0>(grid[subIndex]) = interp(
-                        cornerVals.first,
-                        cornerVals.second,
-                        std::get<2>(grid[subIndex])
-                    );
-                }
-            },
-            [&](const gs::box<M>& boxImp, gs::grid<M, grid_val, box_val>& grid ){
+
                 // Compute the precise value for the near field by multiplying 
                 // and summing over all values.
-                const auto cornerVals = analytic_multiply::corner_vals(boxImp, grid);
                 for( const auto& corner : boxImp){
                     auto& gridVal = grid[corner];
                     for(uint8_t i=0; i<nBoxCorners; ++i){
@@ -90,6 +103,7 @@ public:
                         );
                     }
                 }
+                */
             },
             [&](const gs::box<M>& boxImp, box_val& boxVal, const gs::grid<M, grid_val, box_val>& grid){
                 // Find the corners and values
@@ -97,6 +111,7 @@ public:
                 // Find the center of hte box
                 const auto center = mean(cornerVals.first);
                 // Compute the parameters
+                // @TODO add parameters from lower levels.
                 auto poly = m_f_estimator.compute_coefs(cornerVals.first, center, cornerVals.second);
                 boxVal.first = poly;
                 boxVal.second = center;
