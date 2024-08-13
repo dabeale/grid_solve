@@ -94,7 +94,7 @@ public:
     auto end() -> decltype(m_indices.end()){return m_indices.end();} ///< Return the end iterator into the indices
     auto begin() const -> decltype(m_indices.begin()){return m_indices.begin();} ///< Return a begin iterator into the indices
     auto end() const -> decltype(m_indices.end()){return m_indices.end();} ///< Return the end iterator into the indices
-    operator const std::array<T, N>&(){ return m_indices; } ///< Cast the index to an array
+    operator const std::array<T, N>&() const { return m_indices; } ///< Cast the index to an array
 };
 
 template<int N, typename T=uint32_t>

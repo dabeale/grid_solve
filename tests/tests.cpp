@@ -14,6 +14,7 @@ int main(int args, char* argv[]){
     error += testq_fmm_exp2_1d();
     error += test_box_subpoints();
     error += test_box();
+    error += test_subbox();
     error += test_grid();
     error += test_dimensions_sub2ind_simple();
     error += test_taylor_coefficients_inner();

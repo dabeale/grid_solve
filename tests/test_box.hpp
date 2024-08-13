@@ -28,24 +28,89 @@ int test_box(){
         retVal += ASSERT_BOOL(nbox[6].at_level(3) == gs::index<3>({16,8,0}, 3));
         retVal += ASSERT_BOOL(nbox[7].at_level(3) == gs::index<3>({16,8,8}, 3));
     }
-    auto sbox0 = testBox.subbox(0);
-    retVal += ASSERT_BOOL(sbox0[0].at_level(3) == gs::index<3>({0,0,0}, 3));
-    retVal += ASSERT_BOOL(sbox0[1].at_level(3) == gs::index<3>({0,0,4}, 3));
-    retVal += ASSERT_BOOL(sbox0[2].at_level(3) == gs::index<3>({0,4,0}, 3));
-    retVal += ASSERT_BOOL(sbox0[3].at_level(3) == gs::index<3>({0,4,4}, 3));
-    retVal += ASSERT_BOOL(sbox0[4].at_level(3) == gs::index<3>({4,0,0}, 3));
-    retVal += ASSERT_BOOL(sbox0[5].at_level(3) == gs::index<3>({4,0,4}, 3));
-    retVal += ASSERT_BOOL(sbox0[6].at_level(3) == gs::index<3>({4,4,0}, 3));
-    retVal += ASSERT_BOOL(sbox0[7].at_level(3) == gs::index<3>({4,4,4}, 3));
-    auto sbox2 = testBox.subbox(2);
-    retVal += ASSERT_BOOL(sbox2[0].at_level(3) == gs::index<3>({0,4,0}, 3));
-    retVal += ASSERT_BOOL(sbox2[1].at_level(3) == gs::index<3>({0,4,4}, 3));
-    retVal += ASSERT_BOOL(sbox2[2].at_level(3) == gs::index<3>({0,8,0}, 3));
-    retVal += ASSERT_BOOL(sbox2[3].at_level(3) == gs::index<3>({0,8,4}, 3));
-    retVal += ASSERT_BOOL(sbox2[4].at_level(3) == gs::index<3>({4,4,0}, 3));
-    retVal += ASSERT_BOOL(sbox2[5].at_level(3) == gs::index<3>({4,4,4}, 3));
-    retVal += ASSERT_BOOL(sbox2[6].at_level(3) == gs::index<3>({4,8,0}, 3));
-    retVal += ASSERT_BOOL(sbox2[7].at_level(3) == gs::index<3>({4,8,4}, 3));
+    return retVal;
+}
+
+int test_subbox(){
+    std::cout << "Test subbox" << std::endl;
+    int retVal = 0;
+    gs::box<3> testBox(gs::dimensions<3>({2,2,2}, 2), 0);
+    // Test first level subboxes
+    {
+        auto subbox = testBox.subbox(0);
+        retVal += ASSERT_BOOL(subbox[0].at_level(3) == gs::index<3>({0,0,0}, 3));
+        retVal += ASSERT_BOOL(subbox[1].at_level(3) == gs::index<3>({0,0,4}, 3));
+        retVal += ASSERT_BOOL(subbox[2].at_level(3) == gs::index<3>({0,4,0}, 3));
+        retVal += ASSERT_BOOL(subbox[3].at_level(3) == gs::index<3>({0,4,4}, 3));
+        retVal += ASSERT_BOOL(subbox[4].at_level(3) == gs::index<3>({4,0,0}, 3));
+        retVal += ASSERT_BOOL(subbox[5].at_level(3) == gs::index<3>({4,0,4}, 3));
+        retVal += ASSERT_BOOL(subbox[6].at_level(3) == gs::index<3>({4,4,0}, 3));
+        retVal += ASSERT_BOOL(subbox[7].at_level(3) == gs::index<3>({4,4,4}, 3));
+    }
+    {
+        auto subbox = testBox.subbox(2);
+        retVal += ASSERT_BOOL(subbox[0].at_level(3) == gs::index<3>({0,4,0}, 3));
+        retVal += ASSERT_BOOL(subbox[1].at_level(3) == gs::index<3>({0,4,4}, 3));
+        retVal += ASSERT_BOOL(subbox[2].at_level(3) == gs::index<3>({0,8,0}, 3));
+        retVal += ASSERT_BOOL(subbox[3].at_level(3) == gs::index<3>({0,8,4}, 3));
+        retVal += ASSERT_BOOL(subbox[4].at_level(3) == gs::index<3>({4,4,0}, 3));
+        retVal += ASSERT_BOOL(subbox[5].at_level(3) == gs::index<3>({4,4,4}, 3));
+        retVal += ASSERT_BOOL(subbox[6].at_level(3) == gs::index<3>({4,8,0}, 3));
+        retVal += ASSERT_BOOL(subbox[7].at_level(3) == gs::index<3>({4,8,4}, 3));
+    }
+    {
+        std::set<size_t> allVals;
+        for (size_t i=0; i<8; ++i){
+            auto subbox = testBox.subbox(i);
+            for(size_t j=0; j<8; ++j){
+                for (size_t k=0; k<3; ++k){
+                    allVals.insert(subbox[j].at_level(3)[k]);
+                    const auto boxStep = std::abs(
+                        static_cast<int32_t>(subbox[j].at_level(3)[k])-
+                        static_cast<int32_t>(subbox[(j+1)%8].at_level(3)[k])
+                    );
+                    retVal += ASSERT_BOOL(boxStep == 4 || boxStep == 0); 
+                }
+            }
+        }
+        retVal += ASSERT_BOOL(allVals.size() == 3);
+        for(size_t i : {0, 4, 8}){
+            retVal += ASSERT_BOOL(allVals.contains(i));
+        }
+    }
+    {
+        std::set<size_t> allVals;
+        for (size_t i=0; i<8; ++i){
+            const auto topSubbox = testBox.subbox(i);
+            const auto maxTop = topSubbox.max();
+            const auto minTop = topSubbox.min();
+            std::array<uint32_t, 3> maxInner;
+            maxInner.fill(0);
+            std::array<uint32_t, 3> minInner;
+            minInner.fill(static_cast<uint32_t>(-1));
+            for (size_t l=0; l<8; ++l){
+                auto subbox = topSubbox.subbox(l);
+                maxInner = max(maxInner, maxTop);
+                minInner = min(maxInner, minTop);
+                for(size_t j=0; j<8; ++j){
+                    for (size_t k=0; k<3; ++k){
+                        allVals.insert(subbox[j].at_level(3)[k]);
+                        const auto boxStep = std::abs(
+                            static_cast<int32_t>(subbox[j].at_level(3)[k])-
+                            static_cast<int32_t>(subbox[(j+1)%8].at_level(3)[k])
+                        );
+                        retVal += ASSERT_BOOL(boxStep == 2 || boxStep == 0); 
+                    }
+                }
+            }
+            retVal += ASSERT_BOOL(maxInner == maxTop);
+            retVal += ASSERT_BOOL(minInner == minTop);
+        }
+        retVal += ASSERT_BOOL(allVals.size() == 5);
+        for(size_t i : {0, 2, 4, 6, 8}){
+            retVal += ASSERT_BOOL(allVals.contains(i));
+        }
+    }
     return retVal;
 }
 

@@ -68,6 +68,14 @@ public:
     const equi_tensor<T, D, N>& coeffs() const{
         return m_coeff;
     }
+    /**
+     * \brief Add another polynomial.
+     */
+    const polynomial<T, N, D>& operator+=(const polynomial<T, N, D>& other){
+        m_coeff += other.m_coeff;
+        polynomial<T, N, D-1>::operator+=(other);
+        return *this;
+    }
 };
 
 template<typename T, size_t N>
@@ -99,6 +107,11 @@ public:
     }
     const matrix<T, N, N>& coeffs() const{
         return m_coeff;
+    }
+    const polynomial<T, N, 2>& operator+=(const polynomial<T, N, 2>& other){
+        m_coeff += other.m_coeff;
+        polynomial<T, N, 1>::operator+=(other);
+        return *this;
     }
 };
 
@@ -132,6 +145,11 @@ public:
     const vector<T, N>& coeffs() const{
         return m_coeff;
     }
+    const polynomial<T, N, 1>& operator+=(const polynomial<T, N, 1>& other){
+        m_coeff += other.m_coeff;
+        polynomial<T, N, 0>::operator+=(other);
+        return *this;
+    }
 };
 
 template<typename T, size_t N>
@@ -163,6 +181,10 @@ public:
     }
     const T& coeffs() const {
         return m_coeff;
+    }
+    const polynomial<T, N, 0>& operator+=(const polynomial<T, N, 0>& other){
+        m_coeff += other.m_coeff;
+        return *this;
     }
 };
 }

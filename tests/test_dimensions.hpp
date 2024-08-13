@@ -1,6 +1,7 @@
 
 #include "base/dimensions.hpp"
 #include "base/tools.hpp"
+#include "base/index.hpp"
 
 int test_dimensions_sub2ind(){
     std::cout << "Test dimensions sub2ind" << std::endl;

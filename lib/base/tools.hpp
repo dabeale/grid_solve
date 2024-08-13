@@ -74,6 +74,31 @@ size_t factorial(){
         return factorial<N-1>()*N;
     }
 }
+
+template<size_t N, typename T> 
+/**
+ * \brief Add two arrays
+ */
+std::array<T, N> operator+(std::array<T, N> a, const std::array<T, N>& b){
+    for (size_t i=0; i<N; ++i){ a[i] += b[i]; }
+    return a;
+}
+template<size_t N, typename T> 
+/**
+ * \brief Max of two arrays.
+ */
+std::array<T, N> max(std::array<T, N> a, const std::array<T, N>& b){
+    for (size_t i=0; i<N; ++i){ a[i] = std::max(a[i], b[i]); }
+    return a;
+}
+template<size_t N, typename T> 
+/**
+ * \brief Min of two arrays.
+ */
+std::array<T, N> min(std::array<T, N> a, const std::array<T, N>& b){
+    for (size_t i=0; i<N; ++i){ a[i] = std::min(a[i], b[i]); }
+    return a;
+}
 }
 
 #endif

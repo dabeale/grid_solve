@@ -11,7 +11,7 @@
 
 namespace gs {
 template<int N, typename T=uint32_t>
-requires std::is_integral<T>::value
+requires std::is_integral<T>::value && std::is_unsigned<T>::value
 /**
  * \brief A box (hypercube) in the grid.
  * 
@@ -74,9 +74,40 @@ public:
 
     /**
      * \brief A subbox after binary subdivision.
+     * 
+     * The input index is the index of the nth subbox. It
+     * cannot be higher that the number of corners.
      */
     box<N,T> subbox(const T ind) const{
-        return box<N,T>(m_dimensions, m_level + 1, ind);
+        return box<N,T>(
+            m_dimensions,
+            m_level + 1,
+            // Find the index of the box in coordinate system of the
+            // next level up. Reduce the dimensions first to ensure
+            // that they are box dimensions rather than point dimensions.
+            m_dimensions.reduce().sub2ind((
+                    // Find the lowest corner of the current box in 
+                    // next level up coordinates
+                    std::array<T, N>(m_corners[0].at_level(m_level+1)) +
+                    // Add the unitary offset in each direction
+                    m_dimensions.ind2sub(ind % m_nCorners)
+                ),
+                m_level + 1
+            )
+        );
+    }
+
+    /**
+     * \brief Print the box at the specified level.
+     * 
+     * This method is for testing purposes, to allow one to
+     * see the vertices of the box at the lowest level.
+     */
+    void print(const T level){
+        for (T i=0; i<m_nCorners; ++i){
+            std::cout << m_corners[i].at_level(level) << " ";
+        }
+        std::cout << std::endl;
     }
 
     /**
@@ -104,6 +135,30 @@ public:
             }
          }
          return innerPoints;
+    }
+
+    /**
+     * \brief Find the maximum indexes in each dimension.
+     */
+    std::array<T, N> max() const {
+        std::array<T, N> maxArr;
+        maxArr.fill(0);
+        for(size_t i=0; i<m_nCorners; ++i){
+            maxArr = gs::max(static_cast<std::array<T, N>>(m_corners[i]), maxArr);
+        }
+        return maxArr;
+    }
+
+    /**
+     * \brief Find the minimum indexes in each dimension.
+     */
+    std::array<T, N> min() const {
+        std::array<T, N> minArr;
+        minArr.fill(static_cast<T>(-1));
+        for(size_t i=0; i<m_nCorners; ++i){
+            minArr = gs::min(static_cast<std::array<T, N>>(m_corners[i]), minArr);
+        }
+        return minArr;
     }
 
     const auto& operator[](const T i) const{return m_corners[i];} ///< Access the ith corner of the box
