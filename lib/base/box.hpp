@@ -35,7 +35,9 @@ public:
     static constexpr T m_nCorners = pow<2,N>();   ///< The number of corners.
     static constexpr T m_nSubPoints = pow<3,N>(); ///< The number of subpoints.
 
-    box(const dimensions<N,T> inDims, const T level, const T offset=0): m_level(level), m_dimensions(inDims) {
+    box(const dimensions<N,T> inDims, const T level, const T offset=0):
+        m_level(level), m_dimensions(inDims)
+    {
         // There are 1 fewer boxes than points in each dimension
         const dimensions<N,T> reducedDims = inDims.reduce();
         // Create the start corner
@@ -85,7 +87,8 @@ public:
             // Find the index of the box in coordinate system of the
             // next level up. Reduce the dimensions first to ensure
             // that they are box dimensions rather than point dimensions.
-            m_dimensions.reduce().sub2ind((
+            m_dimensions.reduce().sub2ind(
+                (
                     // Find the lowest corner of the current box in 
                     // next level up coordinates
                     std::array<T, N>(m_corners[0].at_level(m_level+1)) +
@@ -95,6 +98,71 @@ public:
                 m_level + 1
             )
         );
+    }
+
+    /**
+     * \brief Find the neighbour box with the specified index.
+     * 
+     * This method enumerates all of the boxes within the parent
+     * box, not all boxes at the current layer, unless we are at
+     * layer 0 - for which there is no parent box. The number of
+     * neighbours is thus fixed at each layer apart from layer 0.
+     * To get the number of neighbours use the n_nbrs method.
+     */
+    box<N,T> neighbour(const T ind) const {
+        if (m_level > 0){
+            return box<N,T>(
+                m_dimensions,
+                m_level,
+                m_dimensions.reduce().sub2ind(
+                    (
+                        // Find the top corner after stripping the index in
+                        // parent offset.
+                        std::array<T, N>(m_corners[0].at_level(m_level-1).at_level(m_level)) +
+                        // Add the new offset determined by ind
+                        m_dimensions.ind2sub(ind % m_nCorners)
+                    ),
+                    m_level
+                )
+            );
+        }
+        else {
+            return box<N,T>(m_dimensions, m_level, ind);
+        }
+    }
+
+    /**
+     * \brief Return the total number of neighbours of the box.
+     * 
+     * This method returns the total number of neighbours within
+     * the parent box - not all of the adjacent neighbours. It is
+     * designed to be used in a depth first tree search, in which
+     * we only care about the parent and its leaves. Each of the leaves
+     * are neighbours in this scenario.
+     */
+    T n_nbrs() const{
+        return (
+            m_level == 0 ?
+            m_dimensions.max_ind(0) : box<N,T>::m_nCorners
+        );
+    }
+
+    /**
+     * \brief Find the index of the box within it's
+     * parent.
+     */
+    T index_in_parent() const{
+        std::array<T,N> remainderIndex(m_corners[0].at_level(m_level));
+        // Find the remainder of division by 2 
+        // Division gives the index in the level up, and the
+        // remainder is the position within the box. If we are
+        // already at the lowest level then there is no need.
+        if ( m_level > 0 ) {
+            for(size_t i=0; i<N; ++i){
+                remainderIndex[i] %= 2;
+            }
+        }
+        return m_dimensions.sub2ind(remainderIndex);
     }
 
     /**

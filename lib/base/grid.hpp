@@ -9,6 +9,7 @@
 #include "base/index.hpp"
 #include "base/concepts.hpp"
 #include "base/pattern.hpp"
+#include "base/box_stack_iterator.hpp"
 
 namespace gs{
 template<int N, class GridElement, class BoxElement, class S=uint32_t>
@@ -111,6 +112,32 @@ public:
     }
 
     /**
+     * \brief Access the box storage using a box
+     */
+    const BoxElement& operator[] (const box<N,S>& boxVal) const{
+        return m_boxStorage[
+            boxVal.get_level()
+        ][
+            m_dimensions.reduce().sub2ind(
+                boxVal[0], boxVal.get_level()
+            )
+        ];
+    }
+
+    /**
+     * \brief Access the box storage using a box
+     */
+    BoxElement& operator[] (const box<N,S>& boxVal){
+        return m_boxStorage[
+            boxVal.get_level()
+        ][
+            m_dimensions.reduce().sub2ind(
+                boxVal[0], boxVal.get_level()
+            )
+        ];
+    }
+
+    /**
      * \brief Get the corner values of the box in terms of
      * the grid storage object.
      */
@@ -184,6 +211,19 @@ public:
                 default:
                     break;
             }
+        }
+    }
+
+    template<class F>
+    requires std::invocable<F&, const box_stack<N,S>&>
+    /**
+     * \brief Iterate over every box at the lowest level, providing the
+     * full stack of boxes at every iteration.
+     */
+    void iterate(const F& callable){
+        const auto pastEndIt = box_stack_iterator<N, S>(m_dimensions, true);
+        for(auto boxIt = box_stack_iterator<N, S>(m_dimensions); boxIt != pastEndIt; ++boxIt){
+            callable(*boxIt);
         }
     }
 };

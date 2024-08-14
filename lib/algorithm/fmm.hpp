@@ -4,15 +4,17 @@
 
 #include "base/pattern.hpp"
 #include "base/grid.hpp"
+#include "base/box_stack_iterator.hpp"
 #include "math/polynomial.hpp"
 
 namespace gs {
 
-template<int N, typename T, class FTraversal, class FBoxWeight,class GridElement,class BoxElement>
+template<int N, typename T, class FTraversal, class FBoxWeight, class GridElement, class BoxElement>
 requires (
     std::is_integral<T>::value &&
-    std::invocable<FTraversal&, const box<N, T>&, const BoxElement&, grid<N, GridElement, BoxElement, T>&> &&
-    std::invocable<FBoxWeight&, const box<N, T>&, BoxElement&, const grid<N, GridElement, BoxElement, T>&>
+    std::invocable<FTraversal&, const box_stack<N,T>&, grid<N, GridElement, BoxElement, T>&> &&
+    std::invocable<FBoxWeight&, const box_stack<N,T>&, grid<N, GridElement, BoxElement, T>&> &&
+    (N > 0)
 )
 /**
  * \brief The Fast Multipole Method.
@@ -44,7 +46,7 @@ requires (
  */
 class fmm {
     grid<N, GridElement, BoxElement, T> m_grid; ///< The underlying grid.
-    FTraversal m_fineTraversalFunc; ///< The traversal function for the fines level
+    FTraversal m_fineTraversalFunc; ///< The traversal function for the finest level
     FBoxWeight m_boxWeightFunc; ///< The box weight function.
 
 public:
@@ -65,26 +67,9 @@ public:
      * to get the multipoles. In the fine-to-coarse traversal, the weights
      * to each of the boxes are computed and stored.
      */
-    void compute(const T nIters=1){
-        for (T it = 0; it < nIters; ++it){
-            m_grid.iterate(
-                [&](box<N, T>& box, BoxElement& element, const PatternComponent pattern) {
-                    switch (pattern) {
-                        case PARSE_FINEST:
-                            // Depth first at the finest nodes.
-                            m_fineTraversalFunc(box, element, m_grid);
-                            break;
-                        case FINE_TO_COARSE:
-                            // Compute the box weights
-                            m_boxWeightFunc(box, element, m_grid);
-                            break;
-                        default:
-                            break;
-                    }
-                },
-                {FINE_TO_COARSE, PARSE_FINEST}
-            );
-        }
+    void compute(){
+        m_grid.iterate([&](const box_stack<N,T>& boxElement){m_boxWeightFunc(boxElement, m_grid);});
+        m_grid.iterate([&](const box_stack<N,T>& boxElement){m_fineTraversalFunc(boxElement, m_grid);});
     }
 
     size_t grid_size() const{return m_grid.size();} ///< Get the number of vertices in the grid

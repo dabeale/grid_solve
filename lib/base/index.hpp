@@ -54,9 +54,14 @@ public:
      * preserved in the grid.
      */
     void set_level(const T level){
-        T mult = (1 << (level - m_level));
-        for (auto& pt : m_indices){
-            pt = pt * mult;
+        if(m_level < level){
+            T mult = (1 << (level - m_level));
+            for (auto& pt : m_indices) pt *= mult;
+           
+        }
+        else if (m_level > level){
+            T divisor = (1 << (m_level - level));
+            for (auto& pt : m_indices) pt /= divisor;
         }
         m_level = level;
     }
@@ -65,6 +70,9 @@ public:
      * \brief Create a new index of specified level and return it.
      */
     index<N, T> at_level(const T level) const {
+        if(level == m_level){
+            return *this;
+        }
         index<N, T> newIndex(*this);
         newIndex.set_level(level);
         return newIndex;
