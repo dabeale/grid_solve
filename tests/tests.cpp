@@ -12,9 +12,10 @@ int main(int args, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
     error += testq_fmm_exp2_1d();
+    error += test_subbox();
+    error += test_dimensions_sub2ind();
     error += test_box_subpoints();
     error += test_box();
-    error += test_subbox();
     error += test_grid();
     error += test_dimensions_sub2ind_simple();
     error += test_taylor_coefficients_inner();
@@ -27,7 +28,6 @@ int main(int args, char* argv[]){
     error += test_polynomial();
     error += test_index_call();
     error += test_index_subscript();
-    error += test_dimensions_sub2ind();
     error += test_dimensions_sub2ind_inversion();
     if (error){
         std::cout << error << " tests failed" << std::endl;

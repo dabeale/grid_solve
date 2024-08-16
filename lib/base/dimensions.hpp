@@ -26,6 +26,11 @@ requires std::is_integral<T>::value && (N > 0)
  * {1,2} specify a rectangle of length 2 and width 1. At level 2, the dimensions
  * are {2,4} and so on. 
  * 
+ * Nota Bene: The number of boxes doubles on each iteration, and there 
+ * are 1 more points in each dimension than boxes. The dimensions class
+ * is able to index both boxes and points, using the point parameter
+ * on each method. If it is true then it uses grid locations.
+ * 
  * The template parameters,
  *      N - The number of dimensions of the box
  *      T - The integral type.
@@ -43,30 +48,46 @@ public:
 
     /**
      * \brief Get the dimensions at the specified level.
+     * 
+     * The dimensions at the ith level form a difference equation,
+     * $d_{i+1} = 2d_i - 1$, which can be solved since it is linear.
+     * 
+     * An exception is made when the dimensions equal one, since the
+     * difference equation does not hold. The dimension becomes 2 at the
+     * first level in this case.
      */
-    std::array<T, N> level_dims(const T level) const {
+    std::array<T, N> level_dims(const T level, const bool point=true) const {
         std::array<T, N> levelDims;
-        for (T i=0; i<N; ++i){
-            levelDims[i] = m_dimensions[i]*(1 << level);
+        if(point) {
+            // The dimensions for the point grid
+            for (T i=0; i<N; ++i){
+                T dimension = m_dimensions[i];
+                T levelToUse = level;
+                if (m_dimensions[i] == 1){
+                    switch(level){
+                        case 0:
+                            break;
+                        case 1:
+                            // Make sure that the new dimension is 2
+                            dimension=2;
+                            levelToUse=0;
+                            break;
+                        default:
+                            // Revert to normal behaviour.
+                            dimension=2;
+                            levelToUse=level-1;
+                    }
+                }
+                levelDims[i] = (dimension-1)*(1 << levelToUse) + 1;
+            }
+        }
+        else {
+            // The dimensions of each of the boxes (1 less in each dimension)
+            for (T i=0; i<N; ++i){
+                levelDims[i] = (m_dimensions[i]-1)*( 1 << level );
+            }
         }
         return levelDims;
-    }
-
-    /**
-     * \brief Return a dimensions object which is reduced by
-     * one in every dimension.
-     * 
-     * Using this method allows easy conversion between indices for
-     * boxes and indices for points. In the former case there is
-     * one fewer coordinate in each dimension. For example, 
-     * a 3 by 3 grid, has 2 by 2 boxes.
-     */
-    dimensions<N,T> reduce() const {
-        dimensions<N,T> ret(*this);
-        for (T i=0; i<N; ++i){
-            ret.m_dimensions[i] = (m_dimensions[i] > 1) ? (m_dimensions[i] - 1) : 1;
-        }
-        return ret;
     }
 
     /**
@@ -79,8 +100,8 @@ public:
     /**
      * \brief Get the maximum index at the specified level.
      */
-    T max_ind(const T level) const {
-        const std::array<T, N> levelDims = dimensions<N,T>::level_dims(level);
+    T max_ind(const T level, const bool point=true) const {
+        const std::array<T, N> levelDims = dimensions<N,T>::level_dims(level, point);
         T total = 1;
         for (const auto dim : levelDims){
             total *= dim;
@@ -91,9 +112,9 @@ public:
     /**
      * \brief Get the grid dimensions from an index, at the specified level.
      */
-    std::array<T, N> ind2sub(const T ind, const T level=0) const {
+    std::array<T, N> ind2sub(const T ind, const T level=0, const bool point=true) const {
         T coef = 1;
-        auto levelDims = dimensions<N,T>::level_dims(level);
+        auto levelDims = dimensions<N,T>::level_dims(level, point);
         // Get the index at the specified level.
         std::array<T, N> indices;
         for (T i = 1; i <= N; ++i){
@@ -106,8 +127,8 @@ public:
     /**
      * \brief Get a one dimensional index representation, at the specified level.
      */
-    T sub2ind(const std::array<T, N>& indices, const T level=0) const {
-        const auto levelDims = dimensions<N,T>::level_dims(level);
+    T sub2ind(const std::array<T, N>& indices, const T level=0, const bool point=true) const {
+        const auto levelDims = dimensions<N,T>::level_dims(level, point);
         T retInd = indices[N-1];
         T coef = levelDims[N-1];
         for (T i=2; i<=N; ++i){

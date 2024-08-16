@@ -38,10 +38,9 @@ public:
     box(const dimensions<N,T> inDims, const T level, const T offset=0):
         m_level(level), m_dimensions(inDims)
     {
-        // There are 1 fewer boxes than points in each dimension
-        const dimensions<N,T> reducedDims = inDims.reduce();
-        // Create the start corner
-        const index<N,T> offsetIndex(reducedDims.ind2sub(offset, level), level);
+        // There are 1 fewer boxes than points in each dimension so
+        // we use box dimensions. Create the start corner point.
+        const index<N,T> offsetIndex(m_dimensions.ind2sub(offset, level, false), level);
         // Add each of the corners a distance of 1 from the offset.
         for (T i = 0; i < m_nCorners; ++i){
             m_corners[i] = index<N,T>(inDims.ind2sub(i), level) + offsetIndex;
@@ -85,9 +84,8 @@ public:
             m_dimensions,
             m_level + 1,
             // Find the index of the box in coordinate system of the
-            // next level up. Reduce the dimensions first to ensure
-            // that they are box dimensions rather than point dimensions.
-            m_dimensions.reduce().sub2ind(
+            // next level up.
+            m_dimensions.sub2ind(
                 (
                     // Find the lowest corner of the current box in 
                     // next level up coordinates
@@ -95,7 +93,8 @@ public:
                     // Add the unitary offset in each direction
                     m_dimensions.ind2sub(ind % m_nCorners)
                 ),
-                m_level + 1
+                m_level + 1,
+                false // Use box dimensions rather than points
             )
         );
     }
@@ -114,7 +113,7 @@ public:
             return box<N,T>(
                 m_dimensions,
                 m_level,
-                m_dimensions.reduce().sub2ind(
+                m_dimensions.sub2ind(
                     (
                         // Find the top corner after stripping the index in
                         // parent offset.
@@ -122,7 +121,8 @@ public:
                         // Add the new offset determined by ind
                         m_dimensions.ind2sub(ind % m_nCorners)
                     ),
-                    m_level
+                    m_level,
+                    false // Use box dimensions rather than points
                 )
             );
         }
@@ -171,7 +171,7 @@ public:
      * This method is for testing purposes, to allow one to
      * see the vertices of the box at the lowest level.
      */
-    void print(const T level){
+    void print(const T level) const{
         for (T i=0; i<m_nCorners; ++i){
             std::cout << m_corners[i].at_level(level) << " ";
         }

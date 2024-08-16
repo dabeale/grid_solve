@@ -32,7 +32,9 @@ requires std::is_integral<T>::value && std::is_unsigned<T>::value && (N > 0)
 class box_stack_iterator {
     dimensions<N,T> m_dimensions;   ///< The dimensions of the grid
     box_stack<N,T> m_stack;         ///< The stack of boxes
-    std::array<T, N> m_counts;      ///< The count
+    std::vector<T> m_counts;        ///< The counts
+    T m_maxLevel;                   ///< The maximum level
+
 
     /**
      * \brief Increment the counts by one.
@@ -40,14 +42,17 @@ class box_stack_iterator {
      * Return the first index in the array which has changed
      * its value.
      */
-    bool increment_counts(){
-        T firstChangedIndex = N-1;
-        ++m_counts[N-1];
-        for (size_t i=1; i<N; ++i){
-            if( m_counts[N-i] == m_nSubBoxes){
-                m_counts[N-1]=0;
-                firstChangedIndex = N-i-1;
+    T increment_counts(){
+        T firstChangedIndex = m_maxLevel-1;
+        ++m_counts[firstChangedIndex];
+        for (size_t i=1; i<m_maxLevel; ++i){
+            if( m_counts[m_maxLevel-i] == m_nSubBoxes){
+                m_counts[m_maxLevel-i]=0;
+                firstChangedIndex = m_maxLevel-i-1;
                 ++m_counts[firstChangedIndex];
+            }
+            else{
+                break;
             }
         }
         if(m_counts[0] > m_nSubBoxes){
@@ -57,19 +62,20 @@ class box_stack_iterator {
         return firstChangedIndex;
     }
 public:
-    static constexpr size_t m_nSubBoxes = pow<2,N-1>(); ///< The number of subboxes
+    static constexpr size_t m_nSubBoxes = pow<2,N>(); ///< The number of subboxes
 
     box_stack_iterator(const dimensions<N,T>& dims, const bool past_end=false):
-        m_dimensions(dims)
+        m_dimensions(dims),
+        m_counts(dims.max_level(), 0),
+        m_maxLevel(dims.max_level())
     {
         const T start_offset=0;
-        m_counts.fill(0);
         if(past_end){
             m_counts[0]=m_nSubBoxes;
         } 
         else {
-            m_stack.reserve(dims.max_level());
-            for(size_t level=0; level<dims.max_level(); ++level){
+            m_stack.reserve(m_maxLevel);
+            for(size_t level=0; level<m_maxLevel; ++level){
                 m_stack.push_back(
                     box<N,T>(m_dimensions, level, start_offset)
                 );
@@ -83,9 +89,14 @@ public:
      */
     box_stack_iterator<N,T>& operator++(){
         T firstChangedIndex = increment_counts();
-        if(firstChangedIndex > 0){
-            for(size_t i=firstChangedIndex; i<N; ++i){
-                m_stack[i] = m_stack[i-1].subbox(m_counts[i]);
+        if(m_counts[0] < m_nSubBoxes){
+            for(size_t i=firstChangedIndex; i<m_maxLevel; ++i){
+                if ( i == 0 ){
+                    m_stack[i] = box<N, T>(m_dimensions, 0, m_counts[i]);
+                } 
+                else {
+                    m_stack[i] = m_stack[i-1].subbox(m_counts[i]);
+                }
             }
         }
         else {
@@ -115,7 +126,7 @@ public:
      * \brief Partial ordering for the iterator.
      */
     std::partial_ordering operator<=>(const box_stack_iterator<N,T>& other) const {
-        for(size_t i=0; i<N; ++i){
+        for(size_t i=0; i<m_maxLevel; ++i){
             if(m_counts[i] < other.m_counts[i]){
                 return std::partial_ordering::less;
             }

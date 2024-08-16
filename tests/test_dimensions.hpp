@@ -11,8 +11,8 @@ int test_dimensions_sub2ind(){
     retVal += ASSERT_BOOL(dims.sub2ind({0,1,0}, 0) == 5);
     retVal += ASSERT_BOOL(dims.sub2ind({1,0,0}, 0) == 20);
     retVal += ASSERT_BOOL(dims.sub2ind({0,0,1}, 1) == 1);
-    retVal += ASSERT_BOOL(dims.sub2ind({0,1,0}, 1) == 10);
-    retVal += ASSERT_BOOL(dims.sub2ind({1,0,0}, 1) == 80);
+    retVal += ASSERT_BOOL(dims.sub2ind({0,1,0}, 1) == 9);
+    retVal += ASSERT_BOOL(dims.sub2ind({1,0,0}, 1) == 63);
     return retVal;
 }
 

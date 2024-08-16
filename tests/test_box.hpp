@@ -34,7 +34,7 @@ int test_box(){
 int test_subbox(){
     std::cout << "Test subbox" << std::endl;
     int retVal = 0;
-    gs::box<3> testBox(gs::dimensions<3>({2,2,2}, 2), 0);
+    gs::box<3> testBox(gs::dimensions<3>({2,2,2}, 3), 0);
     // Test first level subboxes
     {
         auto subbox = testBox.subbox(0);

@@ -11,6 +11,7 @@
 
 namespace gs {
 template<typename T, size_t M, size_t D>
+requires std::is_floating_point<T>::value
 /**
  * \brief An estimate of the exp_squared function.
  * 

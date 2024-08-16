@@ -45,13 +45,13 @@ class grid {
 public:
     grid() = delete;
     grid(const dimensions<N, S> dimensions):
-        m_gridStorage(dimensions.max_ind(dimensions.max_level())),
-        m_boxStorage(dimensions.max_level()+1),
+        m_gridStorage(dimensions.max_ind(dimensions.max_level()-1)),
+        m_boxStorage(dimensions.max_level()),
         m_dimensions(dimensions)
     {
         S i=0;
         for(auto& boxStore : m_boxStorage){
-            boxStore.resize(dimensions.reduce().max_ind(i++));
+            boxStore.resize(dimensions.max_ind(i++, false));
         }
     }
 
@@ -91,11 +91,12 @@ public:
      * \brief Access the grid storage using an index.
      */
     GridElement& operator[](const index<N, S>& index) {
+        S ind = m_dimensions.sub2ind(
+            index.at_level(m_dimensions.max_level()-1),
+            m_dimensions.max_level()-1
+        );
         return operator[](
-            m_dimensions.sub2ind(
-                index.at_level(m_dimensions.max_level()),
-                m_dimensions.max_level()
-            )
+            ind
         );
     }
 
@@ -105,8 +106,8 @@ public:
     const GridElement& operator[] (const index<N, S>& index) const {
         return operator[](
             m_dimensions.sub2ind(
-                index.at_level(m_dimensions.max_level()),
-                m_dimensions.max_level()
+                index.at_level(m_dimensions.max_level()-1),
+                m_dimensions.max_level()-1
             )
         );
     }
@@ -131,8 +132,8 @@ public:
         return m_boxStorage[
             boxVal.get_level()
         ][
-            m_dimensions.reduce().sub2ind(
-                boxVal[0], boxVal.get_level()
+            m_dimensions.sub2ind(
+                boxVal[0], boxVal.get_level(), false
             )
         ];
     }
@@ -164,7 +165,7 @@ public:
         const F& callable,
         const S level
     ){
-        const S max_ind = m_dimensions.reduce().max_ind(level);
+        const S max_ind = m_dimensions.max_ind(level, false);
         for(S i=0; i<max_ind; ++i){
             box<N, S> box(m_dimensions, level, i);
             callable(box, m_boxStorage[level][i]);
@@ -184,7 +185,7 @@ public:
         for(const auto pattern : pattern){
             switch(pattern){
                 case COARSE_TO_FINE:
-                    for(S i = 0; i <= max_level; ++i){
+                    for(S i = 0; i < max_level; ++i){
                         grid<N,GridElement,BoxElement,S>::iterate(
                             [&](box<N,S>& box, BoxElement& element){
                                 callable(box, element, pattern);
@@ -193,7 +194,7 @@ public:
                     }
                     break;
                 case FINE_TO_COARSE:
-                    for(S i = 0; i <= max_level; ++i){
+                    for(S i = 1; i <= max_level; ++i){
                         grid<N,GridElement,BoxElement,S>::iterate(
                             [&](box<N,S>& box, BoxElement& element){
                                 callable(box, element, pattern);

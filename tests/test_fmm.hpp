@@ -24,12 +24,10 @@ int testq_fmm_exp2_1d(){
         gs::exp_squared_est<double, nDims, nDegree>(sigma)
     );
 
-    // The grid size is the size of the maximum index at the maximum level
-    // At level zero there are 2 points, and so at level 10 there are 2^11.
-    const size_t size = gs::pow<2,11>();
+    const size_t size = gs::pow<2,9>() + 1;
     std::vector<double> inputVec(size, 0.0);
-    for(size_t i=0; i<60; ++i)
-        inputVec[970+i] = 1.0;
+    for(size_t i=0; i<10; ++i)
+        inputVec[250+i] = 1.0;
     analyticMult.initialise(inputVec);
 
     // Compute the solution
@@ -38,7 +36,7 @@ int testq_fmm_exp2_1d(){
     // Get output
     auto output = analyticMult.output();
 
-    retVal += ASSERT_BOOL(output[501] > 0);
+    retVal += ASSERT_BOOL(output[255] > 0);
     for(const auto v :analyticMult.output()){
         retVal += ASSERT_BOOL(!std::isnan(v) && !std::isinf(v) );
     }
