@@ -53,15 +53,37 @@ public:
      * Changing the level will ensure that the index is properly
      * preserved in the grid.
      */
-    void set_level(const T level){
-        if(m_level < level){
-            T mult = (1 << (level - m_level));
-            for (auto& pt : m_indices) pt *= mult;
-           
+    void set_level(const T level, const bool duel=false){
+        T coef(1 << ((level > m_level) ? level - m_level : m_level - level));
+        if(duel){
+            if(m_level < level){
+                for (auto& pt : m_indices){
+                    if (pt % 2 == 0){
+                        pt *= coef;
+                    }
+                    else {
+                        pt = (1+pt)*coef - 1;
+                    }
+                }
+            }
+            else if (m_level > level){
+                for (auto& pt : m_indices){
+                    if (pt % 2 == 0){
+                        pt /= coef;
+                    }
+                    else {
+                        pt = (1+pt)/coef - 1;
+                    }
+                }
+            }
         }
-        else if (m_level > level){
-            T divisor = (1 << (m_level - level));
-            for (auto& pt : m_indices) pt /= divisor;
+        else {
+            if(m_level < level){
+                for (auto& pt : m_indices) pt *= coef;
+            }
+            else if (m_level > level){
+                for (auto& pt : m_indices) pt /= coef;
+            }
         }
         m_level = level;
     }
@@ -69,12 +91,12 @@ public:
     /**
      * \brief Create a new index of specified level and return it.
      */
-    index<N, T> at_level(const T level) const {
+    index<N, T> at_level(const T level, const bool duel = false) const {
         if(level == m_level){
             return *this;
         }
         index<N, T> newIndex(*this);
-        newIndex.set_level(level);
+        newIndex.set_level(level, duel);
         return newIndex;
     }
 

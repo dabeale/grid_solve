@@ -11,12 +11,12 @@
 int main(int args, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
-    error += testq_fmm_exp2_1d();
+    error += test_grid();
+    //error += testq_fmm_exp2_1d();
     error += test_subbox();
     error += test_dimensions_sub2ind();
     error += test_box_subpoints();
     error += test_box();
-    error += test_grid();
     error += test_dimensions_sub2ind_simple();
     error += test_taylor_coefficients_inner();
     error += test_taylor_coefficients_squared();

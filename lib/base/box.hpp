@@ -40,10 +40,10 @@ public:
     {
         // There are 1 fewer boxes than points in each dimension so
         // we use box dimensions. Create the start corner point.
-        const index<N,T> offsetIndex(m_dimensions.ind2sub(offset, level, false), level);
+        const index<N,T> offsetIndex(m_dimensions.ind2sub(offset, level, true), level);
         // Add each of the corners a distance of 1 from the offset.
         for (T i = 0; i < m_nCorners; ++i){
-            m_corners[i] = index<N,T>(inDims.ind2sub(i), level) + offsetIndex;
+            m_corners[i] = index<N,T>(m_dimensions.unitary(i), level) + offsetIndex;
         }
     }
     box(const dimensions<N,T> dimensions, const std::array<index<N, T>, m_nCorners> corners, const T level):
@@ -74,6 +74,32 @@ public:
     }
 
     /**
+     * \brief Check whether the given index is (inclusively) inside the box.
+     * 
+     * The the index is on the edge of corners then the method will
+     * true.
+     */
+    bool is_inside(index<N,T> ind) const{
+        box<N, T> levelBox(*this);
+        if(ind.get_level() < m_level){
+            ind.set_level(m_level);
+        }
+        else if (ind.get_level() > m_level){
+            for (size_t i=0; i<m_nCorners; ++i){
+                levelBox.m_corners[i].set_level(ind.get_level());
+            }
+        }
+        auto maxInd = levelBox.max();
+        auto minInd = levelBox.min();
+        for (size_t i=0; i<N; ++i){
+            if (ind[i] < minInd[i] || ind[i] > maxInd[i]){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
      * \brief A subbox after binary subdivision.
      * 
      * The input index is the index of the nth subbox. It
@@ -91,10 +117,10 @@ public:
                     // next level up coordinates
                     std::array<T, N>(m_corners[0].at_level(m_level+1)) +
                     // Add the unitary offset in each direction
-                    m_dimensions.ind2sub(ind % m_nCorners)
+                    m_dimensions.unitary(ind)
                 ),
                 m_level + 1,
-                false // Use box dimensions rather than points
+                true // Use box dimensions rather than points
             )
         );
     }
@@ -112,19 +138,9 @@ public:
         if (m_level > 0){
             return box<N,T>(
                 m_dimensions,
-                m_level,
-                m_dimensions.sub2ind(
-                    (
-                        // Find the top corner after stripping the index in
-                        // parent offset.
-                        std::array<T, N>(m_corners[0].at_level(m_level-1).at_level(m_level)) +
-                        // Add the new offset determined by ind
-                        m_dimensions.ind2sub(ind % m_nCorners)
-                    ),
-                    m_level,
-                    false // Use box dimensions rather than points
-                )
-            );
+                m_level-1,
+                m_dimensions.sub2ind(m_corners[0].at_level(m_level-1), m_level-1, true)
+            ).subbox(ind);
         }
         else {
             return box<N,T>(m_dimensions, m_level, ind);

@@ -54,7 +54,7 @@ public:
         const vector<T, M>& center,
         const vector<T,M>& y
     ) const{
-        return m_taylor.estimate(poly, center, y);
+        return m_taylor.estimate(poly, vector<T,M>(), y-center);
     }
 
     template<size_t K>
@@ -74,8 +74,8 @@ public:
     ) const {
         polynomial<T, M, D> poly;
         for(size_t i=0; i<K; ++i){
-            vectorVals[i] -= center;
             tVals[i] *= operator()(vectorVals[i],center);
+            vectorVals[i] -= center;
         }
         poly.fill(vectorVals, tVals);
         return poly;

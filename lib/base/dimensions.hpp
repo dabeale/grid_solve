@@ -6,6 +6,7 @@
 #include <inttypes.h>
 #include <array>
 
+#include "base/tools.hpp"
 #include "base/concepts.hpp"
 
 namespace gs {
@@ -56,9 +57,9 @@ public:
      * difference equation does not hold. The dimension becomes 2 at the
      * first level in this case.
      */
-    std::array<T, N> level_dims(const T level, const bool point=true) const {
+    std::array<T, N> level_dims(const T level, const bool duel=false) const {
         std::array<T, N> levelDims;
-        if(point) {
+        if(!duel) {
             // The dimensions for the point grid
             for (T i=0; i<N; ++i){
                 T dimension = m_dimensions[i];
@@ -91,6 +92,22 @@ public:
     }
 
     /**
+     * \brief Return a vector in which each element is no greater than
+     * size, to indicate the direction of the numeric index.
+     */
+    std::array<T, N> unitary(T ind, T size=1) const{
+        ind %= pow<2,N>();
+        std::array<T, N> unit;
+        unit.fill(0);
+        T coef = 1;
+        for (T i = 1; i <= N; ++i){
+            unit[N-i] = ((ind / coef) % 2)*size;
+            coef *= 2;
+        }
+        return unit;
+    }
+
+    /**
      * \brief Get the maximum level.
      */
     T max_level() const {
@@ -100,8 +117,8 @@ public:
     /**
      * \brief Get the maximum index at the specified level.
      */
-    T max_ind(const T level, const bool point=true) const {
-        const std::array<T, N> levelDims = dimensions<N,T>::level_dims(level, point);
+    T max_ind(const T level, const bool duel=false) const {
+        const std::array<T, N> levelDims = dimensions<N,T>::level_dims(level, duel);
         T total = 1;
         for (const auto dim : levelDims){
             total *= dim;
@@ -112,9 +129,9 @@ public:
     /**
      * \brief Get the grid dimensions from an index, at the specified level.
      */
-    std::array<T, N> ind2sub(const T ind, const T level=0, const bool point=true) const {
+    std::array<T, N> ind2sub(const T ind, const T level=0, const bool duel=false) const {
         T coef = 1;
-        auto levelDims = dimensions<N,T>::level_dims(level, point);
+        auto levelDims = dimensions<N,T>::level_dims(level, duel);
         // Get the index at the specified level.
         std::array<T, N> indices;
         for (T i = 1; i <= N; ++i){
@@ -127,8 +144,8 @@ public:
     /**
      * \brief Get a one dimensional index representation, at the specified level.
      */
-    T sub2ind(const std::array<T, N>& indices, const T level=0, const bool point=true) const {
-        const auto levelDims = dimensions<N,T>::level_dims(level, point);
+    T sub2ind(const std::array<T, N>& indices, const T level=0, const bool duel=false) const {
+        const auto levelDims = dimensions<N,T>::level_dims(level, duel);
         T retInd = indices[N-1];
         T coef = levelDims[N-1];
         for (T i=2; i<=N; ++i){

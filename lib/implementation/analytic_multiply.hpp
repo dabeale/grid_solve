@@ -44,7 +44,7 @@ requires (
  */
 class analytic_multiply  {
     static constexpr size_t m_nBoxCorners = pow<2,M>(); ///< The number of corners of each box.
-    static constexpr double m_dTaylorTol = 1e-3; ///< The tolerance below which we use Taylor expansions.
+    static constexpr double m_dTaylorTol = 0.1; ///< The tolerance below which we use Taylor expansions.
 
     using f_traversal = vector_field<M, T, D>::f_traversal; ///< The traversal function
     using f_box_weight = vector_field<M, T, D>::f_box_weight; ///< The box weight function
@@ -86,7 +86,7 @@ public:
                     // Only compute each point location once.
                     if ( !std::get<3>(corner_i) ){
                         // Iterate all boxes and find their neighbours
-                        for(size_t boxi = 0; boxi < boxStack.size()-1; ++boxi ){
+                        for(size_t boxi = 1; boxi < boxStack.size()-1; ++boxi ){
                             // Find the index of the current box
                             const auto currentBoxi = boxStack[boxi].index_in_parent();
                             // For each of the neighbours at every level
@@ -95,11 +95,19 @@ public:
                                 if(currentBoxi != i){
                                     auto neighbour = boxStack[boxi].neighbour(i);
                                     auto& nbrStorage = grid[neighbour];
-                                    std::get<0>(corner_i) += m_f_estimator.estimate(
+                                    auto est =  m_f_estimator.estimate(
                                         std::get<0>(nbrStorage), // The polynomial
                                         std::get<1>(nbrStorage), // The center of the box
                                         std::get<2>(corner_i)    // The corner point
                                     );
+                                    if (neighbour.is_inside(ci)){
+                                        m_f_estimator.estimate(
+                                            std::get<0>(nbrStorage), // The polynomial
+                                            std::get<1>(nbrStorage), // The center of the box
+                                            std::get<2>(corner_i)    // The corner point
+                                        );
+                                    }
+                                    std::get<0>(corner_i) += est;
                                 }
                             }
                         }
@@ -133,7 +141,7 @@ public:
                 const auto& leafBox = boxStack[boxStack.size()-1];
                 // Find the corners and values
                 const auto cornerVals = analytic_multiply::corner_vals(leafBox, grid);
-                for(size_t boxi = 0; boxi < boxStack.size()-1; ++boxi  ){
+                for(size_t boxi = 1; boxi < boxStack.size()-1; ++boxi  ){
                     auto& boxVal = grid[boxStack[boxi]];
                     const auto& leafCenter = std::get<1>(grid[leafBox]);
                     const auto& boxCenter = std::get<1>(boxVal);

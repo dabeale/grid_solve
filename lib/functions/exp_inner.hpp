@@ -16,9 +16,9 @@ template<typename T, size_t M, size_t D=0>
  * \brief The Exp Inner Product function.
  * 
  * The Exp Inner Product function is defined as,
- *                /  x^T y - ||y||^2  \
- *   f(x,y) = exp |  ---------------  |
- *                \     2*sigma^2     /
+ *                /  x^T y - 0.5 ||y||^2  \
+ *   f(x,y) = exp |  -------------------  |
+ *                \        sigma^2        /
  * The implementation computes both the function and
  * its multivariate derivatives on the stack. 
  * 

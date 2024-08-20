@@ -51,7 +51,7 @@ public:
     {
         S i=0;
         for(auto& boxStore : m_boxStorage){
-            boxStore.resize(dimensions.max_ind(i++, false));
+            boxStore.resize(dimensions.max_ind(i++, true));
         }
     }
 
@@ -165,7 +165,7 @@ public:
         const F& callable,
         const S level
     ){
-        const S max_ind = m_dimensions.max_ind(level, false);
+        const S max_ind = m_dimensions.max_ind(level, true);
         for(S i=0; i<max_ind; ++i){
             box<N, S> box(m_dimensions, level, i);
             callable(box, m_boxStorage[level][i]);
