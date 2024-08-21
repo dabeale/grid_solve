@@ -13,7 +13,7 @@ int test_grid(){
         std::set<uint32_t> allVals;
         grid.iterate([&](gs::box<3>& in, double&){
             for (auto corner : in){
-                for (auto x : corner.at_level(2)){
+                for (auto x : corner.at_level(2, gs::index<3>::POINTS)){
                     allVals.insert(x);
                 }
             }
@@ -32,7 +32,7 @@ int test_grid(){
         std::set<uint32_t> allVals;
         grid.iterate([&](gs::box<3>& in, double&){
             for (auto corner : in){
-                for (auto x : corner.at_level(2)){
+                for (auto x : corner.at_level(2, gs::index<3>::POINTS)){
                     allVals.insert(x);
                 }
             }
@@ -49,7 +49,7 @@ int test_grid(){
         std::set<uint32_t> allVals;
         grid.iterate([&](gs::box<3>& in, double&){
             for (auto corner : in){
-                for (auto x : corner.at_level(2)){
+                for (auto x : corner.at_level(2, gs::index<3>::POINTS)){
                     allVals.insert(x);
                 }
             }

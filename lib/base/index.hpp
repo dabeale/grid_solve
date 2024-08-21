@@ -34,11 +34,14 @@ class index {
     T m_level; ///< The level within the grid
 
 public:
-    index () {}
-    index(const T level): m_indices{}, m_level(level){
-        m_indices.fill(0);
-    }
+    index (): index(0) {}
+    index(const T level): m_indices{}, m_level(level){ m_indices.fill(0); }
     index(const std::array<T, N> indices, const T level): m_indices(indices), m_level(level){}
+
+    enum subdivision_type{
+        POINTS=0,
+        BOXES
+    };
 
     /**
      * \brief Return the level of the index.
@@ -53,37 +56,39 @@ public:
      * Changing the level will ensure that the index is properly
      * preserved in the grid.
      */
-    void set_level(const T level, const bool duel=false){
+    void set_level(const T level, const subdivision_type subdivType){
         T coef(1 << ((level > m_level) ? level - m_level : m_level - level));
-        if(duel){
-            if(m_level < level){
-                for (auto& pt : m_indices){
-                    if (pt % 2 == 0){
-                        pt *= coef;
-                    }
-                    else {
-                        pt = (1+pt)*coef - 1;
+        switch(subdivType){
+            case POINTS:
+                if(m_level < level){
+                    for (auto& pt : m_indices) pt *= coef;
+                }
+                else if (m_level > level){
+                    for (auto& pt : m_indices) pt /= coef;
+                }
+            break;
+            case BOXES:
+                if(m_level < level){
+                    for (auto& pt : m_indices){
+                        if (pt % 2 == 0){
+                            pt *= coef;
+                        }
+                        else {
+                            pt = (1+pt)*coef - 1;
+                        }
                     }
                 }
-            }
-            else if (m_level > level){
-                for (auto& pt : m_indices){
-                    if (pt % 2 == 0){
-                        pt /= coef;
-                    }
-                    else {
-                        pt = (1+pt)/coef - 1;
+                else if (m_level > level){
+                    for (auto& pt : m_indices){
+                        if (pt % 2 == 0){
+                            pt /= coef;
+                        }
+                        else {
+                            pt = (1+pt)/coef - 1;
+                        }
                     }
                 }
-            }
-        }
-        else {
-            if(m_level < level){
-                for (auto& pt : m_indices) pt *= coef;
-            }
-            else if (m_level > level){
-                for (auto& pt : m_indices) pt /= coef;
-            }
+            break;
         }
         m_level = level;
     }
@@ -91,12 +96,12 @@ public:
     /**
      * \brief Create a new index of specified level and return it.
      */
-    index<N, T> at_level(const T level, const bool duel = false) const {
+    index<N, T> at_level(const T level, const subdivision_type subdivType) const {
         if(level == m_level){
             return *this;
         }
         index<N, T> newIndex(*this);
-        newIndex.set_level(level, duel);
+        newIndex.set_level(level, subdivType);
         return newIndex;
     }
 

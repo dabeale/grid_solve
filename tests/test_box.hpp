@@ -8,25 +8,25 @@ int test_box(){
     std::cout << "Test box construction" << std::endl;
     int retVal = 0;
     gs::box<3> testBox(gs::dimensions<3>({2,2,2}, 2), 0);
-    retVal += ASSERT_BOOL(testBox[0].at_level(3) == gs::index<3>({0,0,0}, 3));
-    retVal += ASSERT_BOOL(testBox[1].at_level(3) == gs::index<3>({0,0,8}, 3));
-    retVal += ASSERT_BOOL(testBox[2].at_level(3) == gs::index<3>({0,8,0}, 3));
-    retVal += ASSERT_BOOL(testBox[3].at_level(3) == gs::index<3>({0,8,8}, 3));
-    retVal += ASSERT_BOOL(testBox[4].at_level(3) == gs::index<3>({8,0,0}, 3));
-    retVal += ASSERT_BOOL(testBox[5].at_level(3) == gs::index<3>({8,0,8}, 3));
-    retVal += ASSERT_BOOL(testBox[6].at_level(3) == gs::index<3>({8,8,0}, 3));
-    retVal += ASSERT_BOOL(testBox[7].at_level(3) == gs::index<3>({8,8,8}, 3));
+    retVal += ASSERT_BOOL(testBox[0].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,0,0}, 3));
+    retVal += ASSERT_BOOL(testBox[1].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,0,8}, 3));
+    retVal += ASSERT_BOOL(testBox[2].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,8,0}, 3));
+    retVal += ASSERT_BOOL(testBox[3].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,8,8}, 3));
+    retVal += ASSERT_BOOL(testBox[4].at_level(3, gs::index<3>::POINTS) == gs::index<3>({8,0,0}, 3));
+    retVal += ASSERT_BOOL(testBox[5].at_level(3, gs::index<3>::POINTS) == gs::index<3>({8,0,8}, 3));
+    retVal += ASSERT_BOOL(testBox[6].at_level(3, gs::index<3>::POINTS) == gs::index<3>({8,8,0}, 3));
+    retVal += ASSERT_BOOL(testBox[7].at_level(3, gs::index<3>::POINTS) == gs::index<3>({8,8,8}, 3));
     {
         gs::box<3> nbox(testBox);
         nbox.to_neighbour(0, gs::box<3>::POSITIVE);
-        retVal += ASSERT_BOOL(nbox[0].at_level(3) == gs::index<3>({8,0,0}, 3));
-        retVal += ASSERT_BOOL(nbox[1].at_level(3) == gs::index<3>({8,0,8}, 3));
-        retVal += ASSERT_BOOL(nbox[2].at_level(3) == gs::index<3>({8,8,0}, 3));
-        retVal += ASSERT_BOOL(nbox[3].at_level(3) == gs::index<3>({8,8,8}, 3));
-        retVal += ASSERT_BOOL(nbox[4].at_level(3) == gs::index<3>({16,0,0}, 3));
-        retVal += ASSERT_BOOL(nbox[5].at_level(3) == gs::index<3>({16,0,8}, 3));
-        retVal += ASSERT_BOOL(nbox[6].at_level(3) == gs::index<3>({16,8,0}, 3));
-        retVal += ASSERT_BOOL(nbox[7].at_level(3) == gs::index<3>({16,8,8}, 3));
+        retVal += ASSERT_BOOL(nbox[0].at_level(3, gs::index<3>::POINTS) == gs::index<3>({8,0,0}, 3));
+        retVal += ASSERT_BOOL(nbox[1].at_level(3, gs::index<3>::POINTS) == gs::index<3>({8,0,8}, 3));
+        retVal += ASSERT_BOOL(nbox[2].at_level(3, gs::index<3>::POINTS) == gs::index<3>({8,8,0}, 3));
+        retVal += ASSERT_BOOL(nbox[3].at_level(3, gs::index<3>::POINTS) == gs::index<3>({8,8,8}, 3));
+        retVal += ASSERT_BOOL(nbox[4].at_level(3, gs::index<3>::POINTS) == gs::index<3>({16,0,0}, 3));
+        retVal += ASSERT_BOOL(nbox[5].at_level(3, gs::index<3>::POINTS) == gs::index<3>({16,0,8}, 3));
+        retVal += ASSERT_BOOL(nbox[6].at_level(3, gs::index<3>::POINTS) == gs::index<3>({16,8,0}, 3));
+        retVal += ASSERT_BOOL(nbox[7].at_level(3, gs::index<3>::POINTS) == gs::index<3>({16,8,8}, 3));
     }
     return retVal;
 }
@@ -38,25 +38,25 @@ int test_subbox(){
     // Test first level subboxes
     {
         auto subbox = testBox.subbox(0);
-        retVal += ASSERT_BOOL(subbox[0].at_level(3) == gs::index<3>({0,0,0}, 3));
-        retVal += ASSERT_BOOL(subbox[1].at_level(3) == gs::index<3>({0,0,4}, 3));
-        retVal += ASSERT_BOOL(subbox[2].at_level(3) == gs::index<3>({0,4,0}, 3));
-        retVal += ASSERT_BOOL(subbox[3].at_level(3) == gs::index<3>({0,4,4}, 3));
-        retVal += ASSERT_BOOL(subbox[4].at_level(3) == gs::index<3>({4,0,0}, 3));
-        retVal += ASSERT_BOOL(subbox[5].at_level(3) == gs::index<3>({4,0,4}, 3));
-        retVal += ASSERT_BOOL(subbox[6].at_level(3) == gs::index<3>({4,4,0}, 3));
-        retVal += ASSERT_BOOL(subbox[7].at_level(3) == gs::index<3>({4,4,4}, 3));
+        retVal += ASSERT_BOOL(subbox[0].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,0,0}, 3));
+        retVal += ASSERT_BOOL(subbox[1].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,0,4}, 3));
+        retVal += ASSERT_BOOL(subbox[2].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,4,0}, 3));
+        retVal += ASSERT_BOOL(subbox[3].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,4,4}, 3));
+        retVal += ASSERT_BOOL(subbox[4].at_level(3, gs::index<3>::POINTS) == gs::index<3>({4,0,0}, 3));
+        retVal += ASSERT_BOOL(subbox[5].at_level(3, gs::index<3>::POINTS) == gs::index<3>({4,0,4}, 3));
+        retVal += ASSERT_BOOL(subbox[6].at_level(3, gs::index<3>::POINTS) == gs::index<3>({4,4,0}, 3));
+        retVal += ASSERT_BOOL(subbox[7].at_level(3, gs::index<3>::POINTS) == gs::index<3>({4,4,4}, 3));
     }
     {
         auto subbox = testBox.subbox(2);
-        retVal += ASSERT_BOOL(subbox[0].at_level(3) == gs::index<3>({0,4,0}, 3));
-        retVal += ASSERT_BOOL(subbox[1].at_level(3) == gs::index<3>({0,4,4}, 3));
-        retVal += ASSERT_BOOL(subbox[2].at_level(3) == gs::index<3>({0,8,0}, 3));
-        retVal += ASSERT_BOOL(subbox[3].at_level(3) == gs::index<3>({0,8,4}, 3));
-        retVal += ASSERT_BOOL(subbox[4].at_level(3) == gs::index<3>({4,4,0}, 3));
-        retVal += ASSERT_BOOL(subbox[5].at_level(3) == gs::index<3>({4,4,4}, 3));
-        retVal += ASSERT_BOOL(subbox[6].at_level(3) == gs::index<3>({4,8,0}, 3));
-        retVal += ASSERT_BOOL(subbox[7].at_level(3) == gs::index<3>({4,8,4}, 3));
+        retVal += ASSERT_BOOL(subbox[0].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,4,0}, 3));
+        retVal += ASSERT_BOOL(subbox[1].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,4,4}, 3));
+        retVal += ASSERT_BOOL(subbox[2].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,8,0}, 3));
+        retVal += ASSERT_BOOL(subbox[3].at_level(3, gs::index<3>::POINTS) == gs::index<3>({0,8,4}, 3));
+        retVal += ASSERT_BOOL(subbox[4].at_level(3, gs::index<3>::POINTS) == gs::index<3>({4,4,0}, 3));
+        retVal += ASSERT_BOOL(subbox[5].at_level(3, gs::index<3>::POINTS) == gs::index<3>({4,4,4}, 3));
+        retVal += ASSERT_BOOL(subbox[6].at_level(3, gs::index<3>::POINTS) == gs::index<3>({4,8,0}, 3));
+        retVal += ASSERT_BOOL(subbox[7].at_level(3, gs::index<3>::POINTS) == gs::index<3>({4,8,4}, 3));
     }
     {
         std::set<size_t> allVals;
@@ -64,10 +64,10 @@ int test_subbox(){
             auto subbox = testBox.subbox(i);
             for(size_t j=0; j<8; ++j){
                 for (size_t k=0; k<3; ++k){
-                    allVals.insert(subbox[j].at_level(3)[k]);
+                    allVals.insert(subbox[j].at_level(3, gs::index<3>::POINTS)[k]);
                     const auto boxStep = std::abs(
-                        static_cast<int32_t>(subbox[j].at_level(3)[k])-
-                        static_cast<int32_t>(subbox[(j+1)%8].at_level(3)[k])
+                        static_cast<int32_t>(subbox[j].at_level(3, gs::index<3>::POINTS)[k])-
+                        static_cast<int32_t>(subbox[(j+1)%8].at_level(3, gs::index<3>::POINTS)[k])
                     );
                     retVal += ASSERT_BOOL(boxStep == 4 || boxStep == 0); 
                 }
@@ -94,10 +94,10 @@ int test_subbox(){
                 minInner = min(maxInner, minTop);
                 for(size_t j=0; j<8; ++j){
                     for (size_t k=0; k<3; ++k){
-                        allVals.insert(subbox[j].at_level(3)[k]);
+                        allVals.insert(subbox[j].at_level(3, gs::index<3>::POINTS)[k]);
                         const auto boxStep = std::abs(
-                            static_cast<int32_t>(subbox[j].at_level(3)[k])-
-                            static_cast<int32_t>(subbox[(j+1)%8].at_level(3)[k])
+                            static_cast<int32_t>(subbox[j].at_level(3, gs::index<3>::POINTS)[k])-
+                            static_cast<int32_t>(subbox[(j+1)%8].at_level(3, gs::index<3>::POINTS)[k])
                         );
                         retVal += ASSERT_BOOL(boxStep == 2 || boxStep == 0); 
                     }
@@ -124,7 +124,7 @@ int test_box_subpoints(){
     std::set<uint32_t> corners;
     for (size_t i=0; i< box.m_nCorners; ++i){
         // Find the lowest granularity indices
-        auto pt = box[i].at_level(4);
+        auto pt = box[i].at_level(4, gs::index<3>::POINTS);
         // They should be in the lowest corner, with
         // a factor of 2.
         for (uint8_t k = 0; k<3; ++k){
@@ -136,7 +136,7 @@ int test_box_subpoints(){
 
     std::set<uint32_t> innerPts;
     for (auto sp : box.subpoints()){
-        auto pt = sp.at_level(4);
+        auto pt = sp.at_level(4, gs::index<3>::POINTS);
         for (uint8_t k = 0; k<3; ++k){
             retVal += ASSERT_BOOL(pt[k] == 0 || pt[k] == 1 || pt[k] == 2);
             innerPts.insert(pt[k]);
@@ -145,6 +145,107 @@ int test_box_subpoints(){
         retVal += ASSERT_BOOL(pt[0] == 1 || pt[1] == 1 || pt[2] == 1);
     }
     ASSERT_BOOL(innerPts.size() == 3);
+
+    return retVal;
+}
+
+
+int test_subbox_duel(){
+    std::cout << "Test subbox duel" << std::endl;
+    int retVal = 0;
+    gs::box<2> testBox(gs::dimensions<2>({2,2}, 3), 0, gs::index<2>::BOXES);
+    {
+        retVal += ASSERT_BOOL(testBox[0].at_level(3, gs::index<2>::BOXES) == gs::index<3>({0,0}, 3));
+        retVal += ASSERT_BOOL(testBox[1].at_level(3, gs::index<2>::BOXES) == gs::index<3>({0,15}, 3));
+        retVal += ASSERT_BOOL(testBox[2].at_level(3, gs::index<2>::BOXES) == gs::index<3>({15,0}, 3));
+        retVal += ASSERT_BOOL(testBox[3].at_level(3, gs::index<2>::BOXES) == gs::index<3>({15,15}, 3));
+    }
+
+    // Test first level subboxes
+    {
+        auto subbox = testBox.subbox(0);
+        retVal += ASSERT_BOOL(subbox[0].at_level(3, gs::index<2>::BOXES) == gs::index<3>({0,0}, 3));
+        retVal += ASSERT_BOOL(subbox[1].at_level(3, gs::index<2>::BOXES) == gs::index<3>({0,7}, 3));
+        retVal += ASSERT_BOOL(subbox[2].at_level(3, gs::index<2>::BOXES) == gs::index<3>({7,0}, 3));
+        retVal += ASSERT_BOOL(subbox[3].at_level(3, gs::index<2>::BOXES) == gs::index<3>({7,7}, 3));
+    }
+    {
+        auto subbox = testBox.subbox(2);
+        retVal += ASSERT_BOOL(subbox[0].at_level(3, gs::index<2>::BOXES) == gs::index<3>({8,0}, 3));
+        retVal += ASSERT_BOOL(subbox[1].at_level(3, gs::index<2>::BOXES) == gs::index<3>({8,7}, 3));
+        retVal += ASSERT_BOOL(subbox[2].at_level(3, gs::index<2>::BOXES) == gs::index<3>({15,0}, 3));
+        retVal += ASSERT_BOOL(subbox[3].at_level(3, gs::index<2>::BOXES) == gs::index<3>({15,7}, 3));
+    }
+
+    // Test all for overlaps
+    {
+        std::set<size_t> allIndices;
+        for(size_t i=0; i<4; ++i){
+            for(size_t j=i+1; j<4; ++j){
+                auto subboxi = testBox.subbox(i);
+                auto subboxj = testBox.subbox(j);
+                for(size_t k=0; k<4; ++k){
+                    for(size_t l=0; l<4; ++l){
+                        auto ci = subboxi[k].at_level(3, gs::index<2>::BOXES);
+                        auto cj = subboxj[l].at_level(3, gs::index<2>::BOXES);
+                        retVal += ASSERT_BOOL(ci[0] != cj[0] || ci[1] != cj[1]);
+                        allIndices.insert(ci[0]);
+                        allIndices.insert(ci[1]);
+                    }
+                }
+            }
+        }
+        retVal += ASSERT_BOOL(allIndices.size() == 4);
+        for(size_t i : {0, 7, 8, 15}){
+            retVal += ASSERT_BOOL(allIndices.contains(i));
+        }
+    }
+
+    // Test second level subboxes
+    {
+        auto subbox = testBox.subbox(2).subbox(3);
+        retVal += ASSERT_BOOL(subbox[0].at_level(3, gs::index<2>::BOXES) == gs::index<3>({12,4}, 3));
+        retVal += ASSERT_BOOL(subbox[1].at_level(3, gs::index<2>::BOXES) == gs::index<3>({12,7}, 3));
+        retVal += ASSERT_BOOL(subbox[2].at_level(3, gs::index<2>::BOXES) == gs::index<3>({15,4}, 3));
+        retVal += ASSERT_BOOL(subbox[3].at_level(3, gs::index<2>::BOXES) == gs::index<3>({15,7}, 3));
+    }
+    {
+        auto subbox = testBox.subbox(3).subbox(0);
+        retVal += ASSERT_BOOL(subbox[0].at_level(3, gs::index<2>::BOXES) == gs::index<3>({8,8}, 3));
+        retVal += ASSERT_BOOL(subbox[1].at_level(3, gs::index<2>::BOXES) == gs::index<3>({8,11}, 3));
+        retVal += ASSERT_BOOL(subbox[2].at_level(3, gs::index<2>::BOXES) == gs::index<3>({11,8}, 3));
+        retVal += ASSERT_BOOL(subbox[3].at_level(3, gs::index<2>::BOXES) == gs::index<3>({11,11}, 3));
+    }
+    {
+        std::set<size_t> allIndices;
+        for(size_t sbi =0; sbi < 4; ++sbi)
+        {
+            for(size_t sbj =sbi+1; sbj < 4; ++sbj)
+            {
+                auto firstLevelSBi = testBox.subbox(sbi);
+                auto firstLevelSBj = testBox.subbox(sbj);
+                for(size_t i=0; i<4; ++i){
+                    for(size_t j=i+1; j<4; ++j){
+                        auto subboxi = firstLevelSBi.subbox(i);
+                        auto subboxj = firstLevelSBj.subbox(j);
+                        for(size_t k=0; k<4; ++k){
+                            for(size_t l=0; l<4; ++l){
+                                auto ci = subboxi[k].at_level(3, gs::index<2>::BOXES);
+                                auto cj = subboxj[l].at_level(3, gs::index<2>::BOXES);
+                                retVal += ASSERT_BOOL(ci[0] != cj[0] || ci[1] != cj[1]);
+                                allIndices.insert(ci[0]);
+                                allIndices.insert(ci[1]);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        retVal += ASSERT_BOOL(allIndices.size() == 8);
+        for(size_t i : {0, 3, 4, 7, 8, 11, 12, 15}){
+            retVal += ASSERT_BOOL(allIndices.contains(i));
+        }
+    }
 
     return retVal;
 }

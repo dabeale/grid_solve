@@ -44,14 +44,14 @@ class grid {
 
 public:
     grid() = delete;
-    grid(const dimensions<N, S> dimensions):
-        m_gridStorage(dimensions.max_ind(dimensions.max_level()-1)),
-        m_boxStorage(dimensions.max_level()),
-        m_dimensions(dimensions)
+    grid(const dimensions<N, S> dims):
+        m_gridStorage(dims.max_ind(dims.max_level()-1, dimensions<N, S>::POINTS_POINT_SUBDIVISION)),
+        m_boxStorage(dims.max_level()),
+        m_dimensions(dims)
     {
         S i=0;
         for(auto& boxStore : m_boxStorage){
-            boxStore.resize(dimensions.max_ind(i++, true));
+            boxStore.resize(dims.max_ind(i++, dimensions<N, S>::BOXES));
         }
     }
 
@@ -90,24 +90,25 @@ public:
     /**
      * \brief Access the grid storage using an index.
      */
-    GridElement& operator[](const index<N, S>& index) {
-        S ind = m_dimensions.sub2ind(
-            index.at_level(m_dimensions.max_level()-1),
-            m_dimensions.max_level()-1
-        );
+    GridElement& operator[](const index<N, S>& ind) {
         return operator[](
-            ind
+            m_dimensions.sub2ind(
+                ind.at_level(m_dimensions.max_level()-1, index<N, S>::POINTS),
+                m_dimensions.max_level()-1,
+                dimensions<N, S>::POINTS_POINT_SUBDIVISION
+            )
         );
     }
 
     /**
      * \brief Access the grid storage using an index.
      */
-    const GridElement& operator[] (const index<N, S>& index) const {
+    const GridElement& operator[] (const index<N, S>& ind) const {
         return operator[](
             m_dimensions.sub2ind(
-                index.at_level(m_dimensions.max_level()-1),
-                m_dimensions.max_level()-1
+                ind.at_level(m_dimensions.max_level()-1, index<N, S>::POINTS),
+                m_dimensions.max_level()-1,
+                dimensions<N, S>::POINTS_POINT_SUBDIVISION
             )
         );
     }
@@ -120,7 +121,7 @@ public:
             boxVal.get_level()
         ][
             m_dimensions.reduce().sub2ind(
-                boxVal[0], boxVal.get_level()
+                boxVal[0], boxVal.get_level(), dimensions<N, S>::BOXES
             )
         ];
     }
@@ -133,7 +134,7 @@ public:
             boxVal.get_level()
         ][
             m_dimensions.sub2ind(
-                boxVal[0], boxVal.get_level(), false
+                boxVal[0], boxVal.get_level(), dimensions<N, S>::BOXES
             )
         ];
     }
@@ -165,9 +166,9 @@ public:
         const F& callable,
         const S level
     ){
-        const S max_ind = m_dimensions.max_ind(level, true);
+        const S max_ind = m_dimensions.max_ind(level, dimensions<N,S>::BOXES);
         for(S i=0; i<max_ind; ++i){
-            box<N, S> box(m_dimensions, level, i);
+            box<N, S> box(m_dimensions, level, index<N,S>::POINTS, i);
             callable(box, m_boxStorage[level][i]);
         }
     }

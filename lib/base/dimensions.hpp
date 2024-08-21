@@ -41,11 +41,33 @@ class dimensions {
     T m_maxLevel; ///< The maximum allowed level.
 
 public:
+    /**
+     * \brief Return a vector in which each element is no greater than
+     * size, to indicate the direction of the numeric index.
+     */
+    static std::array<T, N> unitary(T ind, T size=1) {
+        ind %= pow<2,N>();
+        std::array<T, N> unit;
+        unit.fill(0);
+        T coef = 1;
+        for (T i = 1; i <= N; ++i){
+            unit[N-i] = ((ind / coef) % 2)*size;
+            coef *= 2;
+        }
+        return unit;
+    }
+
     dimensions(): m_dimensions{}, m_maxLevel(0) {m_dimensions.fill(0);}
     dimensions(std::array<T, N> dimensions, T maxLevel):  m_dimensions(dimensions), m_maxLevel(maxLevel) {}
     dimensions(T dimensions, T maxLevel): m_dimensions{}, m_maxLevel(maxLevel) {
         m_dimensions.fill(dimensions);
     }
+
+    enum modality {
+        BOXES = 0,
+        POINTS_POINT_SUBDIVISION,
+        POINTS_BOX_SUBDIVISION
+    };
 
     /**
      * \brief Get the dimensions at the specified level.
@@ -57,54 +79,46 @@ public:
      * difference equation does not hold. The dimension becomes 2 at the
      * first level in this case.
      */
-    std::array<T, N> level_dims(const T level, const bool duel=false) const {
+    std::array<T, N> level_dims(const T level, const modality mode) const {
         std::array<T, N> levelDims;
-        if(!duel) {
-            // The dimensions for the point grid
-            for (T i=0; i<N; ++i){
-                T dimension = m_dimensions[i];
-                T levelToUse = level;
-                if (m_dimensions[i] == 1){
-                    switch(level){
-                        case 0:
-                            break;
-                        case 1:
-                            // Make sure that the new dimension is 2
-                            dimension=2;
-                            levelToUse=0;
-                            break;
-                        default:
-                            // Revert to normal behaviour.
-                            dimension=2;
-                            levelToUse=level-1;
+        switch (mode){
+            case dimensions<N,T>::POINTS_POINT_SUBDIVISION:
+                // The dimensions for the point grid
+                for (T i=0; i<N; ++i){
+                    T dimension = m_dimensions[i];
+                    T levelToUse = level;
+                    if (m_dimensions[i] == 1){
+                        switch(level){
+                            case 0:
+                                break;
+                            case 1:
+                                // Make sure that the new dimension is 2
+                                dimension=2;
+                                levelToUse=0;
+                                break;
+                            default:
+                                // Revert to normal behaviour.
+                                dimension=2;
+                                levelToUse=level-1;
+                        }
                     }
+                    levelDims[i] = (dimension-1)*(1 << levelToUse) + 1;
                 }
-                levelDims[i] = (dimension-1)*(1 << levelToUse) + 1;
-            }
-        }
-        else {
-            // The dimensions of each of the boxes (1 less in each dimension)
-            for (T i=0; i<N; ++i){
-                levelDims[i] = (m_dimensions[i]-1)*( 1 << level );
-            }
+                break;
+            case dimensions<N,T>::POINTS_BOX_SUBDIVISION:
+                for (T i=0; i<N; ++i){
+                    levelDims[i] = m_dimensions[i]*( 1 << level );
+                }
+                break;
+            case dimensions<N,T>::BOXES:
+                // The dimensions of each of the boxes - 1 less in each dimension
+                // since the dimensions are specified in terms of the points.
+                for (T i=0; i<N; ++i){
+                    levelDims[i] = (m_dimensions[i]-1)*( 1 << level );
+                }
+                break;
         }
         return levelDims;
-    }
-
-    /**
-     * \brief Return a vector in which each element is no greater than
-     * size, to indicate the direction of the numeric index.
-     */
-    std::array<T, N> unitary(T ind, T size=1) const{
-        ind %= pow<2,N>();
-        std::array<T, N> unit;
-        unit.fill(0);
-        T coef = 1;
-        for (T i = 1; i <= N; ++i){
-            unit[N-i] = ((ind / coef) % 2)*size;
-            coef *= 2;
-        }
-        return unit;
     }
 
     /**
@@ -117,8 +131,8 @@ public:
     /**
      * \brief Get the maximum index at the specified level.
      */
-    T max_ind(const T level, const bool duel=false) const {
-        const std::array<T, N> levelDims = dimensions<N,T>::level_dims(level, duel);
+    T max_ind(const T level, const modality mode) const {
+        const std::array<T, N> levelDims = dimensions<N,T>::level_dims(level, mode);
         T total = 1;
         for (const auto dim : levelDims){
             total *= dim;
@@ -129,9 +143,9 @@ public:
     /**
      * \brief Get the grid dimensions from an index, at the specified level.
      */
-    std::array<T, N> ind2sub(const T ind, const T level=0, const bool duel=false) const {
+    std::array<T, N> ind2sub(const T ind, const T level=0, const modality mode=POINTS_POINT_SUBDIVISION) const {
         T coef = 1;
-        auto levelDims = dimensions<N,T>::level_dims(level, duel);
+        auto levelDims = dimensions<N,T>::level_dims(level, mode);
         // Get the index at the specified level.
         std::array<T, N> indices;
         for (T i = 1; i <= N; ++i){
@@ -144,8 +158,8 @@ public:
     /**
      * \brief Get a one dimensional index representation, at the specified level.
      */
-    T sub2ind(const std::array<T, N>& indices, const T level=0, const bool duel=false) const {
-        const auto levelDims = dimensions<N,T>::level_dims(level, duel);
+    T sub2ind(const std::array<T, N>& indices, const T level=0, const modality mode=POINTS_POINT_SUBDIVISION) const {
+        const auto levelDims = dimensions<N,T>::level_dims(level, mode);
         T retInd = indices[N-1];
         T coef = levelDims[N-1];
         for (T i=2; i<=N; ++i){

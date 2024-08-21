@@ -77,7 +77,7 @@ public:
             m_stack.reserve(m_maxLevel);
             for(size_t level=0; level<m_maxLevel; ++level){
                 m_stack.push_back(
-                    box<N,T>(m_dimensions, level, start_offset)
+                    box<N,T>(m_dimensions, level, index<N,T>::POINTS, start_offset)
                 );
             }
         }
@@ -92,7 +92,7 @@ public:
         if(m_counts[0] < m_nSubBoxes){
             for(size_t i=firstChangedIndex; i<m_maxLevel; ++i){
                 if ( i == 0 ){
-                    m_stack[i] = box<N, T>(m_dimensions, 0, m_counts[i]);
+                    m_stack[i] = box<N, T>(m_dimensions, 0, index<N,T>::POINTS, m_counts[i]);
                 } 
                 else {
                     m_stack[i] = m_stack[i-1].subbox(m_counts[i]);
