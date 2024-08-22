@@ -100,13 +100,6 @@ public:
                                         std::get<1>(nbrStorage), // The center of the box
                                         std::get<2>(corner_i)    // The corner point
                                     );
-                                    if (neighbour.is_inside(ci)){
-                                        m_f_estimator.estimate(
-                                            std::get<0>(nbrStorage), // The polynomial
-                                            std::get<1>(nbrStorage), // The center of the box
-                                            std::get<2>(corner_i)    // The corner point
-                                        );
-                                    }
                                     std::get<0>(corner_i) += est;
                                 }
                             }
@@ -155,7 +148,8 @@ public:
                         );
                     }
                 }
-            }
+            },
+            dimensions<M>::BOXES_SUBDIVISION
         ) {}
 
     /**

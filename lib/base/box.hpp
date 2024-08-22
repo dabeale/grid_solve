@@ -30,34 +30,40 @@ class box {
     std::array<index<N, T>, pow<2,N>()> m_corners; ///< The corners.
     T m_level; ///< The box level.
     dimensions<N,T> m_dimensions; ///< The dimensions of the box.
-    index<N,T>::subdivision_type m_subdivType; ///< True if the box is a duel box
+    dimensions<N,T>::subdivision_type m_subdivType; ///< True if the box is a duel box
 
 public:
     static constexpr T m_nCorners = pow<2,N>();   ///< The number of corners.
     static constexpr T m_nSubPoints = pow<3,N>(); ///< The number of subpoints.
 
-    box(const dimensions<N,T> inDims, const T level, const index<N,T>::subdivision_type subdivType=index<N,T>::POINTS, const T offset=0):
+    box(const dimensions<N,T> inDims, const T level, const dimensions<N,T>::subdivision_type subdivType, const T offset=0):
         m_level(level), m_dimensions(inDims), m_subdivType(subdivType)
     {
         switch(m_subdivType){
-            case index<N,T>::BOXES:
+            case dimensions<N,T>::BOXES_SUBDIVISION:
             for (T i = 0; i < m_nCorners; ++i){
                 m_corners[i] = (
                     // Add each of the corners a max distance of 1 from the offset.
                     index<N,T>(dimensions<N,T>::unitary(i), level ) + 
                     // The start corner point
-                    index<N,T>(m_dimensions.ind2sub(offset, level, dimensions<N,T>::POINTS_BOX_SUBDIVISION), level )
+                    index<N,T>(
+                        m_dimensions.ind2sub(offset, level, subdivType, dimensions<N,T>::POINTS_MODE),
+                        level
+                    )
                 );
             }
             break;
-            case index<N,T>::POINTS:
+            case dimensions<N,T>::POINTS_SUBDIVISION:
             for (T i = 0; i < m_nCorners; ++i){
                 m_corners[i] = (
                     // Add each of the corners a distance of 1 from the offset.
                     index<N,T>(dimensions<N,T>::unitary(i), level) + 
                     // There are 1 fewer boxes than points in each dimension so
                     // we use box dimensions. Create the start corner point.
-                    index<N,T>(m_dimensions.ind2sub(offset, level, dimensions<N,T>::BOXES), level)
+                    index<N,T>(
+                        m_dimensions.ind2sub(offset, level, subdivType, dimensions<N,T>::BOXES_MODE),
+                        level
+                    )
                 );
             }
             break;
@@ -96,14 +102,14 @@ public:
      * The the index is on the edge of corners then the method will
      * true.
      */
-    bool is_inside(index<N,T> ind) const{
+    bool is_inside(index<N,T> ind, const dimensions<N,T>::subdivision_type subdivType) const{
         box<N, T> levelBox(*this);
         if(ind.get_level() < m_level){
-            ind.set_level(m_level, index<N,T>::POINTS);
+            ind.set_level(m_level, subdivType);
         }
         else if (ind.get_level() > m_level){
             for (size_t i=0; i<m_nCorners; ++i){
-                levelBox.m_corners[i].set_level(ind.get_level(), index<N,T>::POINTS);
+                levelBox.m_corners[i].set_level(ind.get_level(), subdivType);
             }
         }
         auto maxInd = levelBox.max();
@@ -124,7 +130,7 @@ public:
      */
     box<N,T> subbox(const T ind) const{
         switch(m_subdivType){
-            case index<N,T>::BOXES:
+            case dimensions<N,T>::BOXES_SUBDIVISION:
             return box<N,T>(
                 m_dimensions,
                 m_level + 1,
@@ -140,11 +146,12 @@ public:
                         dimensions<N,T>::unitary(ind, 2)
                     ),
                     m_level + 1,
-                    dimensions<N,T>::POINTS_BOX_SUBDIVISION // Use box dimensions rather than points
+                    m_subdivType,
+                    dimensions<N,T>::POINTS_MODE // Use box dimensions rather than points
                 )
             );
             default:
-            case index<N,T>::POINTS:
+            case dimensions<N,T>::POINTS_SUBDIVISION:
             return box<N,T>(
                 m_dimensions,
                 m_level + 1,
@@ -160,7 +167,8 @@ public:
                         dimensions<N,T>::unitary(ind)
                     ),
                     m_level + 1,
-                    dimensions<N,T>::BOXES // Use box dimensions rather than points
+                    m_subdivType,
+                    dimensions<N,T>::BOXES_MODE // Use box dimensions rather than points
                 )
             );
         }
@@ -182,9 +190,10 @@ public:
                 m_level-1,
                 m_subdivType,
                 m_dimensions.sub2ind(
-                    m_corners[0].at_level(m_level-1, index<N,T>::POINTS),
+                    m_corners[0].at_level(m_level-1, m_subdivType),
                     m_level-1,
-                    dimensions<N,T>::BOXES
+                    m_subdivType,
+                    dimensions<N,T>::BOXES_MODE
                 )
             ).subbox(ind);
         }
@@ -205,7 +214,7 @@ public:
     T n_nbrs() const{
         return (
             m_level == 0 ?
-            m_dimensions.max_ind(0, dimensions<N,T>::BOXES) : box<N,T>::m_nCorners
+            m_dimensions.max_ind(0, m_subdivType, dimensions<N,T>::BOXES_MODE) : box<N,T>::m_nCorners
         );
     }
 
@@ -214,7 +223,7 @@ public:
      * parent.
      */
     T index_in_parent() const{
-        std::array<T,N> remainderIndex(m_corners[0].at_level(m_level, index<N,T>::POINTS));
+        std::array<T,N> remainderIndex(m_corners[0].at_level(m_level, m_subdivType));
         // Find the remainder of division by 2 
         // Division gives the index in the level up, and the
         // remainder is the position within the box. If we are
@@ -224,7 +233,7 @@ public:
                 remainderIndex[i] %= 2;
             }
         }
-        return m_dimensions.sub2ind(remainderIndex, 0, dimensions<N,T>::BOXES);
+        return m_dimensions.sub2ind(remainderIndex, 0, m_subdivType, dimensions<N,T>::BOXES_MODE);
     }
 
     /**
@@ -233,11 +242,11 @@ public:
      * This method is for testing purposes, to allow one to
      * see the vertices of the box at the lowest level.
      */
-    void print(const T level) const{
+    void print(const T level, std::ostream os=std::cout) const{
         for (T i=0; i<m_nCorners; ++i){
-            std::cout << m_corners[i].at_level(level, m_subdivType) << " ";
+            os << m_corners[i].at_level(level, m_subdivType) << " ";
         }
-        std::cout << std::endl;
+        os << std::endl;
     }
 
     /**

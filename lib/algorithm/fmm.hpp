@@ -51,11 +51,12 @@ class fmm {
 
 public:
     fmm(
-        const dimensions<N, T> dimensions,
+        const dimensions<N, T> dims,
         FTraversal fineTraversalFunc,
-        FBoxWeight boxWeightFunc
+        FBoxWeight boxWeightFunc,
+        const dimensions<N, T>::subdivision_type subDiv
     ) :
-        m_grid(dimensions),
+        m_grid(dims, subDiv),
         m_fineTraversalFunc(fineTraversalFunc),
         m_boxWeightFunc(boxWeightFunc){}
 

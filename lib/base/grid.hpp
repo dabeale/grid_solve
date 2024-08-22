@@ -38,20 +38,25 @@ requires std::is_integral<S>::value
  *      S           - The integral type to use.
  */
 class grid {
+    using subdivision_type = dimensions<N,S>::subdivision_type;
+
     std::vector<GridElement> m_gridStorage; ///< Storage at each of the points in the grid.
     std::vector<std::vector<BoxElement>> m_boxStorage; ///< Storage at each level of the 2^N tree.
     dimensions<N, S> m_dimensions; ///< The dimensions of the grid.
+    subdivision_type m_subDivType; ///< The subdivision type
 
 public:
     grid() = delete;
-    grid(const dimensions<N, S> dims):
-        m_gridStorage(dims.max_ind(dims.max_level()-1, dimensions<N, S>::POINTS_POINT_SUBDIVISION)),
+    grid(const dimensions<N, S> dims, const subdivision_type subDiv):
+        m_gridStorage(dims.max_ind(dims.max_level()-1, subDiv, dimensions<N,S>::POINTS_MODE)),
         m_boxStorage(dims.max_level()),
-        m_dimensions(dims)
+        m_dimensions(dims),
+        m_subDivType(subDiv)
+
     {
         S i=0;
         for(auto& boxStore : m_boxStorage){
-            boxStore.resize(dims.max_ind(i++, dimensions<N, S>::BOXES));
+            boxStore.resize(dims.max_ind(i++, subDiv, dimensions<N, S>::BOXES_MODE));
         }
     }
 
@@ -93,9 +98,10 @@ public:
     GridElement& operator[](const index<N, S>& ind) {
         return operator[](
             m_dimensions.sub2ind(
-                ind.at_level(m_dimensions.max_level()-1, index<N, S>::POINTS),
+                ind.at_level(m_dimensions.max_level()-1, m_subDivType),
                 m_dimensions.max_level()-1,
-                dimensions<N, S>::POINTS_POINT_SUBDIVISION
+                m_subDivType,
+                dimensions<N, S>::POINTS_MODE
             )
         );
     }
@@ -106,9 +112,10 @@ public:
     const GridElement& operator[] (const index<N, S>& ind) const {
         return operator[](
             m_dimensions.sub2ind(
-                ind.at_level(m_dimensions.max_level()-1, index<N, S>::POINTS),
+                ind.at_level(m_dimensions.max_level()-1, m_subDivType),
                 m_dimensions.max_level()-1,
-                dimensions<N, S>::POINTS_POINT_SUBDIVISION
+                m_subDivType,
+                dimensions<N, S>::POINTS_MODE
             )
         );
     }
@@ -121,7 +128,7 @@ public:
             boxVal.get_level()
         ][
             m_dimensions.reduce().sub2ind(
-                boxVal[0], boxVal.get_level(), dimensions<N, S>::BOXES
+                boxVal[0], boxVal.get_level(), m_subDivType, dimensions<N, S>::BOXES_MODE
             )
         ];
     }
@@ -134,7 +141,7 @@ public:
             boxVal.get_level()
         ][
             m_dimensions.sub2ind(
-                boxVal[0], boxVal.get_level(), dimensions<N, S>::BOXES
+                boxVal[0], boxVal.get_level(), m_subDivType, dimensions<N, S>::BOXES_MODE
             )
         ];
     }
@@ -166,9 +173,9 @@ public:
         const F& callable,
         const S level
     ){
-        const S max_ind = m_dimensions.max_ind(level, dimensions<N,S>::BOXES);
+        const S max_ind = m_dimensions.max_ind(level, m_subDivType, dimensions<N,S>::BOXES_MODE);
         for(S i=0; i<max_ind; ++i){
-            box<N, S> box(m_dimensions, level, index<N,S>::POINTS, i);
+            box<N, S> box(m_dimensions, level, m_subDivType, i);
             callable(box, m_boxStorage[level][i]);
         }
     }
@@ -223,8 +230,12 @@ public:
      * full stack of boxes at every iteration.
      */
     void iterate(const F& callable){
-        const auto pastEndIt = box_stack_iterator<N, S>(m_dimensions, true);
-        for(auto boxIt = box_stack_iterator<N, S>(m_dimensions); boxIt != pastEndIt; ++boxIt){
+        const auto pastEndIt = box_stack_iterator<N, S>(m_dimensions, m_subDivType, true);
+        for(
+            auto boxIt = box_stack_iterator<N, S>(m_dimensions, m_subDivType);
+            boxIt != pastEndIt;
+            ++boxIt
+        ){
             callable(*boxIt);
         }
     }

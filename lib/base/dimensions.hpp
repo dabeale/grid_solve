@@ -63,10 +63,50 @@ public:
         m_dimensions.fill(dimensions);
     }
 
+    /**
+     * \brief The subdivision type.
+     * 
+     * There are currently two types of subdivision into the grid. POINTS_SUBDIVISION
+     * starts with a collection of corners and recursively adds edges at each incremental
+     * level of the grid. The boxes are the enclosures of the points, and so each box
+     * has a non-empty intersection in terms of the points in the grid. The
+     * BOXES_SUBDIVISION ensures that each box does not overlap it's neighbours.
+     * 
+     * Examples are given below for a 2D grid, points are represented by . in general
+     * but the first box is represented by x.
+     * 
+     *            Level 0             Level 1              Level 2
+     *        
+     *         x           x       x     x     .       x  x  .  .  .
+     *                                                 x  x  .  .  .
+     * Points                      x     x     .       .  .  .  .  .
+     *                                                 .  .  .  .  .
+     *         x           x       .     .     .       .  .  .  .  .
+     * 
+     * 
+     *         x              x     x      x.      .    x  x.  ..  ..  .
+     *                                                  x  x.  ..  ..  .
+     *                                                  .  ..  ..  ..  .
+     * Boxes                        x      x.      .    .  ..  ..  ..  .
+     *                              .      ..      .    .  ..  ..  ..  .
+     *                                                  .  ..  ..  ..  .
+     *                                                  .  ..  ..  ..  .
+     *         x              x     .      ..      .    .  ..  ..  ..  .
+     */
+    enum subdivision_type{
+        POINTS_SUBDIVISION=0,
+        BOXES_SUBDIVISION
+    };
+
+    /**
+     * \brief The modality of the subdivision.
+     * 
+     * In either subdivision type we can specify a box or a point. The 
+     * modality defines the type of output that is required.
+     */
     enum modality {
-        BOXES = 0,
-        POINTS_POINT_SUBDIVISION,
-        POINTS_BOX_SUBDIVISION
+        BOXES_MODE = 0,
+        POINTS_MODE
     };
 
     /**
@@ -79,38 +119,42 @@ public:
      * difference equation does not hold. The dimension becomes 2 at the
      * first level in this case.
      */
-    std::array<T, N> level_dims(const T level, const modality mode) const {
+    std::array<T, N> level_dims(const T level, const subdivision_type subDiv, const modality mode) const {
         std::array<T, N> levelDims;
         switch (mode){
-            case dimensions<N,T>::POINTS_POINT_SUBDIVISION:
-                // The dimensions for the point grid
-                for (T i=0; i<N; ++i){
-                    T dimension = m_dimensions[i];
-                    T levelToUse = level;
-                    if (m_dimensions[i] == 1){
-                        switch(level){
-                            case 0:
-                                break;
-                            case 1:
-                                // Make sure that the new dimension is 2
-                                dimension=2;
-                                levelToUse=0;
-                                break;
-                            default:
-                                // Revert to normal behaviour.
-                                dimension=2;
-                                levelToUse=level-1;
+            case dimensions<N,T>::POINTS_MODE:
+                switch (subDiv) {
+                    case dimensions<N,T>::POINTS_SUBDIVISION:
+                        // The dimensions for the point grid
+                        for (T i=0; i<N; ++i){
+                            T dimension = m_dimensions[i];
+                            T levelToUse = level;
+                            if (m_dimensions[i] == 1){
+                                switch(level){
+                                    case 0:
+                                        break;
+                                    case 1:
+                                        // Make sure that the new dimension is 2
+                                        dimension=2;
+                                        levelToUse=0;
+                                        break;
+                                    default:
+                                        // Revert to normal behaviour.
+                                        dimension=2;
+                                        levelToUse=level-1;
+                                }
+                            }
+                            levelDims[i] = (dimension-1)*(1 << levelToUse) + 1;
                         }
+                        break;
+                case dimensions<N,T>::BOXES_SUBDIVISION:
+                    for (T i=0; i<N; ++i){
+                        levelDims[i] = m_dimensions[i]*( 1 << level );
                     }
-                    levelDims[i] = (dimension-1)*(1 << levelToUse) + 1;
+                    break;
                 }
                 break;
-            case dimensions<N,T>::POINTS_BOX_SUBDIVISION:
-                for (T i=0; i<N; ++i){
-                    levelDims[i] = m_dimensions[i]*( 1 << level );
-                }
-                break;
-            case dimensions<N,T>::BOXES:
+            case dimensions<N,T>::BOXES_MODE:
                 // The dimensions of each of the boxes - 1 less in each dimension
                 // since the dimensions are specified in terms of the points.
                 for (T i=0; i<N; ++i){
@@ -131,8 +175,8 @@ public:
     /**
      * \brief Get the maximum index at the specified level.
      */
-    T max_ind(const T level, const modality mode) const {
-        const std::array<T, N> levelDims = dimensions<N,T>::level_dims(level, mode);
+    T max_ind(const T level, const subdivision_type subDiv, const modality mode) const {
+        const std::array<T, N> levelDims = dimensions<N,T>::level_dims(level, subDiv, mode);
         T total = 1;
         for (const auto dim : levelDims){
             total *= dim;
@@ -143,9 +187,14 @@ public:
     /**
      * \brief Get the grid dimensions from an index, at the specified level.
      */
-    std::array<T, N> ind2sub(const T ind, const T level=0, const modality mode=POINTS_POINT_SUBDIVISION) const {
+    std::array<T, N> ind2sub(
+        const T ind,
+        const T level=0,
+        const subdivision_type subDiv=POINTS_SUBDIVISION,
+        const modality mode=POINTS_MODE
+    ) const {
         T coef = 1;
-        auto levelDims = dimensions<N,T>::level_dims(level, mode);
+        auto levelDims = dimensions<N,T>::level_dims(level, subDiv, mode);
         // Get the index at the specified level.
         std::array<T, N> indices;
         for (T i = 1; i <= N; ++i){
@@ -158,8 +207,13 @@ public:
     /**
      * \brief Get a one dimensional index representation, at the specified level.
      */
-    T sub2ind(const std::array<T, N>& indices, const T level=0, const modality mode=POINTS_POINT_SUBDIVISION) const {
-        const auto levelDims = dimensions<N,T>::level_dims(level, mode);
+    T sub2ind(
+        const std::array<T, N>& indices,
+        const T level=0,
+        const subdivision_type subDiv=POINTS_SUBDIVISION,
+        const modality mode=POINTS_MODE
+    ) const {
+        const auto levelDims = dimensions<N,T>::level_dims(level, subDiv, mode);
         T retInd = indices[N-1];
         T coef = levelDims[N-1];
         for (T i=2; i<=N; ++i){

@@ -30,6 +30,8 @@ requires std::is_integral<T>::value
  *      T - The integral type.
  */
 class index {
+    using subdivision_type = dimensions<N,T>::subdivision_type;
+
     std::array<T, N> m_indices; ///< The array of indices
     T m_level; ///< The level within the grid
 
@@ -37,11 +39,6 @@ public:
     index (): index(0) {}
     index(const T level): m_indices{}, m_level(level){ m_indices.fill(0); }
     index(const std::array<T, N> indices, const T level): m_indices(indices), m_level(level){}
-
-    enum subdivision_type{
-        POINTS=0,
-        BOXES
-    };
 
     /**
      * \brief Return the level of the index.
@@ -59,7 +56,7 @@ public:
     void set_level(const T level, const subdivision_type subdivType){
         T coef(1 << ((level > m_level) ? level - m_level : m_level - level));
         switch(subdivType){
-            case POINTS:
+            case dimensions<N,T>::POINTS_SUBDIVISION:
                 if(m_level < level){
                     for (auto& pt : m_indices) pt *= coef;
                 }
@@ -67,7 +64,7 @@ public:
                     for (auto& pt : m_indices) pt /= coef;
                 }
             break;
-            case BOXES:
+            case dimensions<N,T>::BOXES_SUBDIVISION:
                 if(m_level < level){
                     for (auto& pt : m_indices){
                         if (pt % 2 == 0){
