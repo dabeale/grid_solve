@@ -6,7 +6,7 @@
 int test_grid(){
     std::cout << "Test grid" << std::endl;
     int retVal = 0;
-    gs::dimensions<3> dims({2,2,2}, 2);
+    gs::dimensions<3> dims({2,2,2}, 3);
     gs::grid<3, double, double> grid(dims, gs::dimensions<3>::POINTS_SUBDIVISION);
     {
         uint32_t nPts = 0;

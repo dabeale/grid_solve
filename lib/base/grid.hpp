@@ -38,7 +38,7 @@ requires std::is_integral<S>::value
  *      S           - The integral type to use.
  */
 class grid {
-    using subdivision_type = dimensions<N,S>::subdivision_type;
+    using subdivision_type = typename dimensions<N,S>::subdivision_type;
 
     std::vector<GridElement> m_gridStorage; ///< Storage at each of the points in the grid.
     std::vector<std::vector<BoxElement>> m_boxStorage; ///< Storage at each level of the 2^N tree.
@@ -233,7 +233,7 @@ public:
         const auto pastEndIt = box_stack_iterator<N, S>(m_dimensions, m_subDivType, true);
         for(
             auto boxIt = box_stack_iterator<N, S>(m_dimensions, m_subDivType);
-            boxIt != pastEndIt;
+            boxIt < pastEndIt;
             ++boxIt
         ){
             callable(*boxIt);

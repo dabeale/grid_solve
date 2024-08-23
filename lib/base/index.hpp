@@ -30,7 +30,7 @@ requires std::is_integral<T>::value
  *      T - The integral type.
  */
 class index {
-    using subdivision_type = dimensions<N,T>::subdivision_type;
+    using subdivision_type = typename dimensions<N,T>::subdivision_type;
 
     std::array<T, N> m_indices; ///< The array of indices
     T m_level; ///< The level within the grid

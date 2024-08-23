@@ -17,15 +17,15 @@ int testq_fmm_exp2_1d(){
 
     // Set the standard deviation.
     const double sigma = 5.0;
-    gs::dimensions<1> dims({2}, 10);
+    gs::dimensions<1> dims(2, 10);
     gs::exp_squared_est<double, nDims, nDegree> estimator(sigma);
 
     // Set up FMM algorithm.
     gs::analytic_multiply<double, nDims, nDegree, gs::exp_squared_est> analyticMult(
-        gs::dimensions<1>({2}, 10), estimator
+        gs::dimensions<1>(2, 10), estimator
     );
 
-    const size_t size = gs::pow<2,9>() + 1;
+    const size_t size = gs::pow<2,10>();
     std::vector<double> inputVec(size, 0.0);
     for(size_t i=0; i<10; ++i)
         inputVec[250+i] = 1.0;

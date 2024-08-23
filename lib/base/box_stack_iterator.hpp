@@ -30,11 +30,12 @@ requires std::is_integral<T>::value && std::is_unsigned<T>::value && (N > 0)
  * incremented.
  */
 class box_stack_iterator {
-    using subdivision_type = dimensions<N,T>::subdivision_type;
+    using subdivision_type = typename dimensions<N,T>::subdivision_type;
 
     dimensions<N,T> m_dimensions;   ///< The dimensions of the grid
     box_stack<N,T> m_stack;         ///< The stack of boxes
     std::vector<T> m_counts;        ///< The counts
+    T m_firstBoxMax;                ///< Max index of the first box (it not a subbox)
     T m_maxLevel;                   ///< The maximum level
     subdivision_type m_subDivType;  ///< The subdivision type
 
@@ -49,7 +50,7 @@ class box_stack_iterator {
         T firstChangedIndex = m_maxLevel-1;
         ++m_counts[firstChangedIndex];
         for (size_t i=1; i<m_maxLevel; ++i){
-            if( m_counts[m_maxLevel-i] == m_nSubBoxes){
+            if(m_counts[m_maxLevel-i] >= m_nSubBoxes){
                 m_counts[m_maxLevel-i]=0;
                 firstChangedIndex = m_maxLevel-i-1;
                 ++m_counts[firstChangedIndex];
@@ -58,8 +59,8 @@ class box_stack_iterator {
                 break;
             }
         }
-        if(m_counts[0] > m_nSubBoxes){
-            m_counts[0] = m_nSubBoxes;
+        if(m_counts[0] > m_firstBoxMax){
+            m_counts[0] = m_firstBoxMax;
             firstChangedIndex = 0;
         }
         return firstChangedIndex;
@@ -70,12 +71,13 @@ public:
     box_stack_iterator(const dimensions<N,T>& dims, const subdivision_type subDiv, const bool past_end=false):
         m_dimensions(dims),
         m_counts(dims.max_level(), 0),
+        m_firstBoxMax(dims.max_ind(0, subDiv, dimensions<N, T>::BOXES_MODE)),
         m_maxLevel(dims.max_level()),
         m_subDivType(subDiv)
     {
         const T start_offset=0;
         if(past_end){
-            m_counts[0]=m_nSubBoxes;
+            m_counts[0]=m_firstBoxMax;
         } 
         else {
             m_stack.reserve(m_maxLevel);
@@ -143,7 +145,26 @@ public:
 
     const box_stack<N,T>& operator*(){return m_stack;} ///< Access the underlying stack
     operator const box_stack<N,T>& () const {return m_stack;} ///< Access the underlying stack
+
+    template<int M, typename S>
+    friend std::ostream& operator<<(std::ostream& os, const box_stack_iterator<M, S>& it);
 };
+
+template<int N, typename T=uint32_t>
+/**
+ * \brief Append the iterator to an output stream.
+ */
+std::ostream& operator<<(std::ostream& os, const box_stack_iterator<N, T>& it)
+{
+    const size_t M = it.m_counts.size();
+    os << "[";
+    for(size_t i=0; i<M-1; ++i){
+        os << it.m_counts[i] << ",";
+    }
+    os << it.m_counts[M-1] << "]";
+    return os;
+}
+
 }
 
 #endif

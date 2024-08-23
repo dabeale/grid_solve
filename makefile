@@ -1,7 +1,7 @@
-CXX=g++ -std=c++23
+CXX=g++ -std=c++20
 INCLUDE=-Ilib -Itests
 RFLAGS=-Ofast -Wall
-DFLAGS=-g -Wall
+DFLAGS=-g -Wall -D_GLIBCXX_DEBUG
 DOXY=doxygen
 
 all: bin bin/test_release bin/test_debug docs

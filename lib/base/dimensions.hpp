@@ -103,10 +103,16 @@ public:
      * 
      * In either subdivision type we can specify a box or a point. The 
      * modality defines the type of output that is required.
+     * 
+     * Conversions can be made between modalities by considering the
+     * first corner point in each box. There is a one-to-one
+     * mapping between the first corner point and each box.
      */
     enum modality {
         BOXES_MODE = 0,
-        POINTS_MODE
+        POINTS_MODE,
+        POINTS_TO_BOXES,
+        BOXES_TO_POINTS
     };
 
     /**
@@ -121,7 +127,9 @@ public:
      */
     std::array<T, N> level_dims(const T level, const subdivision_type subDiv, const modality mode) const {
         std::array<T, N> levelDims;
+        levelDims.fill(0);
         switch (mode){
+            case dimensions<N,T>::POINTS_TO_BOXES:
             case dimensions<N,T>::POINTS_MODE:
                 switch (subDiv) {
                     case dimensions<N,T>::POINTS_SUBDIVISION:
@@ -144,23 +152,34 @@ public:
                                         levelToUse=level-1;
                                 }
                             }
-                            levelDims[i] = (dimension-1)*(1 << levelToUse) + 1;
+                            levelDims[i] = ((dimension-1) << levelToUse) + 1;
                         }
                         break;
                 case dimensions<N,T>::BOXES_SUBDIVISION:
                     for (T i=0; i<N; ++i){
-                        levelDims[i] = m_dimensions[i]*( 1 << level );
+                        levelDims[i] = m_dimensions[i] << level;
                     }
                     break;
                 }
                 break;
+            case dimensions<N,T>::BOXES_TO_POINTS:
             case dimensions<N,T>::BOXES_MODE:
-                // The dimensions of each of the boxes - 1 less in each dimension
-                // since the dimensions are specified in terms of the points.
-                for (T i=0; i<N; ++i){
-                    levelDims[i] = (m_dimensions[i]-1)*( 1 << level );
+                switch (subDiv) {
+                    case dimensions<N,T>::POINTS_SUBDIVISION:
+                        // The dimensions of each of the boxes - 1 less in each dimension
+                        // since the dimensions are specified in terms of the points.
+                        for (T i=0; i<N; ++i){
+                            levelDims[i] = (m_dimensions[i]-1) << level;
+                        }
+                        break;
+                    case dimensions<N,T>::BOXES_SUBDIVISION:
+                        // There are a factor of half less boxes than points in
+                        // box subdivision.
+                        for (T i=0; i<N; ++i){
+                            levelDims[i] = (level > 0) ? m_dimensions[i] << (level-1) : m_dimensions[i] >> 1;
+                        }
+                        break;
                 }
-                break;
         }
         return levelDims;
     }
@@ -199,8 +218,21 @@ public:
         std::array<T, N> indices;
         for (T i = 1; i <= N; ++i){
             indices[N-i] = (ind / coef) % levelDims[N-i];
+            switch (mode)
+            {
+            case dimensions<N,T>::BOXES_TO_POINTS:
+                if (subDiv == dimensions<N,T>::BOXES_SUBDIVISION) indices[N-i]*=2;
+                break;
+            case dimensions<N,T>::POINTS_TO_BOXES:
+                if (subDiv == dimensions<N,T>::BOXES_SUBDIVISION) indices[N-i]/=2;
+                break;
+            case dimensions<N,T>::BOXES_MODE:
+            case dimensions<N,T>::POINTS_MODE:
+                break;
+            }
             coef *= levelDims[N-i];
         }
+        
         return indices;
     }
 
@@ -216,6 +248,20 @@ public:
         const auto levelDims = dimensions<N,T>::level_dims(level, subDiv, mode);
         T retInd = indices[N-1];
         T coef = levelDims[N-1];
+
+        switch (mode)
+        {
+        case dimensions<N,T>::BOXES_TO_POINTS:
+            if (subDiv == dimensions<N,T>::BOXES_SUBDIVISION) coef*=2;
+            break;
+        case dimensions<N,T>::POINTS_TO_BOXES:
+            if (subDiv == dimensions<N,T>::BOXES_SUBDIVISION) coef/=2;
+            break;
+        case dimensions<N,T>::BOXES_MODE:
+        case dimensions<N,T>::POINTS_MODE:
+            break;
+        }
+
         for (T i=2; i<=N; ++i){
             retInd += coef*indices[N-i];
             coef *= levelDims[N-i];

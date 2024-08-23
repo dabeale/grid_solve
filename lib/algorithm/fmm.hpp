@@ -45,6 +45,8 @@ requires (
  *      BoxElement  - The element type to be stored at each box in the tree.
  */
 class fmm {
+    using subdivision_type = typename dimensions<N, T>::subdivision_type;
+
     grid<N, GridElement, BoxElement, T> m_grid; ///< The underlying grid.
     FTraversal m_fineTraversalFunc; ///< The traversal function for the finest level
     FBoxWeight m_boxWeightFunc; ///< The box weight function.
@@ -54,7 +56,7 @@ public:
         const dimensions<N, T> dims,
         FTraversal fineTraversalFunc,
         FBoxWeight boxWeightFunc,
-        const dimensions<N, T>::subdivision_type subDiv
+        const subdivision_type subDiv
     ) :
         m_grid(dims, subDiv),
         m_fineTraversalFunc(fineTraversalFunc),

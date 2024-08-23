@@ -46,12 +46,12 @@ class analytic_multiply  {
     static constexpr size_t m_nBoxCorners = pow<2,M>(); ///< The number of corners of each box.
     static constexpr double m_dTaylorTol = 0.1; ///< The tolerance below which we use Taylor expansions.
 
-    using f_traversal = vector_field<M, T, D>::f_traversal; ///< The traversal function
-    using f_box_weight = vector_field<M, T, D>::f_box_weight; ///< The box weight function
-    using grid_val = gs::vector_field<M,T,D>::grid_val; ///< A value in the grid
-    using box_val = gs::vector_field<M,T,D>::box_val;   ///< A value stored in each box
-    using box_corners = std::array<vector<T,M>, m_nBoxCorners>; ///< The corners of the box
-    using box_values = std::array<T, m_nBoxCorners>;      ///< The values at each corner
+    using f_traversal = typename vector_field<M, T, D>::f_traversal; ///< The traversal function
+    using f_box_weight = typename vector_field<M, T, D>::f_box_weight; ///< The box weight function
+    using grid_val = typename gs::vector_field<M,T,D>::grid_val; ///< A value in the grid
+    using box_val = typename gs::vector_field<M,T,D>::box_val;   ///< A value stored in each box
+    using box_corners = typename std::array<vector<T,M>, m_nBoxCorners>; ///< The corners of the box
+    using box_values = typename std::array<T, m_nBoxCorners>;      ///< The values at each corner
 
     /**
      * \brief Get the values and points at the corners of 
@@ -123,9 +123,9 @@ public:
                 for(const auto& box : boxStack ){
                     auto& boxVal = grid[box];
                     bool& doneFirst = std::get<2>(boxVal);
-                    const auto cornerVals = analytic_multiply::corner_vals(box, grid);
                     if(!doneFirst){
                         // Compute the center of the box
+                        const auto cornerVals = analytic_multiply::corner_vals(box, grid);
                         std::get<1>(boxVal) = mean(cornerVals.first);
                         doneFirst = true;
                     }
