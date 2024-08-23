@@ -12,10 +12,10 @@
 int main(int args, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
+    //error += testq_fmm_exp2_1d();
     error += test_bsi_boxes_1D();
     error += test_bsi_points_1D();
     error += test_subbox_duel();
-    //error += testq_fmm_exp2_1d();
     error += test_dimensions_sub2ind();
     error += test_index_call_duel();
     error += test_grid();

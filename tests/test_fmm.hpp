@@ -52,8 +52,8 @@ int testq_fmm_exp2_1d(){
     for(size_t i=0; i<size; ++i){
         for(size_t j=0; j<size; ++j){
             expected[i] += estimator(
-                gs::vector<double, 1>(dims.ind2sub(i, dims.max_level()-1)),
-                gs::vector<double, 1>(dims.ind2sub(j, dims.max_level()-1))
+                gs::vector<double, 1>(dims.ind2sub(i, dims.max_level()-1, gs::dimensions<1>::BOXES_SUBDIVISION)),
+                gs::vector<double, 1>(dims.ind2sub(j, dims.max_level()-1, gs::dimensions<1>::BOXES_SUBDIVISION))
             )*inputVec[j];
         }
     }

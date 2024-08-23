@@ -64,6 +64,13 @@ public:
     {}
 
     /**
+     * \brief Get the box offset
+     */
+    T get_offset() const{
+        return m_offset;
+    }
+
+    /**
      * \brief Get the current level.
      */
     T get_level() const {

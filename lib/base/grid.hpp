@@ -124,26 +124,14 @@ public:
      * \brief Access the box storage using a box
      */
     const BoxElement& operator[] (const box<N,S>& boxVal) const{
-        return m_boxStorage[
-            boxVal.get_level()
-        ][
-            m_dimensions.reduce().sub2ind(
-                boxVal[0], boxVal.get_level(), m_subDivType, dimensions<N, S>::BOXES_MODE
-            )
-        ];
+        return m_boxStorage[boxVal.get_level()][boxVal.get_offset()];
     }
 
     /**
      * \brief Access the box storage using a box
      */
     BoxElement& operator[] (const box<N,S>& boxVal){
-        return m_boxStorage[
-            boxVal.get_level()
-        ][
-            m_dimensions.sub2ind(
-                boxVal[0], boxVal.get_level(), m_subDivType, dimensions<N, S>::BOXES_MODE
-            )
-        ];
+        return m_boxStorage[boxVal.get_level()][boxVal.get_offset()];
     }
 
     /**
