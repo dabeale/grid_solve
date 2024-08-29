@@ -31,6 +31,7 @@ class box {
 
     std::array<index<N, T>, pow<2,N>()> m_corners; ///< The corners.
     T m_level; ///< The box level.
+    T m_indexInParent; ///< The index of the box within it's parent.
     T m_offset; ///< The box index (offset)
     dimensions<N,T> m_dimensions; ///< The dimensions of the box.
     subdivision_type m_subdivType; ///< True if the box is a duel box
@@ -39,8 +40,18 @@ public:
     static constexpr T m_nCorners = pow<2,N>();   ///< The number of corners.
     static constexpr T m_nSubPoints = pow<3,N>(); ///< The number of subpoints.
 
-    box(const dimensions<N,T> inDims, const T level, const subdivision_type subdivType, const T offset=0):
-        m_level(level), m_offset(offset), m_dimensions(inDims), m_subdivType(subdivType)
+    box(
+        const dimensions<N,T> inDims,
+        const T level,
+        const subdivision_type subdivType,
+        const T offset=0,
+        const T indexInParent=0
+    ):
+        m_level(level),
+        m_indexInParent(indexInParent),
+        m_offset(offset),
+        m_dimensions(inDims),
+        m_subdivType(subdivType)
     {
         for (T i = 0; i < m_nCorners; ++i){
             m_corners[i] = (
@@ -59,9 +70,6 @@ public:
             );
         }
     }
-    box(const dimensions<N,T> dimensions, const std::array<index<N, T>, m_nCorners> corners, const T level):
-        m_corners(corners), m_level(level), m_dimensions(dimensions)
-    {}
 
     /**
      * \brief Get the box offset
@@ -140,36 +148,9 @@ public:
             m_dimensions.sub2ind(
                 subp1 + dimensions<N,T>::unitary(ind),
                 m_level+1, m_subdivType, dimensions<N,T>::BOXES_MODE
-            )
+            ),
+            ind
         );
-    }
-
-    /**
-     * \brief Find the neighbour box with the specified index.
-     * 
-     * This method enumerates all of the boxes within the parent
-     * box, not all boxes at the current layer, unless we are at
-     * layer 0 - for which there is no parent box. The number of
-     * neighbours is thus fixed at each layer apart from layer 0.
-     * To get the number of neighbours use the n_nbrs method.
-     */
-    box<N,T> neighbour(const T ind) const {
-        if (m_level > 0){
-            return box<N,T>(
-                m_dimensions,
-                m_level-1,
-                m_subdivType,
-                m_dimensions.sub2ind(
-                    m_corners[0].at_level(m_level-1, m_subdivType),
-                    m_level-1,
-                    m_subdivType,
-                    dimensions<N,T>::BOXES_MODE
-                )
-            ).subbox(ind);
-        }
-        else {
-            return box<N,T>(m_dimensions, m_level, m_subdivType, ind);
-        }
     }
 
     /**
@@ -189,21 +170,10 @@ public:
     }
 
     /**
-     * \brief Find the index of the box within it's
-     * parent.
+     * \brief Get the index of the box within it's parent.
      */
     T index_in_parent() const{
-        std::array<T,N> remainderIndex(m_corners[0].at_level(m_level, m_subdivType));
-        // Find the remainder of division by 2 
-        // Division gives the index in the level up, and the
-        // remainder is the position within the box. If we are
-        // already at the lowest level then there is no need.
-        if ( m_level > 0 ) {
-            for(size_t i=0; i<N; ++i){
-                remainderIndex[i] %= 2;
-            }
-        }
-        return m_dimensions.sub2ind(remainderIndex, 0, m_subdivType, dimensions<N,T>::BOXES_MODE);
+        return m_indexInParent;
     }
 
     /**

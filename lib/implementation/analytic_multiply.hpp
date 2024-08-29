@@ -44,7 +44,6 @@ requires (
  */
 class analytic_multiply  {
     static constexpr size_t m_nBoxCorners = pow<2,M>(); ///< The number of corners of each box.
-    static constexpr double m_dTaylorTol = 0.1; ///< The tolerance below which we use Taylor expansions.
 
     using f_traversal = typename vector_field<M, T, D>::f_traversal; ///< The traversal function
     using f_box_weight = typename vector_field<M, T, D>::f_box_weight; ///< The box weight function
@@ -80,41 +79,42 @@ public:
         m_fmm(
             dims,
             [&](const box_stack<M>& boxStack, grid<M, grid_val, box_val>& grid){
+                const size_t cutoff = 1;
                 const auto finestBox = boxStack[boxStack.size()-1];
                 for( const auto& ci : finestBox){
                     auto& corner_i = grid[ci];
-                    // Only compute each point location once.
-                    if ( !std::get<3>(corner_i) ){
-                        // Iterate all boxes and find their neighbours
-                        for(size_t boxi = 1; boxi < boxStack.size()-1; ++boxi ){
-                            // Find the index of the current box
-                            const auto currentBoxi = boxStack[boxi].index_in_parent();
-                            // For each of the neighbours at every level
-                            for(size_t i=0; i<boxStack[boxi].n_nbrs(); ++i){
-                                // Only approximate neighbour boxes
-                                if(currentBoxi != i){
-                                    auto neighbour = boxStack[boxi].neighbour(i);
-                                    auto& nbrStorage = grid[neighbour];
-                                    auto est =  m_f_estimator.estimate(
-                                        std::get<0>(nbrStorage), // The polynomial
-                                        std::get<1>(nbrStorage), // The center of the box
-                                        std::get<2>(corner_i)    // The corner point
-                                    );
-                                    std::get<0>(corner_i) += est;
-                                }
+                    // Iterate all boxes and find their neighbours
+                    // The zeroth box has no neighbours.
+                    for(size_t boxi = 1; boxi < boxStack.size()-cutoff; ++boxi ){
+                        // Find the index of the current box
+                        const auto currentBoxi = boxStack[boxi].index_in_parent();
+                        // For each of the neighbours at every level
+                        for(size_t i=0; i<boxStack[boxi].n_nbrs(); ++i){
+                            // Only approximate neighbour boxes
+                            if(currentBoxi != i){
+                                auto neighbour = boxStack[boxi-1].subbox(i);
+                                auto& nbrStorage = grid[neighbour];
+                                std::get<0>(corner_i) += m_f_estimator.estimate(
+                                    std::get<0>(nbrStorage), // The polynomial
+                                    std::get<1>(nbrStorage), // The center of the box
+                                    std::get<2>(corner_i)    // The corner point
+                                );
                             }
                         }
-                        // Compute the precise value for the near field by multiplying 
-                        // and summing over all values.
-                        for( const auto& cj : finestBox){
-                            const auto& corner_j = grid[cj];
-                            std::get<0>(corner_i) += (
-                                m_f_estimator(std::get<2>(corner_i), std::get<2>(corner_j))*
-                                std::get<1>(corner_j)
-                            );
+                    }
+                    // Compute the precise value for the near field by multiplying 
+                    // and summing over all values.
+                    for(size_t boxi = boxStack.size()-cutoff; boxi < boxStack.size(); ++boxi ){
+                        for(size_t i=0; i<boxStack[boxi].n_nbrs(); ++i){
+                            auto neighbour = boxStack[boxi-1].subbox(i);
+                            for( const auto& cj : neighbour){
+                                const auto& corner_j = grid[cj];
+                                std::get<0>(corner_i) += (
+                                    m_f_estimator(std::get<2>(corner_i), std::get<2>(corner_j))*
+                                    std::get<1>(corner_j)
+                                );
+                            }
                         }
-                        // Mark the corner as done
-                        std::get<3>(corner_i) = 1;
                     }
                 }
             },
@@ -134,19 +134,14 @@ public:
                 const auto& leafBox = boxStack[boxStack.size()-1];
                 // Find the corners and values
                 const auto cornerVals = analytic_multiply::corner_vals(leafBox, grid);
-                for(size_t boxi = 1; boxi < boxStack.size()-1; ++boxi  ){
+                for(size_t boxi = 1; boxi < boxStack.size(); ++boxi  ){
                     auto& boxVal = grid[boxStack[boxi]];
-                    const auto& leafCenter = std::get<1>(grid[leafBox]);
-                    const auto& boxCenter = std::get<1>(boxVal);
-                    // Taylor is only accurate for nearby points.
-                    if(m_f_estimator(leafCenter, boxCenter) > m_dTaylorTol){
-                        // Update the polynomials.
-                        std::get<0>(boxVal) += m_f_estimator.compute_coefs(
-                            cornerVals.first,
-                            std::get<1>(boxVal),
-                            cornerVals.second
-                        );
-                    }
+                    // Update the polynomials.
+                    std::get<0>(boxVal) += m_f_estimator.compute_coefs(
+                        cornerVals.first,
+                        std::get<1>(boxVal),
+                        cornerVals.second
+                    );
                 }
             },
             dimensions<M>::BOXES_SUBDIVISION
@@ -165,7 +160,7 @@ public:
                 0.0, // Output value
                 init_vec[i], // Input Value
                 gs::vector<double, M>(
-                    m_dimensions.ind2sub(i, m_dimensions.max_level()-1)
+                    m_dimensions.ind2sub(i, m_dimensions.max_level()-1,dimensions<M>::BOXES_SUBDIVISION)
                 ), // Position
                 0,  // Level computed at
             };

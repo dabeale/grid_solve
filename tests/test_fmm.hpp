@@ -13,22 +13,21 @@ int testq_fmm_exp2_1d(){
 
     // Define base types
     const size_t nDims = 1;
-    const size_t nDegree = 2;
+    const size_t nDegree = 15;
 
     // Set the standard deviation.
-    const double sigma = 5.0;
-    gs::dimensions<1> dims(2, 10);
+    const double sigma = 2.0;
+    gs::dimensions<1> dims(2, 4);
     gs::exp_squared_est<double, nDims, nDegree> estimator(sigma);
 
     // Set up FMM algorithm.
     gs::analytic_multiply<double, nDims, nDegree, gs::exp_squared_est> analyticMult(
-        gs::dimensions<1>(2, 10), estimator
+        gs::dimensions<1>(2, 4), estimator
     );
 
-    const size_t size = gs::pow<2,10>();
+    const size_t size = gs::pow<2,4>();
     std::vector<double> inputVec(size, 0.0);
-    for(size_t i=0; i<10; ++i)
-        inputVec[250+i] = 1.0;
+    inputVec[6] = inputVec[7] = inputVec[8] = inputVec[9] = 1.0;
     analyticMult.initialise(inputVec);
 
     // Compute the solution
@@ -37,16 +36,9 @@ int testq_fmm_exp2_1d(){
     // Get output
     auto output = analyticMult.output();
 
-    retVal += ASSERT_BOOL(output[255] > 0);
     for(const auto v :analyticMult.output()){
-        if(v > 1e-3)
-            std::cout << v << ",";
-        else
-            std::cout << 0 << ",";
         retVal += ASSERT_BOOL(!std::isnan(v) && !std::isinf(v) );
     }
-    std::cout << std::endl;
-    std::cout << std::endl;
 
     std::vector<double> expected(size, 0.0);
     for(size_t i=0; i<size; ++i){
@@ -57,16 +49,9 @@ int testq_fmm_exp2_1d(){
             )*inputVec[j];
         }
     }
-    for(const auto v :expected){
-        if(v > 1e-3)
-            std::cout << v << ",";
-        else
-            std::cout << 0 << ",";
+    for(size_t i=0; i<expected.size(); ++i){
+        retVal += ASSERT_BOOL(std::abs(expected[i] - output[i]) < 2e-4);
     }
-    std::cout << std::endl;
-
-    std::cout << "Incomplete fmm testing, assert" << std::endl;
-    retVal += ASSERT_BOOL(false); // @TODO unfinished
 
     return retVal;
 }
