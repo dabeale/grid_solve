@@ -15,8 +15,6 @@ jobs:
       run: echo ${{ secrets.DOCKER_PASS }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
     - name: Build the Docker image
       run: docker build . --tag danbeale/grid_solve:$(date +%s)
-    - name: Push the Docker image
-      run: docker push danbeale/grid_solve:$(date +%s)
     - name: Run the tests
       run: docker run --rm grid-solve:$(date +%s)
     - name: Docker logout
