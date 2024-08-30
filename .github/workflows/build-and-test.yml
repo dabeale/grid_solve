@@ -11,11 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Docker login
-      run: echo ${{ secrets.DOCKER_PASS }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
     - name: Build the Docker image
       run: docker build . --tag danbeale/grid_solve:$(date +%s)
-    - name: Run the tests
       run: docker run --rm grid-solve:$(date +%s)
-    - name: Docker logout
-      run: docker logout
