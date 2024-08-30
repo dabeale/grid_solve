@@ -14,4 +14,4 @@ jobs:
     - name: Build and run the Docker image
       run: >
         docker build . --tag danbeale/grid_solve:latest &&
-        docker run --rm danbeale/grid-solve:latest
+        docker run --rm danbeale/grid_solve:latest
