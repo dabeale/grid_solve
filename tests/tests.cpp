@@ -13,8 +13,9 @@
 int main(int args, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
-    error += test_exp_estimator();
+    error += testq_fmm_exp2_2d();
     error += testq_fmm_exp2_1d();
+    error += test_exp_estimator();
     error += test_bsi_boxes_1D();
     error += test_bsi_points_1D();
     error += test_subbox_duel();
