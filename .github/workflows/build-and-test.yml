@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
-    - name: Build the Docker image
+    - name: Build and run the Docker image
       run: >
-        docker build . --tag danbeale/grid_solve:$(date +%s) &&
-        docker run --rm grid-solve:$(date +%s)
+        docker build . --tag danbeale/grid_solve:latest &&
+        docker run --rm grid-solve:latest
