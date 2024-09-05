@@ -10,7 +10,7 @@
 #include "test_iterator.hpp"
 #include "test_estimators.hpp"
 
-int main(int args, char* argv[]){
+int main(int, char* argv[]){
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
     error += testq_fmm_exp2_2d();
