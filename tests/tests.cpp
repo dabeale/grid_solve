@@ -1,15 +1,15 @@
 // Copyright 2024 Daniel Beale CC BY-NC-SA 4.0
 
-#include "tests/test_index.hpp"
-#include "tests/test_box.hpp"
-#include "tests/test_dimensions.hpp"
-#include "tests/test_grid.hpp"
-#include "tests/test_fmm.hpp"
-#include "tests/test_math.hpp"
-#include "tests/test_functions.hpp"
-#include "tests/test_taylor.hpp"
-#include "tests/test_iterator.hpp"
-#include "tests/test_estimators.hpp"
+#include "./test_index.hpp"
+#include "./test_box.hpp"
+#include "./test_dimensions.hpp"
+#include "./test_grid.hpp"
+#include "./test_fmm.hpp"
+#include "./test_math.hpp"
+#include "./test_functions.hpp"
+#include "./test_taylor.hpp"
+#include "./test_iterator.hpp"
+#include "./test_estimators.hpp"
 
 int main(int, char* argv[]) {
     std::cout << argv[0] << " test suite" << std::endl;
