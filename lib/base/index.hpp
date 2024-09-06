@@ -1,16 +1,17 @@
+// Copyright 2024 Daniel Beale CC BY-NC-SA 4.0
+#ifndef LIB_BASE_INDEX_HPP_
+#define LIB_BASE_INDEX_HPP_
 
-#ifndef _GS_INDEX_
-#define _GS_INDEX_
+#include <inttypes.h>
 
 #include <iostream>
-#include <inttypes.h>
 #include <array>
 
 #include "base/concepts.hpp"
 #include "base/dimensions.hpp"
 
 namespace gs {
-template<int N, typename T=uint32_t>
+template<int N, typename T = uint32_t>
 requires std::is_integral<T>::value
 /**
  * \brief An index within a grid.
@@ -30,15 +31,17 @@ requires std::is_integral<T>::value
  *      T - The integral type.
  */
 class index {
-    using subdivision_type = typename dimensions<N,T>::subdivision_type;
+    using subdivision_type = typename dimensions<N, T>::subdivision_type;
 
-    std::array<T, N> m_indices; ///< The array of indices
-    T m_level; ///< The level within the grid
+    std::array<T, N> m_indices;  ///< The array of indices
+    T m_level;  ///< The level within the grid
 
-public:
-    index (): index(0) {}
-    index(const T level): m_indices{}, m_level(level){ m_indices.fill(0); }
-    index(const std::array<T, N> indices, const T level): m_indices(indices), m_level(level){}
+ public:
+    index(): index(0) {}
+    explicit index(const T level):
+        m_indices{}, m_level(level) { m_indices.fill(0); }
+    index(const std::array<T, N> indices, const T level):
+        m_indices(indices), m_level(level) {}
 
     /**
      * \brief Return the level of the index.
@@ -53,34 +56,30 @@ public:
      * Changing the level will ensure that the index is properly
      * preserved in the grid.
      */
-    void set_level(const T level, const subdivision_type subdivType){
+    index<N, T>& set_level(const T level, const subdivision_type subdivType) {
         T coef(1 << ((level > m_level) ? level - m_level : m_level - level));
-        switch(subdivType){
-            case dimensions<N,T>::POINTS_SUBDIVISION:
-                if(m_level < level){
-                    for (auto& pt : m_indices) pt *= coef;
-                }
-                else if (m_level > level){
-                    for (auto& pt : m_indices) pt /= coef;
+        switch ( subdivType ) {
+            case dimensions<N, T>::POINTS_SUBDIVISION:
+                if ( m_level < level ) {
+                    for ( auto& pt : m_indices ) pt *= coef;
+                } else if ( m_level > level ) {
+                    for ( auto& pt : m_indices ) pt /= coef;
                 }
             break;
-            case dimensions<N,T>::BOXES_SUBDIVISION:
-                if(m_level < level){
-                    for (auto& pt : m_indices){
-                        if (pt % 2 == 0){
+            case dimensions<N, T>::BOXES_SUBDIVISION:
+                if ( m_level < level ) {
+                    for ( auto& pt : m_indices ) {
+                        if ( pt % 2 == 0 ) {
                             pt *= coef;
-                        }
-                        else {
+                        } else {
                             pt = (1+pt)*coef - 1;
                         }
                     }
-                }
-                else if (m_level > level){
-                    for (auto& pt : m_indices){
-                        if (pt % 2 == 0){
+                } else if ( m_level > level ) {
+                    for ( auto& pt : m_indices ) {
+                        if ( pt % 2 == 0 ) {
                             pt /= coef;
-                        }
-                        else {
+                        } else {
                             pt = (1+pt)/coef - 1;
                         }
                     }
@@ -88,56 +87,67 @@ public:
             break;
         }
         m_level = level;
+        return *this;
     }
 
     /**
      * \brief Create a new index of specified level and return it.
      */
-    index<N, T> at_level(const T level, const subdivision_type subdivType) const {
-        if(level == m_level){
-            return *this;
-        }
-        index<N, T> newIndex(*this);
-        newIndex.set_level(level, subdivType);
-        return newIndex;
+    index<N, T> at_level(
+        const T level,
+        const subdivision_type subdivType)
+    const {
+        if ( level == m_level ) { return *this; }
+        return index<N, T>(*this).set_level(level, subdivType);
     }
 
     /**
      * \brief Add to another index.
      */
-    index<N,T> operator+(index<N,T> other) const{
-        index<N,T> newRet(*this);
-        newRet += other;
-        return newRet;
+    index<N, T> operator+(index<N, T> other) const {
+        return index<N, T>(*this) += other;
     }
     /**
      * \brief Add to another index.
      */
-    const index<N,T>& operator+=(index<N,T> other){
-        for (T k=0; k<N; ++k){
+    const index<N, T>& operator+=(index<N, T> other) {
+        for ( T k = 0; k < N; ++k ) {
             m_indices[k] += other.m_indices[k];
         }
         return *this;
     }
 
-    const T& operator[](const T i) const {return m_indices[i];} ///< Access the ith index.
-    T& operator[](const T i) {return m_indices[i];} ///< Access the ith index.
-    auto begin() -> decltype(m_indices.begin()){return m_indices.begin();} ///< Return a begin iterator into the indices
-    auto end() -> decltype(m_indices.end()){return m_indices.end();} ///< Return the end iterator into the indices
-    auto begin() const -> decltype(m_indices.begin()){return m_indices.begin();} ///< Return a begin iterator into the indices
-    auto end() const -> decltype(m_indices.end()){return m_indices.end();} ///< Return the end iterator into the indices
-    operator const std::array<T, N>&() const { return m_indices; } ///< Cast the index to an array
+    const T& operator[](const T i) const {
+        return m_indices[i];
+    }  ///< Access the ith index.
+    T& operator[](const T i) {
+        return m_indices[i];
+    }  ///< Access the ith index.
+    auto begin() -> decltype(m_indices.begin()) {
+        return m_indices.begin();
+    }  ///< Return a begin iterator into the indices
+    auto end() -> decltype(m_indices.end()) {
+        return m_indices.end();
+    }  ///< Return the end iterator into the indices
+    auto begin() const -> decltype(m_indices.begin()) {
+        return m_indices.begin();
+    }  ///< Return a begin iterator into the indices
+    auto end() const -> decltype(m_indices.end()) {
+        return m_indices.end();
+    }  ///< Return the end iterator into the indices
+    operator const std::array<T, N>&() const {
+        return m_indices;
+    }  ///< Cast the index to an array
 };
 
-template<int N, typename T=uint32_t>
+template<int N, typename T = uint32_t>
 /**
  * \brief Append the index to an output stream.
  */
-std::ostream& operator<<(std::ostream& os, const index<N, T>& boxVar)
-{
+std::ostream& operator<<(std::ostream& os, const index<N, T>& boxVar) {
     os << "(";
     T ind = 0;
-    for (const auto& corner : boxVar){
+    for ( const auto& corner : boxVar ) {
         os << corner;
         if ( ind++ < N - 1 ) {
             os << ",";
@@ -151,12 +161,12 @@ requires random_access_container<T> && std::is_integral<S>::value
 /**
  * \brief Equality operator for an index and array like structures.
  */
-bool operator==(index<N, S> ind, T arr){
-    for (S i = 0; i < N; ++i){
-        if (arr[i] != ind[i]) return false;
+bool operator==(index<N, S> ind, T arr) {
+    for ( S i = 0; i < N; ++i ) {
+        if ( arr[i] != ind[i] ) return false;
     }
     return true;
 }
-}
+}  // namespace gs
 
-#endif
+#endif  // LIB_BASE_INDEX_HPP_

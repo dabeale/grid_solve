@@ -1,6 +1,6 @@
-
-#ifndef _GS_EXP_SQUARED_EST_
-#define _GS_EXP_SQUARED_EST_
+// Copyright 2024 Daniel Beale CC BY-NC-SA 4.0
+#ifndef LIB_ESTIMATORS_EXP_SQUARED_EST_HPP_
+#define LIB_ESTIMATORS_EXP_SQUARED_EST_HPP_
 
 #include <cmath>
 
@@ -25,8 +25,8 @@ class exp_squared_est  {
     exp_inner<T, M, D> m_exp_inner;         ///< The exp inner product estimate
     taylor<T, M, D, exp_inner> m_taylor;  ///< The taylor estimate
 
-public:
-    exp_squared_est(const T sigma):
+ public:
+    explicit exp_squared_est(const T sigma):
         m_exp_squared(sigma),
         m_exp_inner(sigma),
         m_taylor(m_exp_inner) {}
@@ -34,8 +34,8 @@ public:
     /**
      * \brief Compute the exact value using the estimator
      */
-    T operator()(const vector<T, M>& a, const vector<T, M>& b) const{
-        return m_exp_squared(a,b);
+    T operator()(const gs::vector<T, M>& a, const gs::vector<T, M>& b) const {
+        return m_exp_squared(a, b);
     }
 
     /**
@@ -51,10 +51,10 @@ public:
      */
     T estimate(
         const polynomial<T, M, D>& poly,
-        const vector<T, M>& center,
-        const vector<T,M>& y
-    ) const{
-        return m_taylor.estimate(poly, vector<T,M>(), y-center);
+        const gs::vector<T, M>& center,
+        const gs::vector<T, M>& y)
+    const {
+        return m_taylor.estimate(poly, gs::vector<T, M>(), y-center);
     }
 
     template<size_t K>
@@ -68,19 +68,19 @@ public:
      * by the function and the values.
      */
     polynomial<T, M, D> compute_coefs(
-        std::array<vector<T, M>, K> vectorVals,
-        const vector<T, M>& center,
-        std::array<T, K> tVals
-    ) const {
+        std::array<gs::vector<T, M>, K> vectorVals,
+        const gs::vector<T, M>& center,
+        std::array<T, K> tVals)
+    const {
         polynomial<T, M, D> poly;
-        for(size_t i=0; i<K; ++i){
-            tVals[i] *= operator()(vectorVals[i],center);
+        for ( size_t i = 0; i < K; ++i ) {
+            tVals[i] *= operator()(vectorVals[i], center);
             vectorVals[i] -= center;
         }
         poly.fill(vectorVals, tVals);
         return poly;
     }
 };
-}
+}  // namespace gs
 
-#endif
+#endif  // LIB_ESTIMATORS_EXP_SQUARED_EST_HPP_
