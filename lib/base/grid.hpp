@@ -1,7 +1,8 @@
+// Copyright 2024 Daniel Beale CC BY-NC-SA 4.0
+#ifndef LIB_BASE_GRID_HPP_
+#define LIB_BASE_GRID_HPP_
 
-#ifndef _GS_GRID_
-#define _GS_GRID_
-
+#include <vector>
 #include <functional>
 
 #include "base/dimensions.hpp"
@@ -11,8 +12,8 @@
 #include "base/pattern.hpp"
 #include "base/box_stack_iterator.hpp"
 
-namespace gs{
-template<int N, class GridElement, class BoxElement, class S=uint32_t>
+namespace gs {
+template<int N, class GridElement, class BoxElement, class S = uint32_t>
 requires std::is_integral<S>::value
 /**
  * \brief A grid of objects of arbitrary dimension.
@@ -38,32 +39,37 @@ requires std::is_integral<S>::value
  *      S           - The integral type to use.
  */
 class grid {
-    using subdivision_type = typename dimensions<N,S>::subdivision_type;
+    using subdivision_type = typename dimensions<N, S>::subdivision_type;
 
-    std::vector<GridElement> m_gridStorage; ///< Storage at each of the points in the grid.
-    std::vector<std::vector<BoxElement>> m_boxStorage; ///< Storage at each level of the 2^N tree.
-    dimensions<N, S> m_dimensions; ///< The dimensions of the grid.
-    subdivision_type m_subDivType; ///< The subdivision type
+    std::vector<GridElement> m_gridStorage;
+        ///< Storage at each of the points in the grid.
+    std::vector<std::vector<BoxElement>> m_boxStorage;
+        ///< Storage at each level of the 2^N tree.
+    dimensions<N, S> m_dimensions;  ///< The dimensions of the grid.
+    subdivision_type m_subDivType;  ///< The subdivision type
 
-public:
+ public:
     grid() = delete;
     grid(const dimensions<N, S> dims, const subdivision_type subDiv):
-        m_gridStorage(dims.max_ind(dims.max_level()-1, subDiv, dimensions<N,S>::POINTS_MODE)),
+        m_gridStorage(
+            dims.max_ind(
+                dims.max_level()-1,
+                subDiv,
+                dimensions<N, S>::POINTS_MODE)),
         m_boxStorage(dims.max_level()),
         m_dimensions(dims),
-        m_subDivType(subDiv)
-
-    {
-        S i=0;
-        for(auto& boxStore : m_boxStorage){
-            boxStore.resize(dims.max_ind(i++, subDiv, dimensions<N, S>::BOXES_MODE));
+        m_subDivType(subDiv) {
+        S i = 0;
+        for ( auto& boxStore : m_boxStorage ) {
+            boxStore.resize(
+                dims.max_ind(i++, subDiv, dimensions<N, S>::BOXES_MODE));
         }
     }
 
     /**
      * \brief Set the grid storage.
      */
-    void set_grid(const std::vector<GridElement>& grid){
+    void set_grid(const std::vector<GridElement>& grid) {
         m_gridStorage = grid;
     }
 
@@ -101,9 +107,7 @@ public:
                 ind.at_level(m_dimensions.max_level()-1, m_subDivType),
                 m_dimensions.max_level()-1,
                 m_subDivType,
-                dimensions<N, S>::POINTS_MODE
-            )
-        );
+                dimensions<N, S>::POINTS_MODE));
     }
 
     /**
@@ -115,22 +119,20 @@ public:
                 ind.at_level(m_dimensions.max_level()-1, m_subDivType),
                 m_dimensions.max_level()-1,
                 m_subDivType,
-                dimensions<N, S>::POINTS_MODE
-            )
-        );
+                dimensions<N, S>::POINTS_MODE));
     }
 
     /**
      * \brief Access the box storage using a box
      */
-    const BoxElement& operator[] (const box<N,S>& boxVal) const{
+    const BoxElement& operator[] (const box<N, S>& boxVal) const {
         return m_boxStorage[boxVal.get_level()][boxVal.get_offset()];
     }
 
     /**
      * \brief Access the box storage using a box
      */
-    BoxElement& operator[] (const box<N,S>& boxVal){
+    BoxElement& operator[] (const box<N, S>& boxVal) {
         return m_boxStorage[boxVal.get_level()][boxVal.get_offset()];
     }
 
@@ -138,19 +140,33 @@ public:
      * \brief Get the corner values of the box in terms of
      * the grid storage object.
      */
-    std::array<GridElement, pow<2,N>()> get_corner_values(const box<N, S>& box) const{
-        std::array<GridElement, pow<2,N>()> gridValues;
-        S iCorner=0;
-        for(const auto& corner : box){
-            gridValues[iCorner++] = grid<N, GridElement, BoxElement, S>::operator[](corner);
+    std::array<GridElement, pow<2, N>()> get_corner_values(
+        const box<N, S>& box)
+    const {
+        std::array<GridElement, pow<2, N>()> gridValues;
+        S iCorner = 0;
+        for ( const auto& corner : box ) {
+            gridValues[iCorner++] = grid<N,
+                GridElement,
+                BoxElement,
+                S
+            >::operator[](corner);
         }
         return gridValues;
     }
 
-    auto begin() -> decltype(m_gridStorage.begin()){return m_gridStorage.begin();} ///< Return a begin iterator into the vertices
-    auto end() -> decltype(m_gridStorage.end()){return m_gridStorage.end();} ///< Return the end iterator into the vertices
-    auto begin() const -> decltype(m_gridStorage.begin()){return m_gridStorage.begin();} ///< Return a begin iterator into the vertices
-    auto end() const -> decltype(m_gridStorage.end()){return m_gridStorage.end();} ///< Return the end iterator into the vertices
+    auto begin() -> decltype(m_gridStorage.begin()) {
+        return m_gridStorage.begin();
+    }  ///< Return a begin iterator into the vertices
+    auto end() -> decltype(m_gridStorage.end()) {
+        return m_gridStorage.end();
+    }  ///< Return the end iterator into the vertices
+    auto begin() const -> decltype(m_gridStorage.begin()) {
+        return m_gridStorage.begin();
+    }  ///< Return a begin iterator into the vertices
+    auto end() const -> decltype(m_gridStorage.end()) {
+        return m_gridStorage.end();
+    }  ///< Return the end iterator into the vertices
 
     template<class F>
     requires std::invocable<F&, box<N, S>&, BoxElement&>
@@ -160,9 +176,12 @@ public:
     void iterate(
         const F& callable,
         const S level
-    ){
-        const S max_ind = m_dimensions.max_ind(level, m_subDivType, dimensions<N,S>::BOXES_MODE);
-        for(S i=0; i<max_ind; ++i){
+    ) {
+        const S max_ind = m_dimensions.max_ind(
+            level,
+            m_subDivType,
+            dimensions<N, S>::BOXES_MODE);
+        for ( S i = 0; i < max_ind; ++i ) {
             box<N, S> box(m_dimensions, level, m_subDivType, i);
             callable(box, m_boxStorage[level][i]);
         }
@@ -176,34 +195,31 @@ public:
     void iterate(
         const F& callable,
         const std::vector<PatternComponent>& pattern
-    ){
+    ) {
         const S max_level = m_dimensions.max_level();
-        for(const auto pattern : pattern){
-            switch(pattern){
+        for ( const auto pattern : pattern ) {
+            switch ( pattern ) {
                 case COARSE_TO_FINE:
-                    for(S i = 0; i < max_level; ++i){
-                        grid<N,GridElement,BoxElement,S>::iterate(
-                            [&](box<N,S>& box, BoxElement& element){
+                    for ( S i = 0; i < max_level; ++i ) {
+                        grid<N, GridElement, BoxElement, S>::iterate(
+                            [&](box<N, S>& box, BoxElement& element) {
                                 callable(box, element, pattern);
-                            }, i
-                        );
+                            }, i);
                     }
                     break;
                 case FINE_TO_COARSE:
-                    for(S i = 1; i <= max_level; ++i){
-                        grid<N,GridElement,BoxElement,S>::iterate(
-                            [&](box<N,S>& box, BoxElement& element){
+                    for ( S i = 1; i <= max_level; ++i ) {
+                        grid<N, GridElement, BoxElement, S>::iterate(
+                            [&](box<N, S>& box, BoxElement& element) {
                                 callable(box, element, pattern);
-                            }, max_level-i
-                        );
+                            }, max_level-i);
                     }
                     break;
                 case PARSE_FINEST:
-                    grid<N,GridElement,BoxElement,S>::iterate(
-                        [&](box<N,S>& box, BoxElement& element){
+                    grid<N, GridElement, BoxElement, S>::iterate(
+                        [&](box<N, S>& box, BoxElement& element){
                             callable(box, element, pattern);
-                        }, max_level
-                    );
+                        }, max_level);
                     break;
                 default:
                     break;
@@ -212,22 +228,25 @@ public:
     }
 
     template<class F>
-    requires std::invocable<F&, const box_stack<N,S>&>
+    requires std::invocable<F&, const box_stack<N, S>&>
     /**
      * \brief Iterate over every box at the lowest level, providing the
      * full stack of boxes at every iteration.
      */
-    void iterate(const F& callable){
-        const auto pastEndIt = box_stack_iterator<N, S>(m_dimensions, m_subDivType, true);
-        for(
+    void iterate(const F& callable) {
+        const auto pastEndIt = box_stack_iterator<N, S>(
+            m_dimensions,
+            m_subDivType,
+            true);
+        for (
             auto boxIt = box_stack_iterator<N, S>(m_dimensions, m_subDivType);
             boxIt < pastEndIt;
             ++boxIt
-        ){
+        ) {
             callable(*boxIt);
         }
     }
 };
-}
+}  // namespace gs
 
-#endif
+#endif  // LIB_BASE_GRID_HPP_

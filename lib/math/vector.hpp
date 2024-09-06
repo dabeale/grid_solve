@@ -1,6 +1,6 @@
-
-#ifndef _GS_VECTOR_
-#define _GS_VECTOR_
+// Copyright 2024 Daniel Beale CC BY-NC-SA 4.0
+#ifndef LIB_MATH_VECTOR_HPP_
+#define LIB_MATH_VECTOR_HPP_
 
 #include <cmath>
 #include <array>
@@ -23,100 +23,109 @@ template<typename T, size_t M>
  *      M - The number of dimensions.
  */
 class vector {
-protected:
-    std::array<T, M> m_array; ///< The storage array.
-public:
+ protected:
+    std::array<T, M> m_array;  ///< The storage array.
+
+ public:
     vector() {m_array.fill(0);}
     vector(std::initializer_list<T> inList) {
-        size_t j=0;
-        for(const auto i : inList){
+        size_t j = 0;
+        for ( const auto i : inList ) {
             m_array[j++] = i;
         }
     }
     template<typename S>
-    vector( const std::array<S, M>& arr ){
-        for(size_t i=0; i<M; ++i){
+    explicit vector(const std::array<S, M>& arr) {
+        for ( size_t i = 0; i < M; ++i ) {
             m_array[i] = static_cast<T>(arr[i]);
         }
     }
 
-    T& operator()(const size_t i){ return m_array[i]; } ///< Access the ith element of the vector
-    const T& operator()(const size_t i) const {return m_array[i];}  ///< Access the ith element of the vector
-    T& operator[](const size_t i){return m_array[i];} ///< Access the ith element of the vector
-    const T& operator[](const size_t i) const {return m_array[i];} ///< Access the ith element of the vector
+    T& operator()(const size_t i) {
+        return m_array[i];
+    }  ///< Access the ith element of the vector
+    const T& operator()(const size_t i) const {
+        return m_array[i];
+    }   ///< Access the ith element of the vector
+    T& operator[](const size_t i) {
+        return m_array[i];
+    }  ///< Access the ith element of the vector
+    const T& operator[](const size_t i) const {
+        return m_array[i];
+    }  ///< Access the ith element of the vector
 
     /**
      * \brief Add to another vector in-place.
      */
-    const vector<T,M>& operator+=(const vector<T,M>& other){
-        for(size_t i=0; i<M; ++i) m_array[i] += other.m_array[i];
+    const gs::vector<T, M>& operator+=(const gs::vector<T, M>& other) {
+        for ( size_t i = 0; i < M; ++i ) m_array[i] += other.m_array[i];
         return *this;
     }
     /**
      * \brief Negate from another vector in-place.
      */
-    const vector<T,M>& operator-=(const vector<T,M>& other){
-        for(size_t i=0; i<M; ++i) m_array[i] -= other.m_array[i];
+    const gs::vector<T, M>& operator-=(const vector<T, M>& other) {
+        for (size_t i = 0; i < M; ++i ) m_array[i] -= other.m_array[i];
         return *this;
     }
     /**
      * \brief Add to a constant in place.
      */
-    const vector<T,M>& operator+=(const T& c){
-        for(size_t i=0; i<M; ++i) m_array[i] += c;
+    const gs::vector<T, M>& operator+=(const T& c) {
+        for ( size_t i = 0; i < M; ++i ) m_array[i] += c;
         return *this;
     }
     /**
      * \brief Negate from a constant in place.
      */
-    const vector<T,M>& operator-=(const T& c){
-        for(size_t i=0; i<M; ++i) m_array[i] -= c;
+    const gs::vector<T, M>& operator-=(const T& c) {
+        for ( size_t i = 0; i < M; ++i ) m_array[i] -= c;
         return *this;
     }
     /**
      * \brief Multiply by constant in place.
      */
-    const vector<T,M>& operator*=(const T& c){
-        for(size_t i=0; i<M; ++i) m_array[i] *= c;
+    const gs::vector<T, M>& operator*=(const T& c) {
+        for ( size_t i = 0; i < M; ++i ) m_array[i] *= c;
         return *this;
     }
     /**
      * \brief Divide by constant in place.
      */
-    const vector<T,M>& operator/=(const T& c){
-        for(size_t i=0; i<M; ++i) m_array[i] /= c;
+    const gs::vector<T, M>& operator/=(const T& c) {
+        for ( size_t i = 0; i < M; ++i ) m_array[i] /= c;
         return *this;
     }
     /**
      * \brief Add to another vector and return the result.
      */
-    vector<T,M> operator+(const vector<T,M>& other) const{
-        return (vector<T,M>(*this) += other);
+    gs::vector<T, M> operator+(const gs::vector<T, M>& other) const {
+        return (gs::vector<T, M>(*this) += other);
     }
     /**
      * \brief Negate from another vector and return the result.
      */
-    vector<T,M> operator-(const vector<T,M>& other) const{
-        return (vector<T,M>(*this) -= other);
+    gs::vector<T, M> operator-(const vector<T, M>& other) const {
+        return (gs::vector<T, M>(*this) -= other);
     }
     /**
      * \brief Divide by a constant and return the result.
      */
-    vector<T,M> operator/(const T& val) const{
-        return (vector<T,M>(*this) /= val);
+    gs::vector<T, M> operator/(const T& val) const {
+        return (gs::vector<T, M>(*this) /= val);
     }
     /**
      * \brief Multiply by a constant and return the result.
      */
-    vector<T,M> operator*(const T& val) const{
-        return (vector<T,M>(*this) *= val);
+    gs::vector<T, M> operator*(const T& val) const {
+        return (gs::vector<T, M>(*this) *= val);
     }
     /**
      * \brief Return the dot product with another vector.
      */
-    T dot(const vector<T,M>& other) const{
+    T dot(const gs::vector<T, M>& other) const {
         T c = 0;
-        for(size_t i=0; i<M; ++i) c += m_array[i]*other.m_array[i];
+        for ( size_t i = 0; i < M; ++i ) c += m_array[i]*other.m_array[i];
         return c;
     }
     /**
@@ -124,7 +133,7 @@ public:
      */
     T norm2() const {
         T c = 0;
-        for(size_t i=0; i<M; ++i) c += m_array[i]*m_array[i];
+        for ( size_t i = 0; i < M; ++i ) c += m_array[i]*m_array[i];
         return c;
     }
     /**
@@ -136,13 +145,13 @@ public:
 };
 
 template<typename T, size_t M, size_t K>
-requires (K > 0)
+requires(K > 0)
 /**
  * \brief Compute the average over a collection of input vectors.
  */
-vector<T, M> mean(const std::array<vector<T, M>, K>& arr){
-    vector<T, M> start=arr[0];
-    for(size_t i=1; i<K; ++i){
+gs::vector<T, M> mean(const std::array<gs::vector<T, M>, K>& arr) {
+    gs::vector<T, M> start = arr[0];
+    for ( size_t i = 1; i < K; ++i ) {
         start += arr[i];
     }
     start /= static_cast<double>(K);
@@ -150,23 +159,23 @@ vector<T, M> mean(const std::array<vector<T, M>, K>& arr){
 }
 
 template<typename T, size_t M, size_t K>
-requires (K > 0)
+requires(K > 0)
 /**
  * \brief Interpolate a collection of vectors using inverse dist squared.
  */
 T interp(
-    const std::array<vector<T, M>, K>& arr,
+    const std::array<gs::vector<T, M>, K>& arr,
     const std::array<T, K>& vals,
-    const vector<T,M>& at
-){
+    const gs::vector<T, M>& at
+) {
     std::array<double, K> weights;
     T sum(0.0);
-    for(size_t k=0; k<K; ++k){
+    for ( size_t k = 0; k < K; ++k ) {
         weights[k] = 1.0/(arr[k] - at).norm();
         sum += weights[k];
     }
     T out(0.0);
-    for(size_t k=0; k<K; ++k){
+    for ( size_t k = 0; k < K; ++k ) {
         out += (weights[k]/sum)*vals[k];
     }
     return out;
@@ -176,10 +185,9 @@ template<typename T, size_t M>
 /**
  * \brief Append the vector to an output stream.
  */
-std::ostream& operator<<(std::ostream& os, const vector<T, M>& vec)
-{
+std::ostream& operator<<(std::ostream& os, const gs::vector<T, M>& vec) {
     os << "[";
-    for(size_t i=0; i<M-1; ++i){
+    for ( size_t i = 0; i < M-1; ++i ) {
         os << vec(i) << ",";
     }
     os << vec(M-1) << "]";
@@ -197,7 +205,7 @@ concept is_vector = random_access<T> && requires(T m, T n) {
     m*double();
     m/double();
     m-double();
-};
-}
+};  // NOLINT(readability/braces)
+}  // namespace gs
 
-#endif
+#endif  // LIB_MATH_VECTOR_HPP_

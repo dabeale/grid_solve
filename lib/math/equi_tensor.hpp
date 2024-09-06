@@ -1,6 +1,6 @@
-
-#ifndef _GS_EQUI_TENSOR_
-#define _GS_EQUI_TENSOR_
+// Copyright 2024 Daniel Beale CC BY-NC-SA 4.0
+#ifndef LIB_MATH_EQUI_TENSOR_HPP_
+#define LIB_MATH_EQUI_TENSOR_HPP_
 
 #include "math/tensor.hpp"
 
@@ -21,7 +21,7 @@ template<typename T, size_t K, size_t ...Ks>
  * \brief Specialisation of equi_tensor_base at the lowest level.
  */
 class equi_tensor_base<T, 1, K, Ks...> {
-public:
+ public:
     using type = tensor<T, K, Ks...>;
 };
 
@@ -42,11 +42,11 @@ template<typename T, size_t N, size_t K>
  *      K - The size of each dimension.
  */
 class equi_tensor: public equi_tensor_base<T, N, K>::type {
-public:
+ public:
     using base = typename equi_tensor_base<T, N, K>::type;
     equi_tensor(): base() {}
-    equi_tensor(const vector<T, pow<K,N>()>& vec): base(vec) {}
-    equi_tensor(std::initializer_list<T> inList): base(inList) {}
+    explicit equi_tensor(const gs::vector<T, pow<K, N>()>& vec): base(vec) {}
+    explicit equi_tensor(std::initializer_list<T> inList): base(inList) {}
     /**
      * \brief The full inner product for the tensor.
      * 
@@ -54,12 +54,12 @@ public:
      * inner product is the dot product. If it is a matrix A
      * then the inner product is x^T A x for input vector x.
      */
-    T inner(const vector<T,K>& vec) const{
+    T inner(const gs::vector<T, K>& vec) const {
         T out = 0;
-        for(size_t i=0; i<pow<K, N>(); ++i){
+        for ( size_t i = 0; i<pow<K, N>(); ++i ) {
             auto indArr = base::m_dims.ind2sub(i);
-            T mult = vector<T, base::m_nElems>::operator()(i);
-            for(size_t k=0; k<N; ++k){
+            T mult = gs::vector<T, base::m_nElems>::operator()(i);
+            for ( size_t k = 0; k < N; ++k ) {
                 mult*=vec(indArr[k]);
             }
             out += mult;
@@ -77,18 +77,18 @@ template<typename T, size_t N, size_t K>
  * x, then xx^T is the 2D outer product and (x_i)(x_j)(x_k) is the
  * 3D outer product, and so on.
  */
-equi_tensor<T, N, K> tensor_outer(const vector<T,K>& vec){
+equi_tensor<T, N, K> tensor_outer(const gs::vector<T, K>& vec) {
     equi_tensor<T, N, K> out;
-    for(size_t i=0; i<pow<K, N>(); ++i){
+    for ( size_t i = 0; i<pow<K, N>(); ++i ) {
         auto indArr = out.get_dims().ind2sub(i);
         T mult = 1.0;
-        for(size_t k=0; k<N; ++k){
+        for ( size_t k = 0; k < N; ++k ) {
             mult*=vec(indArr[k]);
         }
         out[i] = mult;
     }
     return out;
 }
-}
+}  // namespace gs
 
-#endif
+#endif  // LIB_MATH_EQUI_TENSOR_HPP_

@@ -1,6 +1,6 @@
-
-#ifndef _GS_PATTERN_
-#define _GS_PATTERN_
+// Copyright 2024 Daniel Beale CC BY-NC-SA 4.0
+#ifndef LIB_BASE_PATTERN_HPP_
+#define LIB_BASE_PATTERN_HPP_
 
 #include <vector>
 
@@ -17,7 +17,7 @@ enum PatternComponent {
 /**
  * \brief A V traversal pattern.
  */
-std::vector<PatternComponent> v_pattern(){
+std::vector<PatternComponent> v_pattern() {
     return {
         COARSE_TO_FINE,
         FINE_TO_COARSE
@@ -26,12 +26,12 @@ std::vector<PatternComponent> v_pattern(){
 /**
  * \brief A /\ traversal pattern.
  */
-std::vector<PatternComponent> inverse_v_pattern(){
+std::vector<PatternComponent> inverse_v_pattern() {
     return {
         FINE_TO_COARSE,
         COARSE_TO_FINE
     };
 }
-}
+}  // namespace gs
 
-#endif
+#endif  // LIB_BASE_PATTERN_HPP_

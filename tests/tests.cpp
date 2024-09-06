@@ -1,16 +1,17 @@
+// Copyright 2024 Daniel Beale CC BY-NC-SA 4.0
 
-#include "test_index.hpp"
-#include "test_box.hpp"
-#include "test_dimensions.hpp"
-#include "test_grid.hpp"
-#include "test_fmm.hpp"
-#include "test_math.hpp"
-#include "test_functions.hpp"
-#include "test_taylor.hpp"
-#include "test_iterator.hpp"
-#include "test_estimators.hpp"
+#include "./test_index.hpp"
+#include "./test_box.hpp"
+#include "./test_dimensions.hpp"
+#include "./test_grid.hpp"
+#include "./test_fmm.hpp"
+#include "./test_math.hpp"
+#include "./test_functions.hpp"
+#include "./test_taylor.hpp"
+#include "./test_iterator.hpp"
+#include "./test_estimators.hpp"
 
-int main(int, char* argv[]){
+int main(int, char* argv[]) {
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
     error += testq_fmm_exp2_2d();
@@ -37,10 +38,9 @@ int main(int, char* argv[]){
     error += test_index_call();
     error += test_index_subscript();
     error += test_dimensions_sub2ind_inversion();
-    if (error){
+    if ( error ) {
         std::cout << error << " tests failed" << std::endl;
-    }
-    else {
+    } else {
         std::cout << "All tests passed" << std::endl;
     }
 }
