@@ -1,6 +1,6 @@
-
-#ifndef _GS_TENSOR_
-#define _GS_TENSOR_
+// Copyright 2024 Daniel Beale CC BY-NC-SA 4.0
+#ifndef LIB_MATH_TENSOR_HPP_
+#define LIB_MATH_TENSOR_HPP_
 
 #include "math/vector.hpp"
 #include "base/dimensions.hpp"
@@ -27,15 +27,17 @@ template<typename T, size_t... Dims>
  *      T       - The base type (e.g. double or float).
  *      Dims... - The dimensions.
  */
-class tensor: public vector<T, mult<Dims...>()> {
+class tensor: public gs::vector<T, mult<Dims...>()> {
 protected:
     static constexpr size_t m_nSize = sizeof...(Dims);
     static constexpr size_t m_nElems = mult<Dims...>();
     dimensions<m_nSize, size_t> m_dims;
 public:
-    tensor(): vector<T, m_nElems>(), m_dims({Dims...},0) {}
-    tensor(const vector<T, m_nElems>& vec): vector<T, m_nElems>(vec), m_dims({Dims...}, 0) {}
-    tensor(std::initializer_list<T> inList): vector<T, m_nElems>(inList), m_dims({Dims...}, 0) {}
+    tensor(): gs::vector<T, m_nElems>(), m_dims({Dims...}, 0) {}
+    tensor(const gs::vector<T, m_nElems>& vec):
+        gs::vector<T, m_nElems>(vec), m_dims({Dims...}, 0) {}
+    tensor(std::initializer_list<T> inList):
+        gs::vector<T, m_nElems>(inList), m_dims({Dims...}, 0) {}
     /**
      * \brief Get the dimensions of the tensor.
      */
@@ -46,10 +48,8 @@ public:
      * \brief Return the value of the tensor at the index specified
      * by inds. The input is a variadic parameter pack.
      */
-    T& operator()(Indices... inds){
-        return vector<T, m_nElems>::operator()(
-            m_dims.sub2ind({inds...})
-        );
+    T& operator()(Indices... inds) {
+        return gs::vector<T, m_nElems>::operator()(m_dims.sub2ind({inds...}));
     }
     template<typename... Indices>
     requires (sizeof...(Indices) == m_nSize)
@@ -58,11 +58,9 @@ public:
      * by inds. The input is a variadic parameter pack.
      */
     const T& operator()(Indices... inds) const {
-        return vector<T, m_nElems>::operator()(
-            m_dims.sub2ind({inds...})
-        );
+        return gs::vector<T, m_nElems>::operator()(m_dims.sub2ind({inds...}));
     }
-};
-}
+};  // NOLINT(readability/braces)
+}  // namespace gs
 
-#endif
+#endif  // LIB_MATH_TENSOR_HPP_

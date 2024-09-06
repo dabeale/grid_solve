@@ -1,14 +1,19 @@
-
-#ifndef _GS_TAYLOR_
-#define _GS_TAYLOR_
+// Copyright 2024 Daniel Beale CC BY-NC-SA 4.0
+#ifndef LIB_MATH_TAYLOR_HPP_
+#define LIB_MATH_TAYLOR_HPP_
 
 #include "math/polynomial.hpp"
 #include "math/vector.hpp"
 
 namespace gs {
-template< typename T, size_t M, size_t D, template < typename, size_t, size_t > class F >
+template<
+    typename T, size_t M, size_t D,
+    template < typename, size_t, size_t > class F
+>
 requires requires(F<T, M, D> f) {
-    { f(vector<T,M>(), vector<T,M>()) } -> std::convertible_to<vector<T, pow<M,D>()>>;
+    {
+        f(gs::vector<T, M>(), vector<T, M>())
+    } -> std::convertible_to<gs::vector<T, pow<M, D>()>>;
 }
 /**
  * \brief Taylors expansion of a multivariate function.
@@ -29,38 +34,38 @@ requires requires(F<T, M, D> f) {
  *      F - The input function type (must be callable).
  */
 class taylor {
-    F<T, M, D> m_function; ///< The function to approximate.
+    F<T, M, D> m_function;  ///< The function to approximate.
 
-public:
-    taylor(const F<T, M, D> func): m_function(func){}
+ public:
+    explicit taylor(const F<T, M, D> func): m_function(func) {}
 
-    template<size_t K=D>
+    template<size_t K = D>
     /**
      * \brief Produce the Taylor estimate of the input function.
      * 
      * Produce an estimate of the function with varying parameter x, fixed
      * parameter y, about the center cx.
      */
-    T estimate(const vector<T, M>& x, const vector<T, M>& cx, const vector<T, M>& y){
+    T estimate(
+        const gs::vector<T, M>& x,
+        const gs::vector<T, M>& cx,
+        const gs::vector<T, M>& y
+    ) {
         const auto fAtY = static_cast<F<T, M, K>>(m_function)(cx, y);
         if constexpr ( K == 0 ) {
             return fAtY;
-        }
-        else if constexpr ( K == 1 ){
-            return fAtY.dot(x-cx) + estimate<K-1>(x,cx,y);
-        }
-        else if constexpr ( K == 2 ){
-            return 0.5*(fAtY*(x-cx)).dot(x-cx) + estimate<K-1>(x,cx,y);
-        }
-        else {
+        } else if constexpr ( K == 1 ) {
+            return fAtY.dot(x-cx) + estimate<K-1>(x, cx, y);
+        } else if constexpr ( K == 2 ) {
+            return 0.5*(fAtY*(x-cx)).dot(x-cx) + estimate<K-1>(x, cx, y);
+        } else {
             return (
-                (1.0/factorial<K>())*fAtY.inner(x-cx) + 
-                estimate<K-1>(x,cx,y)
-            );
+                (1.0/factorial<K>())*fAtY.inner(x-cx) +
+                estimate<K-1>(x, cx, y));
         }
     }
-                                                
-    template<size_t K=D>
+
+    template<size_t K = D>
     /**
      * \brief Produce the Taylor estimate of the input function.
      * 
@@ -86,20 +91,22 @@ public:
      * The coefficients of the derivatives of f are a multivariate polynomial, which
      * can be computed independently of y and c, and ultimately the function estimate.
      */  
-    T estimate(const polynomial<T, M, D>& polyCoefs, const vector<T, M>& cx, const vector<T, M>& y) const{
+    T estimate(
+        const polynomial<T, M, D>& polyCoefs,
+        const gs::vector<T, M>& cx,
+        const gs::vector<T, M>& y) const {
         const auto& funcRef = static_cast<F<T, M, K>>(m_function);
         const auto& polyCoefsRef = static_cast<polynomial<T, M, K>>(polyCoefs);
         if constexpr ( K == 0 ) {
             return funcRef(cx, y - cx)*polyCoefsRef.coeffs();
-        }
-        else {
+        } else {
             return (
-                (1.0/factorial<K>())*polyCoefsRef.coeffs().dot(funcRef(cx, y - cx)) +
-                estimate<K-1>(polyCoefs,cx,y)
-            );
+                (1.0/factorial<K>())*
+                polyCoefsRef.coeffs().dot(funcRef(cx, y - cx)) +
+                estimate<K-1>(polyCoefs, cx, y));
         }
     }
 };
-}
+}  // namespace gs
 
-#endif
+#endif  // LIB_MATH_TAYLOR_HPP_

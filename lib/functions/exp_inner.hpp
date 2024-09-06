@@ -44,7 +44,7 @@ public:
      */
     equi_tensor<T, D, M> operator()(const vector<T, M>& x, const vector<T, M>& y) const{
         const equi_tensor<T, D, M> tOuter = tensor_outer<T, D, M>(exp_inner<T, M, 0>::d_coef(x,y));
-        return tOuter*exp_inner<T, M, 0>::operator()(x,y);
+        return equi_tensor<T, D, M>(tOuter*exp_inner<T, M, 0>::operator()(x,y));
     }
 };
 
@@ -59,7 +59,9 @@ public:
     exp_inner(T sigma = 1): exp_inner<T, M, 1>(sigma), m_dimensions(M, 0) {}
 
     matrix<T, M, M> operator()(const vector<T, M>& x, const vector<T, M>& y) const {
-        return matrix_outer(exp_inner<T, M, 0>::d_coef(x,y))*exp_inner<T, M, 0>::operator()(x,y);
+        return matrix<T, M, M>(
+            matrix_outer(exp_inner<T, M, 0>::d_coef(x,y))*exp_inner<T, M, 0>::operator()(x,y)
+        );
     }
 };
 
