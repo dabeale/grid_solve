@@ -34,7 +34,30 @@ class box {
     T m_indexInParent;  ///< The index of the box within it's parent.
     T m_offset;  ///< The box index (offset)
     dimensions<N, T> m_dimensions;  ///< The dimensions of the box.
-    subdivision_type m_subdivType;  ///< True if the box is a duel box
+    subdivision_type m_subdivType;  ///< The subdivision type
+
+    /**
+     * \brief Find the index of the box within its parent box.
+     * 
+     * This method is called on construction, and stored in the
+     * m_indexInParent variable. It is therefore private.
+     */
+    T compute_index_in_parent() const {
+        if ( m_level > 0 ) {
+            // Convert the index vector into local box coordinate
+            return m_dimensions.sub2ind(
+                // Convert the offset into a local box coordinate.
+                m_dimensions.ind2sub(
+                    m_offset, m_level, m_subdivType, dimensions<N, T>::BOXES_TO_LOCAL_BOXES
+                ),
+                m_level - 1,
+                m_subdivType,
+                dimensions<N, T>::LOCAL_BOXES
+            );
+        } else {
+            return 0;
+        }
+    }
 
  public:
     static constexpr T m_nCorners = pow<2, N>();  ///< The number of corners.
@@ -45,7 +68,7 @@ class box {
         const T level,
         const subdivision_type subdivType,
         const T offset = 0,
-        const T indexInParent = 0
+        const T indexInParent = static_cast<T>(-1)
     ):
         m_level(level),
         m_indexInParent(indexInParent),
@@ -68,21 +91,14 @@ class box {
                 )
             );
         }
+        if ( indexInParent == static_cast<T>(-1) ) {
+            m_indexInParent = compute_index_in_parent();
+        }
     }
 
-    /**
-     * \brief Get the box offset
-     */
-    T get_offset() const {
-        return m_offset;
-    }
-
-    /**
-     * \brief Get the current level.
-     */
-    T get_level() const {
-        return m_level;
-    }
+    T get_offset() const {return m_offset;}  ///< Get the box offset
+    T get_level() const {return m_level;}  ///< Get the current level.
+    T index_in_parent() const {return m_indexInParent;}  ///< Get the index of the box within it's parent.
 
     /**
      * \brief A neighbour direction of a box.
@@ -101,13 +117,16 @@ class box {
     }
 
     /**
-     * \brief Check whether the given index is (inclusively) inside the box.
+     * \brief Check whether the given index is inside the box.
      * 
-     * The the index is on the edge of corners then the method will
-     * true.
+     * Depending on the strict argument the method will check whether
+     * the point is strictly inside or not. For example, if strict
+     * is true and the point is on one of the corners then the method
+     * will return false.
      */
-    bool is_inside(index<N, T> ind, const subdivision_type subdivType) const {
+    bool is_inside(index<N, T> ind, const subdivision_type subdivType, const bool strict = false) const {
         box<N, T> levelBox(*this);
+        // Ensure that the index is the correct level
         if (ind.get_level() < m_level) {
             ind.set_level(m_level, subdivType);
         } else if ( ind.get_level() > m_level ) {
@@ -118,14 +137,42 @@ class box {
                 );
             }
         }
+        // Check whether the point is inside in each dimension
         auto maxInd = levelBox.max();
         auto minInd = levelBox.min();
         for ( size_t i = 0; i < N; ++i ) {
-            if ( ind[i] < minInd[i] || ind[i] > maxInd[i] ) {
+            if (
+                ( (!strict) && (ind[i] <  minInd[i] || ind[i] >  maxInd[i]) ) ||
+                (   strict  && (ind[i] <= minInd[i] || ind[i] >= maxInd[i]) )
+            ) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * \brief The parent of the box.
+     * 
+     * Return the parent box, if it exists. If we are at the top of the
+     * tree then return self.
+     */
+    box<N, T> parent() const {
+        if ( m_level > 0 ) {
+            return box<N, T>(
+                m_dimensions,
+                m_level - 1,
+                m_subdivType,
+                m_dimensions.sub2ind(
+                    m_corners[0].at_level(m_level - 1),
+                    m_level - 1,
+                    m_subdivType,
+                    dimensions<N, T>::POINTS_TO_BOXES
+                )
+            );
+        } else {
+            return *this;
+        }
     }
 
     /**
@@ -177,13 +224,6 @@ class box {
                 dimensions<N, T>::BOXES_MODE
             ) : box<N, T>::m_nCorners
         );
-    }
-
-    /**
-     * \brief Get the index of the box within it's parent.
-     */
-    T index_in_parent() const {
-        return m_indexInParent;
     }
 
     /**
