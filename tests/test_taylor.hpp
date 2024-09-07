@@ -40,15 +40,9 @@ int test_taylor_estimation() {
             }
         }
         {
-            gs::taylor<double, 3, 2, gs::exp_squared> tlora{
-                gs::exp_squared<double, 3, 2>()
-            };
-            gs::taylor<double, 3, 5, gs::exp_squared> tlorb{
-                gs::exp_squared<double, 3, 5>()
-            };
-            gs::taylor<double, 3, 10, gs::exp_squared> tlorc{
-                gs::exp_squared<double, 3, 10>()
-            };
+            gs::taylor<double, 3, 2, gs::exp_squared> tlora{gs::exp_squared<double, 3, 2>()};
+            gs::taylor<double, 3, 5, gs::exp_squared> tlorb{gs::exp_squared<double, 3, 5>()};
+            gs::taylor<double, 3, 10, gs::exp_squared> tlorc{gs::exp_squared<double, 3, 10>()};
             gs::exp_squared<double, 3> comp;
             for ( double pert : {0.1, 0.2, -0.1, 0.001} ) {
                 gs::vector<double, 3> val({1+pert, 2, 3});
@@ -58,14 +52,10 @@ int test_taylor_estimation() {
                 auto estimatec = tlorc.estimate(val, {1, 2, 3}, {2, 2, 3});
                 retVal += ASSERT_BOOL(std::abs(expected - estimatea) < 1e-2);
                 if ( std::abs(estimatea-estimateb) > 1e-12 ) {
-                    retVal += ASSERT_BOOL(
-                        std::abs(expected - estimateb) <
-                        std::abs(expected - estimatea));
+                    retVal += ASSERT_BOOL(std::abs(expected - estimateb) < std::abs(expected - estimatea));
                 }
                 if ( std::abs(estimatec-estimateb) > 1e-12 ) {
-                    retVal += ASSERT_BOOL(
-                        std::abs(expected - estimatec) <
-                        std::abs(expected - estimateb));
+                    retVal += ASSERT_BOOL(std::abs(expected - estimatec) < std::abs(expected - estimateb));
                 }
             }
         }
@@ -122,9 +112,7 @@ int test_taylor_coefficients_squared() {
             // Check the accuracy
             retVal += ASSERT_BOOL(std::abs(estimate - expected) < 1e-2);
             if ( std::abs(estimate - expected) >= 1e-2 ) {
-                std::cout << testSigma <<
-                    ": " << expected <<
-                    "," << estimate << std::endl;
+                std::cout << testSigma << ": " << expected <<  "," << estimate << std::endl;
             }
         }
     }
@@ -194,7 +182,8 @@ int test_taylor_coefficients_inner() {
             }
             // Create the polynomial used for evaluation.
             gs::polynomial<double, 3, nDegree> poly(
-                vVecsMinusCenter, tVecsWeighted);
+                vVecsMinusCenter, tVecsWeighted
+            );
             // Create the expected value (100% accurate)
             double expected = 0.0;
             for ( size_t i = 0; i < 4u; ++i ) {
@@ -205,10 +194,7 @@ int test_taylor_coefficients_inner() {
             // Check the accuracy
             retVal += ASSERT_BOOL(std::abs(estimate - expected) < 1e-2);
             if ( std::abs(estimate - expected) >= 1e-2 ) {
-                std::cout <<
-                    testSigma <<
-                    ": " << expected <<
-                    "," << estimate << std::endl;
+                std::cout << testSigma << ": " << expected << "," << estimate << std::endl;
             }
         }
     }

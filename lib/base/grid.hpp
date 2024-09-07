@@ -41,10 +41,8 @@ requires std::is_integral<S>::value
 class grid {
     using subdivision_type = typename dimensions<N, S>::subdivision_type;
 
-    std::vector<GridElement> m_gridStorage;
-        ///< Storage at each of the points in the grid.
-    std::vector<std::vector<BoxElement>> m_boxStorage;
-        ///< Storage at each level of the 2^N tree.
+    std::vector<GridElement> m_gridStorage;  ///< Storage at each of the points in the grid.
+    std::vector<std::vector<BoxElement>> m_boxStorage;  ///< Storage at each level of the 2^N tree.
     dimensions<N, S> m_dimensions;  ///< The dimensions of the grid.
     subdivision_type m_subDivType;  ///< The subdivision type
 
@@ -55,14 +53,17 @@ class grid {
             dims.max_ind(
                 dims.max_level()-1,
                 subDiv,
-                dimensions<N, S>::POINTS_MODE)),
+                dimensions<N, S>::POINTS_MODE
+            )
+        ),
         m_boxStorage(dims.max_level()),
         m_dimensions(dims),
         m_subDivType(subDiv) {
         S i = 0;
         for ( auto& boxStore : m_boxStorage ) {
             boxStore.resize(
-                dims.max_ind(i++, subDiv, dimensions<N, S>::BOXES_MODE));
+                dims.max_ind(i++, subDiv, dimensions<N, S>::BOXES_MODE)
+            );
         }
     }
 
@@ -107,7 +108,9 @@ class grid {
                 ind.at_level(m_dimensions.max_level()-1, m_subDivType),
                 m_dimensions.max_level()-1,
                 m_subDivType,
-                dimensions<N, S>::POINTS_MODE));
+                dimensions<N, S>::POINTS_MODE
+            )
+        );
     }
 
     /**
@@ -119,7 +122,9 @@ class grid {
                 ind.at_level(m_dimensions.max_level()-1, m_subDivType),
                 m_dimensions.max_level()-1,
                 m_subDivType,
-                dimensions<N, S>::POINTS_MODE));
+                dimensions<N, S>::POINTS_MODE
+            )
+        );
     }
 
     /**
@@ -140,33 +145,19 @@ class grid {
      * \brief Get the corner values of the box in terms of
      * the grid storage object.
      */
-    std::array<GridElement, pow<2, N>()> get_corner_values(
-        const box<N, S>& box)
-    const {
+    std::array<GridElement, pow<2, N>()> get_corner_values(const box<N, S>& box) const {
         std::array<GridElement, pow<2, N>()> gridValues;
         S iCorner = 0;
         for ( const auto& corner : box ) {
-            gridValues[iCorner++] = grid<N,
-                GridElement,
-                BoxElement,
-                S
-            >::operator[](corner);
+            gridValues[iCorner++] = grid<N, GridElement, BoxElement, S>::operator[](corner);
         }
         return gridValues;
     }
 
-    auto begin() -> decltype(m_gridStorage.begin()) {
-        return m_gridStorage.begin();
-    }  ///< Return a begin iterator into the vertices
-    auto end() -> decltype(m_gridStorage.end()) {
-        return m_gridStorage.end();
-    }  ///< Return the end iterator into the vertices
-    auto begin() const -> decltype(m_gridStorage.begin()) {
-        return m_gridStorage.begin();
-    }  ///< Return a begin iterator into the vertices
-    auto end() const -> decltype(m_gridStorage.end()) {
-        return m_gridStorage.end();
-    }  ///< Return the end iterator into the vertices
+    auto begin() -> decltype(m_gridStorage.begin()) {return m_gridStorage.begin();}  ///< Return a begin iterator into the vertices
+    auto end() -> decltype(m_gridStorage.end()) {return m_gridStorage.end();}  ///< Return the end iterator into the vertices
+    auto begin() const -> decltype(m_gridStorage.begin()) {return m_gridStorage.begin();}  ///< Return a begin iterator into the vertices
+    auto end() const -> decltype(m_gridStorage.end()) {return m_gridStorage.end();}  ///< Return the end iterator into the vertices
 
     template<class F>
     requires std::invocable<F&, box<N, S>&, BoxElement&>
@@ -180,7 +171,8 @@ class grid {
         const S max_ind = m_dimensions.max_ind(
             level,
             m_subDivType,
-            dimensions<N, S>::BOXES_MODE);
+            dimensions<N, S>::BOXES_MODE
+        );
         for ( S i = 0; i < max_ind; ++i ) {
             box<N, S> box(m_dimensions, level, m_subDivType, i);
             callable(box, m_boxStorage[level][i]);
@@ -204,7 +196,8 @@ class grid {
                         grid<N, GridElement, BoxElement, S>::iterate(
                             [&](box<N, S>& box, BoxElement& element) {
                                 callable(box, element, pattern);
-                            }, i);
+                            }, i
+                        );
                     }
                     break;
                 case FINE_TO_COARSE:
@@ -212,14 +205,16 @@ class grid {
                         grid<N, GridElement, BoxElement, S>::iterate(
                             [&](box<N, S>& box, BoxElement& element) {
                                 callable(box, element, pattern);
-                            }, max_level-i);
+                            }, max_level-i
+                        );
                     }
                     break;
                 case PARSE_FINEST:
                     grid<N, GridElement, BoxElement, S>::iterate(
                         [&](box<N, S>& box, BoxElement& element){
                             callable(box, element, pattern);
-                        }, max_level);
+                        }, max_level
+                    );
                     break;
                 default:
                     break;

@@ -51,10 +51,13 @@ int testq_fmm_exp2_1d() {
             expected[i] += estimator(
                 gs::vector<double, nDims>(
                     dims.ind2sub(i, dims.max_level()-1,
-                    gs::dimensions<nDims>::BOXES_SUBDIVISION)),
+                    gs::dimensions<nDims>::BOXES_SUBDIVISION)
+                ),
                 gs::vector<double, nDims>(
                     dims.ind2sub(j, dims.max_level()-1,
-                    gs::dimensions<nDims>::BOXES_SUBDIVISION)))*inputVec[j];
+                    gs::dimensions<nDims>::BOXES_SUBDIVISION)
+                )
+            )*inputVec[j];
         }
     }
     for ( size_t i = 0; i < expected.size(); ++i ) {
@@ -84,18 +87,10 @@ int testq_fmm_exp2_2d() {
 
     const size_t size = gs::pow<2, 4>()*gs::pow<2, 4>();
     std::vector<double> inputVec(size, 0.0);
-    inputVec[dims.sub2ind(
-        {7, 7}, dims.max_level()-1,
-        gs::dimensions<nDims>::BOXES_SUBDIVISION)] = 1.0;
-    inputVec[dims.sub2ind(
-        {8, 8}, dims.max_level()-1,
-        gs::dimensions<nDims>::BOXES_SUBDIVISION)] = 1.0;
-    inputVec[dims.sub2ind(
-        {7, 8}, dims.max_level()-1,
-        gs::dimensions<nDims>::BOXES_SUBDIVISION)] = 1.0;
-    inputVec[dims.sub2ind(
-        {8, 7}, dims.max_level()-1,
-        gs::dimensions<nDims>::BOXES_SUBDIVISION)] = 1.0;
+    inputVec[dims.sub2ind({7, 7}, dims.max_level()-1, gs::dimensions<nDims>::BOXES_SUBDIVISION)] = 1.0;
+    inputVec[dims.sub2ind({8, 8}, dims.max_level()-1, gs::dimensions<nDims>::BOXES_SUBDIVISION)] = 1.0;
+    inputVec[dims.sub2ind({7, 8}, dims.max_level()-1, gs::dimensions<nDims>::BOXES_SUBDIVISION)] = 1.0;
+    inputVec[dims.sub2ind({8, 7}, dims.max_level()-1, gs::dimensions<nDims>::BOXES_SUBDIVISION)] = 1.0;
     analyticMult.initialise(inputVec);
 
     // Compute the solution
@@ -115,11 +110,16 @@ int testq_fmm_exp2_2d() {
                 gs::vector<double, nDims>(
                     dims.ind2sub(
                         i, dims.max_level()-1,
-                        gs::dimensions<nDims>::BOXES_SUBDIVISION)),
+                        gs::dimensions<nDims>::BOXES_SUBDIVISION
+                    )
+                ),
                 gs::vector<double, nDims>(
                     dims.ind2sub(
                         j, dims.max_level()-1,
-                        gs::dimensions<nDims>::BOXES_SUBDIVISION)))*inputVec[j];
+                        gs::dimensions<nDims>::BOXES_SUBDIVISION
+                    )
+                )
+            )*inputVec[j];
         }
     }
     for ( size_t i = 0; i < expected.size(); ++i ) {

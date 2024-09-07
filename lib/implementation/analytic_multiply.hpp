@@ -24,31 +24,13 @@ template<int N, typename T, int D, typename S = uint32_t>
  */
 class vector_field {
  public:
-    using grid_val = std::tuple<
-        T,
-        T,
-        gs::vector<T, N>,
-        int32_t
-    >;
-    using box_val = std::tuple<
-        polynomial<T, N, D>,
-        gs::vector<T, N>,
-        bool
-    >;
-    using f_box_weight = std::function<
-        void(const box_stack<N>&, grid<N, grid_val, box_val>&)
-    >;
-    using f_traversal = std::function<
-        void(const box_stack<N>&, grid<N, grid_val, box_val>&)
-    >;
+    using grid_val = std::tuple<T, T, gs::vector<T, N>, int32_t>;
+    using box_val = std::tuple<polynomial<T, N, D>, gs::vector<T, N>, bool>;
+    using f_box_weight = std::function< void(const box_stack<N>&, grid<N, grid_val, box_val>&)>;
+    using f_traversal = std::function< void(const box_stack<N>&, grid<N, grid_val, box_val>&)>;
 };
 
-template<
-    typename T,
-    size_t M,
-    size_t D,
-    template < typename, size_t, size_t > class FuncEstimator
->
+template<typename T, size_t M, size_t D, template < typename, size_t, size_t > class FuncEstimator>
 requires(
     (M > 0) && (D > 0) &&
     requires(FuncEstimator<T, M, D> t) {
@@ -78,20 +60,12 @@ class analytic_multiply  {
     static constexpr size_t m_nBoxCorners = pow<2, M>();
         ///< The number of corners of each box.
 
-    using f_traversal = typename vector_field<M, T, D>::f_traversal;
-        ///< The traversal function
-    using f_box_weight = typename vector_field<M, T, D>::f_box_weight;
-        ///< The box weight function
-    using grid_val = typename gs::vector_field<M, T, D>::grid_val;
-        ///< A value in the grid
-    using box_val = typename gs::vector_field<M, T, D>::box_val;
-        ///< A value stored in each box
-    using box_corners = typename std::array<
-        gs::vector<T, M>,
-        m_nBoxCorners
-    >;  ///< The corners of the box
-    using box_values = typename std::array<T, m_nBoxCorners>;
-        ///< The values at each corner
+    using f_traversal = typename vector_field<M, T, D>::f_traversal;  ///< The traversal function
+    using f_box_weight = typename vector_field<M, T, D>::f_box_weight;  ///< The box weight function
+    using grid_val = typename gs::vector_field<M, T, D>::grid_val;  ///< A value in the grid
+    using box_val = typename gs::vector_field<M, T, D>::box_val;  ///< A value stored in each box
+    using box_corners = typename std::array< gs::vector<T, M>, m_nBoxCorners>;  ///< The corners of the box
+    using box_values = typename std::array<T, m_nBoxCorners>;  ///< The values at each corner
 
     /**
      * \brief Get the values and points at the corners of 
@@ -111,14 +85,7 @@ class analytic_multiply  {
 
     dimensions<M> m_dimensions;  ///< The dimensions.
     FuncEstimator<T, M, D> m_f_estimator;  ///< The analytic function estimator.
-    fmm<
-        M,
-        uint32_t,
-        f_traversal,
-        f_box_weight,
-        grid_val,
-        box_val
-    > m_fmm;  ///< The FMM method.
+    fmm<M, uint32_t, f_traversal, f_box_weight, grid_val,  box_val> m_fmm;  ///< The FMM method.
 
  public:
     analytic_multiply(
@@ -156,7 +123,8 @@ class analytic_multiply  {
                                 std::get<0>(corner_i) += m_f_estimator.estimate(
                                     std::get<0>(nbrStorage),  // polynomial
                                     std::get<1>(nbrStorage),  // center
-                                    std::get<2>(corner_i));   // corner point
+                                    std::get<2>(corner_i)     // corner point
+                                );
                             }
                         }
                     }
@@ -174,8 +142,9 @@ class analytic_multiply  {
                                 std::get<0>(corner_i) += (
                                     m_f_estimator(
                                         std::get<2>(corner_i),
-                                        std::get<2>(corner_j))*
-                                    std::get<1>(corner_j));
+                                        std::get<2>(corner_j)
+                                    )*std::get<1>(corner_j)
+                                );
                             }
                         }
                     }
@@ -191,8 +160,7 @@ class analytic_multiply  {
                     bool& doneFirst = std::get<2>(boxVal);
                     if ( !doneFirst ) {
                         // Compute the center of the box
-                        const auto cornerVals = analytic_multiply::corner_vals(
-                            box, grid);
+                        const auto cornerVals = analytic_multiply::corner_vals(box, grid);
                         std::get<1>(boxVal) = mean(cornerVals.first);
                         doneFirst = true;
                     }
@@ -208,7 +176,8 @@ class analytic_multiply  {
                     std::get<0>(boxVal) += m_f_estimator.compute_coefs(
                         cornerVals.first,
                         std::get<1>(boxVal),
-                        cornerVals.second);
+                        cornerVals.second
+                    );
                 }
             },
             dimensions<M>::BOXES_SUBDIVISION
@@ -223,19 +192,14 @@ class analytic_multiply  {
         }
         // Initialise the grid
         for ( size_t i = 0; i < m_fmm.grid_size(); ++i ) {
-            m_fmm[i] = std::tuple<
-                double,
-                double,
-                gs::vector<double, M>,
-                int32_t
-            > {
+            m_fmm[i] = std::tuple<double, double, gs::vector<double, M>, int32_t> {
                 0.0,  // Output value
                 init_vec[i],  // Input Value
                 gs::vector<double, M>(
                     m_dimensions.ind2sub(
-                        i,
-                        m_dimensions.max_level()-1,
-                        dimensions<M>::BOXES_SUBDIVISION)),  // Position
+                        i, m_dimensions.max_level()-1, dimensions<M>::BOXES_SUBDIVISION
+                    )
+                ),   // Position
                 0,   // Level computed at
             };
         }
@@ -244,9 +208,7 @@ class analytic_multiply  {
     /**
      * \brief Compute the solution
      */
-    void compute() {
-        m_fmm.compute();
-    }
+    void compute() {m_fmm.compute();}
 
     /**
      * \brief Return the output

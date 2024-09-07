@@ -7,4 +7,5 @@ ADD tests tests
 COPY makefile .
 COPY config.dox .
 COPY README.md .
+COPY CPPLINT.cfg .
 RUN make all

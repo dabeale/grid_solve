@@ -33,8 +33,7 @@ class exp_inner: public exp_inner<T, M, D-1> {
     dimensions<D> m_dimensions;  ///< The dimensions of the tensor.
 
  public:
-    explicit exp_inner(T sigma = 1):
-        exp_inner<T, M, D-1>(sigma), m_dimensions(M, 0) {}
+    explicit exp_inner(T sigma = 1): exp_inner<T, M, D-1>(sigma), m_dimensions(M, 0) {}
 
     /**
      * \brief Evaluate the function / derivative.
@@ -44,14 +43,13 @@ class exp_inner: public exp_inner<T, M, D-1> {
      * this is simply the function itself, but at higher values
      * it is the Dth derivative.
      */
-    equi_tensor<T, D, M> operator()(
-        const gs::vector<T, M>& x,
-        const gs::vector<T, M>& y)
-    const {
+    equi_tensor<T, D, M> operator()(const gs::vector<T, M>& x, const gs::vector<T, M>& y) const {
         const equi_tensor<T, D, M> tOuter = tensor_outer<T, D, M>(
-            exp_inner<T, M, 0>::d_coef(x, y));
+            exp_inner<T, M, 0>::d_coef(x, y)
+        );
         return equi_tensor<T, D, M>(
-            tOuter*exp_inner<T, M, 0>::operator()(x, y));
+            tOuter*exp_inner<T, M, 0>::operator()(x, y)
+        );
     }
 };
 
@@ -67,13 +65,11 @@ class exp_inner<T, M, 2>: public exp_inner<T, M, 1> {
     explicit exp_inner(T sigma = 1):
         exp_inner<T, M, 1>(sigma), m_dimensions(M, 0) {}
 
-    matrix<T, M, M> operator()(
-        const gs::vector<T, M>& x,
-        const gs::vector<T, M>& y)
-    const {
+    matrix<T, M, M> operator()(const gs::vector<T, M>& x, const gs::vector<T, M>& y) const {
         return matrix<T, M, M>(
             matrix_outer(exp_inner<T, M, 0>::d_coef(x, y))*
-            exp_inner<T, M, 0>::operator()(x, y));
+            exp_inner<T, M, 0>::operator()(x, y)
+        );
     }
 };
 
@@ -89,13 +85,11 @@ class exp_inner<T, M, 1>: public exp_inner<T, M, 0> {
     explicit exp_inner(T sigma = 1):
         exp_inner<T, M, 0>(sigma), m_dimensions(M, 0) {}
 
-    gs::vector<T, M> operator()(
-        const gs::vector<T, M>& x,
-        const gs::vector<T, M>& y)
-    const {
+    gs::vector<T, M> operator()(const gs::vector<T, M>& x, const gs::vector<T, M>& y) const {
         return (
             exp_inner<T, M, 0>::d_coef(x, y)*
-            exp_inner<T, M, 0>::operator()(x, y));
+            exp_inner<T, M, 0>::operator()(x, y)
+        );
     }
 };
 
@@ -111,9 +105,7 @@ class exp_inner<T, M, 0> {
  public:
     explicit exp_inner(T sigma = 1):
         m_sigma_squared(sigma*sigma) {}
-    gs::vector<T, M> d_coef(
-        const gs::vector<T, M>&, const gs::vector<T, M>& y)
-    const {
+    gs::vector<T, M> d_coef(const gs::vector<T, M>&, const gs::vector<T, M>& y) const {
         return y/m_sigma_squared;
     }
     T operator()(const gs::vector<T, M>& x, const gs::vector<T, M>& y) const{

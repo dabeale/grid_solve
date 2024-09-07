@@ -42,7 +42,8 @@ template<typename T>
  * \brief Random access container concept.
  */
 concept random_access_container = (
-    iterable<T> && has_value<T> && random_access<T>);
+    iterable<T> && has_value<T> && random_access<T>
+);
 }  // namespace gs
 
 #endif  // LIB_BASE_CONCEPTS_HPP_

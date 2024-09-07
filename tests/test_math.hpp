@@ -50,8 +50,7 @@ int test_tensor() {
         });
         for ( size_t i = 0; i < 3; ++i ) {
             for ( size_t j = 0; j < 3; ++j ) {
-                retVal += ASSERT_BOOL(
-                    std::abs(tens(i, j) - expected(i, j)) < 1e-8);
+                retVal += ASSERT_BOOL(std::abs(tens(i, j) - expected(i, j)) < 1e-8);
             }
         }
     }

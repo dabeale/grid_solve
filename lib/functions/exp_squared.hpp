@@ -33,8 +33,7 @@ class exp_squared: public exp_squared<T, M, D-1> {
     dimensions<D> m_dimensions;  ///< The dimensions of the tensor.
 
  public:
-    explicit exp_squared(T sigma = 1):
-        exp_squared<T, M, D-1>(sigma), m_dimensions(M, 0) {}
+    explicit exp_squared(T sigma = 1): exp_squared<T, M, D-1>(sigma), m_dimensions(M, 0) {}
 
     /**
      * \brief Evaluate the function / derivative.
@@ -44,10 +43,7 @@ class exp_squared: public exp_squared<T, M, D-1> {
      * this is simply the function itself, but at higher values
      * it is the Dth derivative.
      */
-    equi_tensor<T, D, M> operator()(
-        const gs::vector<T, M>& x,
-        const gs::vector<T, M>& y)
-    const {
+    equi_tensor<T, D, M> operator()(const gs::vector<T, M>& x, const gs::vector<T, M>& y) const {
         equi_tensor<T, D, M> ret;
         const auto pTens = exp_squared<T, M, D-1>::operator()(x, y);
         const auto ppTens = exp_squared<T, M, D-2>::operator()(x, y);
@@ -83,15 +79,14 @@ class exp_squared<T, M, 2>: public exp_squared<T, M, 1> {
     explicit exp_squared(T sigma = 1):
         exp_squared<T, M, 1>(sigma), m_dimensions(M, 0) {}
 
-    matrix<T, M, M> operator()(
-        const gs::vector<T, M>& x,
-        const gs::vector<T, M>& y)
-    const {
+    matrix<T, M, M> operator()(const gs::vector<T, M>& x, const gs::vector<T, M>& y) const {
         T fEval = exp_squared<T, M, 0>::operator()(x, y);
         matrix<T, M, M> ret(
             matrix_outer(
                 exp_squared<T, M, 1>::operator()(x, y),
-                exp_squared<T, M, 0>::d_coef(x, y)));
+                exp_squared<T, M, 0>::d_coef(x, y)
+            )
+        );
         for ( size_t m = 0; m < M; ++m ) {
             ret(m, m) -= fEval / exp_squared<T, M, 0>::m_sigma_squared;
         }
@@ -108,16 +103,13 @@ class exp_squared<T, M, 1>: public exp_squared<T, M, 0> {
     dimensions<1> m_dimensions;
 
  public:
-    explicit exp_squared(T sigma = 1):
-        exp_squared<T, M, 0>(sigma), m_dimensions(M, 0) {}
+    explicit exp_squared(T sigma = 1): exp_squared<T, M, 0>(sigma), m_dimensions(M, 0) {}
 
-    gs::vector<T, M> operator()(
-        const gs::vector<T, M>& x,
-        const gs::vector<T, M>& y)
-    const {
+    gs::vector<T, M> operator()(const gs::vector<T, M>& x, const gs::vector<T, M>& y) const {
         return (
             exp_squared<T, M, 0>::d_coef(x, y)*
-            exp_squared<T, M, 0>::operator()(x, y));
+            exp_squared<T, M, 0>::operator()(x, y)
+        );
     }
 };
 
@@ -131,10 +123,7 @@ class exp_squared<T, M, 0> {
 
  public:
     explicit exp_squared(T sigma = 1): m_sigma_squared(sigma*sigma) {}
-    gs::vector<T, M> d_coef(
-        const gs::vector<T, M>& x,
-        const gs::vector<T, M>& y)
-    const {
+    gs::vector<T, M> d_coef(const gs::vector<T, M>& x, const gs::vector<T, M>& y) const {
         return (x-y)/(-m_sigma_squared);
     }
     T operator()(const gs::vector<T, M>& x, const gs::vector<T, M>& y) const{

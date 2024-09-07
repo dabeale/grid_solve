@@ -37,17 +37,16 @@ class box {
     subdivision_type m_subdivType;  ///< True if the box is a duel box
 
  public:
-    static constexpr T m_nCorners = pow<2, N>();
-        ///< The number of corners.
-    static constexpr T m_nSubPoints = pow<3, N>();
-        ///< The number of subpoints.
+    static constexpr T m_nCorners = pow<2, N>();  ///< The number of corners.
+    static constexpr T m_nSubPoints = pow<3, N>();  ///< The number of subpoints.
 
     box(
         const dimensions<N, T> inDims,
         const T level,
         const subdivision_type subdivType,
         const T offset = 0,
-        const T indexInParent = 0):
+        const T indexInParent = 0
+    ):
         m_level(level),
         m_indexInParent(indexInParent),
         m_offset(offset),
@@ -63,8 +62,11 @@ class box {
                         offset,
                         level,
                         subdivType,
-                        dimensions<N, T>::BOXES_TO_POINTS),
-                    level));
+                        dimensions<N, T>::BOXES_TO_POINTS
+                    ),
+                    level
+                )
+            );
         }
     }
 
@@ -112,7 +114,8 @@ class box {
             for ( size_t i = 0; i < m_nCorners; ++i ) {
                 levelBox.m_corners[i].set_level(
                     ind.get_level(),
-                    subdivType);
+                    subdivType
+                );
             }
         }
         auto maxInd = levelBox.max();
@@ -137,7 +140,8 @@ class box {
             m_offset,
             m_level,
             m_subdivType,
-            dimensions<N, T>::BOXES_MODE);
+            dimensions<N, T>::BOXES_MODE
+        );
         // Move the box up a level. Note that in both subdivision methods
         // there is always a factor of two more boxes at the next level.
         for ( auto& v : subp1 ) v *= 2;
@@ -149,8 +153,10 @@ class box {
             m_subdivType,
             m_dimensions.sub2ind(
                 subp1 + dimensions<N, T>::unitary(ind),
-                m_level+1, m_subdivType, dimensions<N, T>::BOXES_MODE),
-            ind);
+                m_level+1, m_subdivType, dimensions<N, T>::BOXES_MODE
+            ),
+            ind
+        );
     }
 
     /**
@@ -168,8 +174,9 @@ class box {
             m_dimensions.max_ind(
                 0,
                 m_subdivType,
-                dimensions<N, T>::BOXES_MODE) :
-            box<N, T>::m_nCorners);
+                dimensions<N, T>::BOXES_MODE
+            ) : box<N, T>::m_nCorners
+        );
     }
 
     /**
@@ -228,7 +235,8 @@ class box {
         for ( size_t i = 0; i < m_nCorners; ++i ) {
             maxArr = gs::max(
                 static_cast<std::array<T, N>>(m_corners[i]),
-                maxArr);
+                maxArr
+            );
         }
         return maxArr;
     }
@@ -242,26 +250,17 @@ class box {
         for ( size_t i = 0; i < m_nCorners; ++i ) {
             minArr = gs::min(
                 static_cast<std::array<T, N>>(m_corners[i]),
-                minArr);
+                minArr
+            );
         }
         return minArr;
     }
 
-    const auto& operator[](const T i) const {
-        return m_corners[i];
-    }  ///< Access the ith corner of the box
-    auto begin() -> decltype(m_corners.begin()) {
-        return m_corners.begin();
-    }  ///< Return a begin iterator into the corners
-    auto end() -> decltype(m_corners.end()) {
-        return m_corners.end();
-    }  ///< Return the end iterator into the corners
-    auto begin() const -> decltype(m_corners.begin()) {
-        return m_corners.begin();
-    }  ///< Return a begin iterator into the corners
-    auto end() const -> decltype(m_corners.end()) {
-        return m_corners.end();
-    }  ///< Return the end iterator into the corners
+    const auto& operator[](const T i) const {return m_corners[i];}  ///< Access the ith corner of the box
+    auto begin() -> decltype(m_corners.begin()) {return m_corners.begin();}  ///< Return a begin iterator into the corners
+    auto end() -> decltype(m_corners.end()) {return m_corners.end();}  ///< Return the end iterator into the corners
+    auto begin() const -> decltype(m_corners.begin()) {return m_corners.begin();}  ///< Return a begin iterator into the corners
+    auto end() const -> decltype(m_corners.end()) {return m_corners.end();}  ///< Return the end iterator into the corners
 };
 
 template<int N, typename T = uint32_t>

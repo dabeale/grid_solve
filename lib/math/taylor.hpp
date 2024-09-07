@@ -61,7 +61,8 @@ class taylor {
         } else {
             return (
                 (1.0/factorial<K>())*fAtY.inner(x-cx) +
-                estimate<K-1>(x, cx, y));
+                estimate<K-1>(x, cx, y)
+            );
         }
     }
 
@@ -104,7 +105,8 @@ class taylor {
             return (
                 (1.0/factorial<K>())*
                 polyCoefsRef.coeffs().dot(funcRef(cx, y - cx)) +
-                estimate<K-1>(polyCoefs, cx, y));
+                estimate<K-1>(polyCoefs, cx, y)
+            );
         }
     }
 };
