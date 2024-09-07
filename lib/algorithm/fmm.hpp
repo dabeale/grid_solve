@@ -71,7 +71,8 @@ class fmm {
         const dimensions<N, T> dims,
         FTraversal fineTraversalFunc,
         FBoxWeight boxWeightFunc,
-        const subdivision_type subDiv) :
+        const subdivision_type subDiv
+    ) :
         m_grid(dims, subDiv),
         m_fineTraversalFunc(fineTraversalFunc),
         m_boxWeightFunc(boxWeightFunc) {}
@@ -93,33 +94,15 @@ class fmm {
         });
     }
 
-    size_t grid_size() const {
-        return m_grid.size();
-    }  ///< Get the number of vertices in the grid
-    GridElement& operator[](const T i) {
-        return m_grid[i];
-    }  ///< Access the ith vertex of the grid
-    const GridElement& operator[](const T i) const {
-        return m_grid[i];
-    }  ///< Access the ith vertex of the grid
-    GridElement& operator[](const index<N, T>& i) {
-        return m_grid[i];
-    }  ///< Access a vertex of the grid using an index
-    const GridElement& operator[](const index<N, T>& i) const {
-        return m_grid[i];
-    }  ///< Access a vertex of the grid using an index
-    auto begin() -> decltype(m_grid.begin()) {
-        return m_grid.begin();
-    }  ///< Return a begin iterator into the vertices
-    auto end() -> decltype(m_grid.end()) {
-        return m_grid.end();
-    }  ///< Return the end iterator into the vertices
-    auto begin() const -> decltype(m_grid.begin()) {
-        return m_grid.begin();
-    }  ///< Return a begin iterator into the vertices
-    auto end() const -> decltype(m_grid.end()) {
-        return m_grid.end();
-    }  ///< Return the end iterator into the vertices
+    size_t grid_size() const {return m_grid.size();}  ///< Get the number of vertices in the grid
+    GridElement& operator[](const T i) {return m_grid[i];}  ///< Access the ith vertex of the grid
+    const GridElement& operator[](const T i) const {return m_grid[i];}  ///< Access the ith vertex of the grid
+    GridElement& operator[](const index<N, T>& i) {return m_grid[i];}  ///< Access a vertex of the grid using an index
+    const GridElement& operator[](const index<N, T>& i) const {return m_grid[i];}  ///< Access a vertex of the grid using an index
+    auto begin() -> decltype(m_grid.begin()) {return m_grid.begin();}  ///< Return a begin iterator into the vertices
+    auto end() -> decltype(m_grid.end()) {return m_grid.end();}  ///< Return the end iterator into the vertices
+    auto begin() const -> decltype(m_grid.begin()) {return m_grid.begin();}  ///< Return a begin iterator into the vertices
+    auto end() const -> decltype(m_grid.end()) {return m_grid.end();}  ///< Return the end iterator into the vertices
 };
 }  // namespace gs
 

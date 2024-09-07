@@ -92,7 +92,9 @@ class box_stack_iterator {
                         level,
                         subDiv,
                         start_offset,
-                        start_offset));
+                        start_offset
+                    )
+                );
             }
         }
     }
@@ -111,7 +113,8 @@ class box_stack_iterator {
                         0,
                         m_subDivType,
                         m_counts[0],
-                        m_counts[0]);
+                        m_counts[0]
+                    );
                 } else {
                     m_stack[i] = m_stack[i-1].subbox(m_counts[i]);
                 }
@@ -153,17 +156,11 @@ class box_stack_iterator {
         return std::partial_ordering::equivalent;
     }
 
-    const box_stack<N, T>& operator*() {
-        return m_stack;
-    }  ///< Access the underlying stack
-    operator const box_stack<N, T>& () const {
-        return m_stack;
-    }  ///< Access the underlying stack
+    const box_stack<N, T>& operator*() {return m_stack;}  ///< Access the underlying stack
+    operator const box_stack<N, T>& () const {return m_stack;}  ///< Access the underlying stack
 
     template<int M, typename S>
-    friend std::ostream& operator<<(
-        std::ostream& os,
-        const box_stack_iterator<M, S>& it);
+    friend std::ostream& operator<<(std::ostream& os, const box_stack_iterator<M, S>& it);
 };
 
 template<int N, typename T = uint32_t>

@@ -41,18 +41,10 @@ class vector {
         }
     }
 
-    T& operator()(const size_t i) {
-        return m_array[i];
-    }  ///< Access the ith element of the vector
-    const T& operator()(const size_t i) const {
-        return m_array[i];
-    }   ///< Access the ith element of the vector
-    T& operator[](const size_t i) {
-        return m_array[i];
-    }  ///< Access the ith element of the vector
-    const T& operator[](const size_t i) const {
-        return m_array[i];
-    }  ///< Access the ith element of the vector
+    T& operator()(const size_t i) {return m_array[i];}  ///< Access the ith element of the vector
+    const T& operator()(const size_t i) const {return m_array[i];}   ///< Access the ith element of the vector
+    T& operator[](const size_t i) {return m_array[i];}  ///< Access the ith element of the vector
+    const T& operator[](const size_t i) const {return m_array[i];}  ///< Access the ith element of the vector
 
     /**
      * \brief Add to another vector in-place.

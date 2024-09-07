@@ -23,7 +23,8 @@ int test_exp_estimator() {
             gs::vector<double, 1>{7.0},
         },
         {3.5},
-        {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0});
+        {0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 1.0}
+    );
 
     for ( double dd = 0.1; dd <= 0.8; dd += 0.5 ) {
         retVal += ASSERT_BOOL(

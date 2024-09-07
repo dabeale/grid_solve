@@ -24,19 +24,16 @@ int test_bsi_points_1D() {
     size_t iters = 0;
     for (
         auto bsiIt = bsi;
-        bsiIt < gs::box_stack_iterator<1>(
-            dims,
-            gs::dimensions<1>::POINTS_SUBDIVISION, true);
-        ++bsiIt, ++iters) {
+        bsiIt < gs::box_stack_iterator<1>(dims, gs::dimensions<1>::POINTS_SUBDIVISION, true);
+        ++bsiIt, ++iters
+    ) {
         retVal += ASSERT_BOOL(iters < nBoxes);
         if ( iters >= nBoxes ) break;
         for ( size_t i = 0; i < 3; ++i ) {
             for ( size_t j = 0; j < 2; ++j ) {
                 retVal += ASSERT_BOOL(
-                    (*bsiIt)[i][j].at_level(
-                        2,
-                        gs::dimensions<1>::POINTS_SUBDIVISION)[0]
-                    == expected[iters][i][j]);
+                    (*bsiIt)[i][j].at_level(2, gs::dimensions<1>::POINTS_SUBDIVISION)[0] == expected[iters][i][j]
+                );
             }
         }
     }
@@ -65,18 +62,16 @@ int test_bsi_boxes_1D() {
     size_t iters = 0;
     for (
         auto bsiIt = bsi;
-        bsiIt < gs::box_stack_iterator<1>(
-            dims, gs::dimensions<1>::BOXES_SUBDIVISION, true);
-        ++bsiIt, ++iters) {
+        bsiIt < gs::box_stack_iterator<1>(dims, gs::dimensions<1>::BOXES_SUBDIVISION, true);
+        ++bsiIt, ++iters
+    ) {
         retVal += ASSERT_BOOL(iters < nBoxes);
         if ( iters >= nBoxes ) break;
         for ( size_t i = 0; i < 3; ++i ) {
             for ( size_t j = 0; j < 2; ++j ) {
                 retVal += ASSERT_BOOL(
-                    (*bsiIt)[i][j].at_level(
-                        2,
-                        gs::dimensions<1>::BOXES_SUBDIVISION)[0]
-                    == expected[iters][i][j]);
+                    (*bsiIt)[i][j].at_level(2, gs::dimensions<1>::BOXES_SUBDIVISION)[0] == expected[iters][i][j]
+                );
             }
         }
     }

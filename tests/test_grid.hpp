@@ -10,17 +10,13 @@ int test_grid() {
     std::cout << "Test grid" << std::endl;
     int retVal = 0;
     gs::dimensions<3> dims({2, 2, 2}, 3);
-    gs::grid<3, double, double> grid(
-        dims, gs::dimensions<3>::POINTS_SUBDIVISION);
+    gs::grid<3, double, double> grid(dims, gs::dimensions<3>::POINTS_SUBDIVISION);
     {
         uint32_t nPts = 0;
         std::set<uint32_t> allVals;
         grid.iterate([&](gs::box<3>& in, double&){
             for ( auto corner : in ) {
-                for (
-                    auto x : corner.at_level(
-                        2,
-                        gs::dimensions<3>::POINTS_SUBDIVISION)) {
+                for (auto x : corner.at_level(2, gs::dimensions<3>::POINTS_SUBDIVISION)) {
                     allVals.insert(x);
                 }
             }
@@ -39,10 +35,7 @@ int test_grid() {
         std::set<uint32_t> allVals;
         grid.iterate([&](gs::box<3>& in, double&){
             for ( auto corner : in ) {
-                for (
-                    auto x : corner.at_level(
-                        2,
-                        gs::dimensions<3>::POINTS_SUBDIVISION)) {
+                for (auto x : corner.at_level(2, gs::dimensions<3>::POINTS_SUBDIVISION)) {
                     allVals.insert(x);
                 }
             }
@@ -59,10 +52,7 @@ int test_grid() {
         std::set<uint32_t> allVals;
         grid.iterate([&](gs::box<3>& in, double&){
             for ( auto corner : in ) {
-                for (
-                    auto x : corner.at_level(
-                        2,
-                        gs::dimensions<3>::POINTS_SUBDIVISION)) {
+                for (auto x : corner.at_level(2, gs::dimensions<3>::POINTS_SUBDIVISION)) {
                     allVals.insert(x);
                 }
             }

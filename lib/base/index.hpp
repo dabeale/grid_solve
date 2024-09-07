@@ -38,10 +38,8 @@ class index {
 
  public:
     index(): index(0) {}
-    explicit index(const T level):
-        m_indices{}, m_level(level) { m_indices.fill(0); }
-    index(const std::array<T, N> indices, const T level):
-        m_indices(indices), m_level(level) {}
+    explicit index(const T level): m_indices{}, m_level(level) { m_indices.fill(0); }
+    index(const std::array<T, N> indices, const T level): m_indices(indices), m_level(level) {}
 
     /**
      * \brief Return the level of the index.
@@ -117,27 +115,13 @@ class index {
         return *this;
     }
 
-    const T& operator[](const T i) const {
-        return m_indices[i];
-    }  ///< Access the ith index.
-    T& operator[](const T i) {
-        return m_indices[i];
-    }  ///< Access the ith index.
-    auto begin() -> decltype(m_indices.begin()) {
-        return m_indices.begin();
-    }  ///< Return a begin iterator into the indices
-    auto end() -> decltype(m_indices.end()) {
-        return m_indices.end();
-    }  ///< Return the end iterator into the indices
-    auto begin() const -> decltype(m_indices.begin()) {
-        return m_indices.begin();
-    }  ///< Return a begin iterator into the indices
-    auto end() const -> decltype(m_indices.end()) {
-        return m_indices.end();
-    }  ///< Return the end iterator into the indices
-    operator const std::array<T, N>&() const {
-        return m_indices;
-    }  ///< Cast the index to an array
+    const T& operator[](const T i) const {return m_indices[i];}  ///< Access the ith index.
+    T& operator[](const T i) {return m_indices[i];}  ///< Access the ith index.
+    auto begin() -> decltype(m_indices.begin()) {return m_indices.begin();}  ///< Return a begin iterator into the indices
+    auto end() -> decltype(m_indices.end()) {return m_indices.end();}  ///< Return the end iterator into the indices
+    auto begin() const -> decltype(m_indices.begin()) {return m_indices.begin();}  ///< Return a begin iterator into the indices
+    auto end() const -> decltype(m_indices.end()) {return m_indices.end();}  ///< Return the end iterator into the indices
+    operator const std::array<T, N>&() const {return m_indices;}  ///< Cast the index to an array
 };
 
 template<int N, typename T = uint32_t>

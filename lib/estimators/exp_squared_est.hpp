@@ -21,8 +21,8 @@ requires std::is_floating_point<T>::value
  * by exp_squared, against a particular point.
  */
 class exp_squared_est  {
-    exp_squared<T, M, 0> m_exp_squared;     ///< The exp_squared function
-    exp_inner<T, M, D> m_exp_inner;         ///< The exp inner product estimate
+    exp_squared<T, M, 0> m_exp_squared;   ///< The exp_squared function
+    exp_inner<T, M, D> m_exp_inner;       ///< The exp inner product estimate
     taylor<T, M, D, exp_inner> m_taylor;  ///< The taylor estimate
 
  public:
@@ -52,8 +52,8 @@ class exp_squared_est  {
     T estimate(
         const polynomial<T, M, D>& poly,
         const gs::vector<T, M>& center,
-        const gs::vector<T, M>& y)
-    const {
+        const gs::vector<T, M>& y
+    ) const {
         return m_taylor.estimate(poly, gs::vector<T, M>(), y-center);
     }
 
@@ -70,8 +70,8 @@ class exp_squared_est  {
     polynomial<T, M, D> compute_coefs(
         std::array<gs::vector<T, M>, K> vectorVals,
         const gs::vector<T, M>& center,
-        std::array<T, K> tVals)
-    const {
+        std::array<T, K> tVals
+    ) const {
         polynomial<T, M, D> poly;
         for ( size_t i = 0; i < K; ++i ) {
             tVals[i] *= operator()(vectorVals[i], center);

@@ -38,8 +38,7 @@ requires std::is_integral<T>::value && (N > 0)
  *      T - The integral type.
  */
 class dimensions {
-    std::array<T, N> m_dimensions;
-        ///< The base array storage for the dimensions.
+    std::array<T, N> m_dimensions;  ///< The base array storage for the dimensions.
     T m_maxLevel;  ///< The maximum allowed level.
 
  public:
@@ -62,8 +61,7 @@ class dimensions {
     dimensions(): m_dimensions{}, m_maxLevel(0) {m_dimensions.fill(0);}
     dimensions(std::array<T, N> dimensions, T maxLevel):
         m_dimensions(dimensions), m_maxLevel(maxLevel) {}
-    dimensions(T dimensions, T maxLevel):
-        m_dimensions{}, m_maxLevel(maxLevel) {
+    dimensions(T dimensions, T maxLevel): m_dimensions{}, m_maxLevel(maxLevel) {
         m_dimensions.fill(dimensions);
     }
 
@@ -188,7 +186,8 @@ class dimensions {
                             levelDims[i] = (
                                 (level > 0) ?
                                 m_dimensions[i] << (level-1) :
-                                m_dimensions[i] >> 1);
+                                m_dimensions[i] >> 1
+                            );
                         }
                         break;
                 }
@@ -212,7 +211,8 @@ class dimensions {
         const modality mode)
     const {
         const std::array<T, N> levelDims = dimensions<N, T>::level_dims(
-            level, subDiv, mode);
+            level, subDiv, mode
+        );
         T total = 1;
         for ( const auto dim : levelDims ) {
             total *= dim;
@@ -265,7 +265,8 @@ class dimensions {
         const modality mode = POINTS_MODE)
     const {
         const auto levelDims = dimensions<N, T>::level_dims(
-            level, subDiv, mode);
+            level, subDiv, mode
+        );
         T retInd = indices[N-1];
         T coef = levelDims[N-1];
 
