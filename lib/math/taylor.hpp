@@ -95,8 +95,8 @@ class taylor {
     T estimate(
         const polynomial<T, M, D>& polyCoefs,
         const gs::vector<T, M>& cx,
-        const gs::vector<T, M>& y)
-    const {
+        const gs::vector<T, M>& y
+    ) const {
         const auto& funcRef = static_cast<F<T, M, K>>(m_function);
         const auto& polyCoefsRef = static_cast<polynomial<T, M, K>>(polyCoefs);
         if constexpr ( K == 0 ) {

@@ -67,8 +67,7 @@ class box_stack_iterator {
     }
 
  public:
-    static constexpr size_t m_nSubBoxes = pow<2, N>();
-        ///< The number of subboxes
+    static constexpr size_t m_nSubBoxes = pow<2, N>();  ///< The number of subboxes
 
     box_stack_iterator(
         const dimensions<N, T>& dims,
@@ -144,8 +143,8 @@ class box_stack_iterator {
      * \brief Partial ordering for the iterator.
      */
     std::partial_ordering operator<=>(
-        const box_stack_iterator<N, T>& other)
-    const {
+        const box_stack_iterator<N, T>& other
+    ) const {
         for ( size_t i = 0; i < m_maxLevel; ++i ) {
             if ( m_counts[i] < other.m_counts[i] ) {
                 return std::partial_ordering::less;

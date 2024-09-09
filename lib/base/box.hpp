@@ -159,15 +159,24 @@ class box {
      */
     box<N, T> parent() const {
         if ( m_level > 0 ) {
+            auto boxIndex = m_dimensions.ind2sub(
+                m_offset,
+                m_level,
+                m_subdivType,
+                dimensions<N, T>::BOXES_MODE
+            );
+            // Move the box down a level. Note that in both subdivision methods
+            // there is always a factor of two more boxes at the next level.
+            for ( auto& i : boxIndex ) i /= 2;
             return box<N, T>(
                 m_dimensions,
                 m_level - 1,
                 m_subdivType,
                 m_dimensions.sub2ind(
-                    m_corners[0].at_level(m_level - 1),
+                    boxIndex,
                     m_level - 1,
                     m_subdivType,
-                    dimensions<N, T>::POINTS_TO_BOXES
+                    dimensions<N, T>::BOXES_MODE
                 )
             );
         } else {
@@ -296,6 +305,26 @@ class box {
         return minArr;
     }
 
+    /**
+     * \brief Return true if the boxes are equal.
+     */
+    bool operator==(const box<N, T>& other) const {
+        const auto level = std::max(m_level, other.m_level);
+        for ( size_t i = 0; i < pow<2, N>(); ++i ) {
+            const index<N, T> cornerSelf(
+                m_corners[i].at_level(level, m_subdivType)
+            );
+            const index<N, T> cornerOther(
+                other.m_corners[i].at_level(level, m_subdivType)
+            );
+            for ( size_t j = 0; j < N; ++j ) {
+                if ( cornerSelf[j] != cornerOther[j] ) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     const auto& operator[](const T i) const {return m_corners[i];}  ///< Access the ith corner of the box
     auto begin() -> decltype(m_corners.begin()) {return m_corners.begin();}  ///< Return a begin iterator into the corners
     auto end() -> decltype(m_corners.end()) {return m_corners.end();}  ///< Return the end iterator into the corners

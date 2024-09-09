@@ -148,7 +148,7 @@ class polynomial<T, N, 1>: public polynomial<T, N, 0> {
     const gs::vector<T, N>& coeffs() const {
         return m_coeff;
     }
-    const polynomial<T, N, 1>& operator+=(const polynomial<T, N, 1>& other){
+    const polynomial<T, N, 1>& operator+=(const polynomial<T, N, 1>& other) {
         m_coeff += other.m_coeff;
         polynomial<T, N, 0>::operator+=(other);
         return *this;
@@ -186,7 +186,7 @@ class polynomial<T, N, 0> {
     const T& coeffs() const {
         return m_coeff;
     }
-    const polynomial<T, N, 0>& operator+=(const polynomial<T, N, 0>& other){
+    const polynomial<T, N, 0>& operator+=(const polynomial<T, N, 0>& other) {
         m_coeff += other.m_coeff;
         return *this;
     }

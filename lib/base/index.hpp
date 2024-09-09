@@ -93,8 +93,8 @@ class index {
      */
     index<N, T> at_level(
         const T level,
-        const subdivision_type subdivType)
-    const {
+        const subdivision_type subdivType
+    ) const {
         if ( level == m_level ) { return *this; }
         return index<N, T>(*this).set_level(level, subdivType);
     }
