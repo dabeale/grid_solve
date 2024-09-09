@@ -14,6 +14,8 @@
 int main(int, char* argv[]) {
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
+    error += test_box_parents_2d();
+    error += test_box_parents_3d();
     error += testq_fmm_exp2_2d();
     error += testq_fmm_exp2_1d();
     error += test_exp_estimator();

@@ -7,6 +7,7 @@
 
 #include "base/box.hpp"
 #include "base/tools.hpp"
+#include "base/box_stack_iterator.hpp"
 
 int test_box() {
     std::cout << "Test box construction" << std::endl;
@@ -176,7 +177,8 @@ int test_subbox_duel() {
     gs::box<2> testBox(
         gs::dimensions<2>({2, 2}, 3),
         0,
-        gs::dimensions<2>::BOXES_SUBDIVISION);
+        gs::dimensions<2>::BOXES_SUBDIVISION
+    );
     {
         retVal += ASSERT_BOOL(testBox[0].at_level(3, gs::dimensions<2>::BOXES_SUBDIVISION) == gs::index<2>({0, 0}, 3));
         retVal += ASSERT_BOOL(testBox[1].at_level(3, gs::dimensions<2>::BOXES_SUBDIVISION) == gs::index<2>({0, 15}, 3));
@@ -269,6 +271,60 @@ int test_subbox_duel() {
         }
     }
 
+    return retVal;
+}
+
+int test_box_parents_2d() {
+    std::cout << "Test box parents 2D" << std::endl;
+    int retVal = 0;
+
+    const size_t nDims = 2;
+    const size_t nBaseDims = 2;
+    const size_t maxLevel = 4;
+
+    gs::dimensions<nDims> dims(nBaseDims, maxLevel);
+    gs::box_stack_iterator<nDims> bsi(dims, gs::dimensions<nDims>::BOXES_SUBDIVISION);
+
+    for (
+        auto bsiIt = bsi;
+        bsiIt < gs::box_stack_iterator<nDims>(dims, gs::dimensions<nDims>::BOXES_SUBDIVISION, true);
+        ++bsiIt
+    ) {
+        auto boxStack = *bsiIt;
+        for ( size_t i = 1; i < boxStack.size(); ++i ) {
+            retVal += ASSERT_BOOL( boxStack[i-1] == boxStack[i].parent() );
+            retVal += ASSERT_BOOL(
+                boxStack[i] == boxStack[i].parent().subbox(boxStack[i].index_in_parent())
+            );
+        }
+    }
+    return retVal;
+}
+
+int test_box_parents_3d() {
+    std::cout << "Test box parents 3D" << std::endl;
+    int retVal = 0;
+
+    const size_t nDims = 3;
+    const size_t nBaseDims = 2;
+    const size_t maxLevel = 4;
+
+    gs::dimensions<nDims> dims(nBaseDims, maxLevel);
+    gs::box_stack_iterator<nDims> bsi(dims, gs::dimensions<nDims>::BOXES_SUBDIVISION);
+
+    for (
+        auto bsiIt = bsi;
+        bsiIt < gs::box_stack_iterator<nDims>(dims, gs::dimensions<nDims>::BOXES_SUBDIVISION, true);
+        ++bsiIt
+    ) {
+        auto boxStack = *bsiIt;
+        for ( size_t i = 1; i < boxStack.size(); ++i ) {
+            retVal += ASSERT_BOOL( boxStack[i-1] == boxStack[i].parent() );
+            retVal += ASSERT_BOOL(
+                boxStack[i] == boxStack[i].parent().subbox(boxStack[i].index_in_parent())
+            );
+        }
+    }
     return retVal;
 }
 

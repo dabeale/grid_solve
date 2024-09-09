@@ -8,6 +8,12 @@
 
 #define ASSERT_BOOL(value) gs::assert_bool(value, #value);
 
+#ifdef _GS_DEBUG
+#define DEBUG_ASSERT(value) if ( !(value) ) throw std::runtime_error(#value);
+#else
+#define DEBUG_ASSERT(value)
+#endif
+
 namespace gs {
 /**
  * \brief Print a message if the predicate is false.

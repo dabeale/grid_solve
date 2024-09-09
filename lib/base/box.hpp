@@ -34,7 +34,30 @@ class box {
     T m_indexInParent;  ///< The index of the box within it's parent.
     T m_offset;  ///< The box index (offset)
     dimensions<N, T> m_dimensions;  ///< The dimensions of the box.
-    subdivision_type m_subdivType;  ///< True if the box is a duel box
+    subdivision_type m_subdivType;  ///< The subdivision type
+
+    /**
+     * \brief Find the index of the box within its parent box.
+     * 
+     * This method is called on construction, and stored in the
+     * m_indexInParent variable. It is therefore private.
+     */
+    T compute_index_in_parent() const {
+        if ( m_level > 0 ) {
+            // Convert the index vector into local box coordinate
+            return m_dimensions.sub2ind(
+                // Convert the offset into a local box coordinate.
+                m_dimensions.ind2sub(
+                    m_offset, m_level, m_subdivType, dimensions<N, T>::BOXES_TO_LOCAL_BOXES
+                ),
+                m_level - 1,
+                m_subdivType,
+                dimensions<N, T>::LOCAL_BOXES
+            );
+        } else {
+            return 0;
+        }
+    }
 
  public:
     static constexpr T m_nCorners = pow<2, N>();  ///< The number of corners.
@@ -45,7 +68,7 @@ class box {
         const T level,
         const subdivision_type subdivType,
         const T offset = 0,
-        const T indexInParent = 0
+        const T indexInParent = static_cast<T>(-1)
     ):
         m_level(level),
         m_indexInParent(indexInParent),
@@ -68,21 +91,14 @@ class box {
                 )
             );
         }
+        if ( indexInParent == static_cast<T>(-1) ) {
+            m_indexInParent = compute_index_in_parent();
+        }
     }
 
-    /**
-     * \brief Get the box offset
-     */
-    T get_offset() const {
-        return m_offset;
-    }
-
-    /**
-     * \brief Get the current level.
-     */
-    T get_level() const {
-        return m_level;
-    }
+    T get_offset() const {return m_offset;}  ///< Get the box offset
+    T get_level() const {return m_level;}  ///< Get the current level.
+    T index_in_parent() const {return m_indexInParent;}  ///< Get the index of the box within it's parent.
 
     /**
      * \brief A neighbour direction of a box.
@@ -101,13 +117,16 @@ class box {
     }
 
     /**
-     * \brief Check whether the given index is (inclusively) inside the box.
+     * \brief Check whether the given index is inside the box.
      * 
-     * The the index is on the edge of corners then the method will
-     * true.
+     * Depending on the strict argument the method will check whether
+     * the point is strictly inside or not. For example, if strict
+     * is true and the point is on one of the corners then the method
+     * will return false.
      */
-    bool is_inside(index<N, T> ind, const subdivision_type subdivType) const {
+    bool is_inside(index<N, T> ind, const subdivision_type subdivType, const bool strict = false) const {
         box<N, T> levelBox(*this);
+        // Ensure that the index is the correct level
         if (ind.get_level() < m_level) {
             ind.set_level(m_level, subdivType);
         } else if ( ind.get_level() > m_level ) {
@@ -118,14 +137,71 @@ class box {
                 );
             }
         }
+        // Check whether the point is inside in each dimension
         auto maxInd = levelBox.max();
         auto minInd = levelBox.min();
         for ( size_t i = 0; i < N; ++i ) {
-            if ( ind[i] < minInd[i] || ind[i] > maxInd[i] ) {
+            if (
+                ( (!strict) && (ind[i] <  minInd[i] || ind[i] >  maxInd[i]) ) ||
+                (   strict  && (ind[i] <= minInd[i] || ind[i] >= maxInd[i]) )
+            ) {
                 return false;
             }
         }
         return true;
+    }
+
+    /**
+     * \brief Return the neighbour of the box, given an index.
+     * 
+     * The index specifies the subbox of the parent box, if the box is
+     * at level zero, then it is simply the index of the box at level 0.
+     */
+    box<N, T> neighbour(const T ind) const {
+        if ( m_level > 0 ) {
+            return parent().subbox(ind);
+        } else {
+            return box<N, T>(
+                m_dimensions,
+                m_level,
+                m_subdivType,
+                ind,
+                ind
+            );
+        }
+    }
+
+    /**
+     * \brief The parent of the box.
+     * 
+     * Return the parent box, if it exists. If we are at the top of the
+     * tree then return self.
+     */
+    box<N, T> parent() const {
+        if ( m_level > 0 ) {
+            auto boxIndex = m_dimensions.ind2sub(
+                m_offset,
+                m_level,
+                m_subdivType,
+                dimensions<N, T>::BOXES_MODE
+            );
+            // Move the box down a level. Note that in both subdivision methods
+            // there is always a factor of two more boxes at the next level.
+            for ( auto& i : boxIndex ) i /= 2;
+            return box<N, T>(
+                m_dimensions,
+                m_level - 1,
+                m_subdivType,
+                m_dimensions.sub2ind(
+                    boxIndex,
+                    m_level - 1,
+                    m_subdivType,
+                    dimensions<N, T>::BOXES_MODE
+                )
+            );
+        } else {
+            return *this;
+        }
     }
 
     /**
@@ -177,13 +253,6 @@ class box {
                 dimensions<N, T>::BOXES_MODE
             ) : box<N, T>::m_nCorners
         );
-    }
-
-    /**
-     * \brief Get the index of the box within it's parent.
-     */
-    T index_in_parent() const {
-        return m_indexInParent;
     }
 
     /**
@@ -256,6 +325,26 @@ class box {
         return minArr;
     }
 
+    /**
+     * \brief Return true if the boxes are equal.
+     */
+    bool operator==(const box<N, T>& other) const {
+        const auto level = std::max(m_level, other.m_level);
+        for ( size_t i = 0; i < pow<2, N>(); ++i ) {
+            const index<N, T> cornerSelf(
+                m_corners[i].at_level(level, m_subdivType)
+            );
+            const index<N, T> cornerOther(
+                other.m_corners[i].at_level(level, m_subdivType)
+            );
+            for ( size_t j = 0; j < N; ++j ) {
+                if ( cornerSelf[j] != cornerOther[j] ) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
     const auto& operator[](const T i) const {return m_corners[i];}  ///< Access the ith corner of the box
     auto begin() -> decltype(m_corners.begin()) {return m_corners.begin();}  ///< Return a begin iterator into the corners
     auto end() -> decltype(m_corners.end()) {return m_corners.end();}  ///< Return the end iterator into the corners
