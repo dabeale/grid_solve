@@ -158,7 +158,7 @@ class box {
      * at level zero, then it is simply the index of the box at level 0.
      */
     box<N, T> neighbour(const T ind) const {
-        if ( m_level > 0 ){
+        if ( m_level > 0 ) {
             return parent().subbox(ind);
         } else {
             return box<N, T>(
