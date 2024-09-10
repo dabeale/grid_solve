@@ -129,7 +129,9 @@ class box_stack_iterator {
      * object before it was incremented.
      */
     box_stack_iterator<N, T> operator++(int) {
-        return box_stack_iterator<N, T> (*this)++;
+        box_stack_iterator<N, T> self(*this);
+        box_stack_iterator<N, T>::operator++();
+        return self;
     }
 
     /**
