@@ -26,7 +26,7 @@ int test_box() {
     retVal += ASSERT_BOOL(testBox[7].at_level(3, gs::dimensions<3>::POINTS_SUBDIVISION) == gs::index<3>({8, 8, 8}, 3));
     {
         gs::box<3> nbox(testBox);
-        nbox.to_neighbour(0, gs::box<3>::POSITIVE);
+        nbox.to_neighbour(0, 1u);
         retVal += ASSERT_BOOL(nbox[0].at_level(3, gs::dimensions<3>::POINTS_SUBDIVISION) == gs::index<3>({8, 0, 0}, 3));
         retVal += ASSERT_BOOL(nbox[1].at_level(3, gs::dimensions<3>::POINTS_SUBDIVISION) == gs::index<3>({8, 0, 8}, 3));
         retVal += ASSERT_BOOL(nbox[2].at_level(3, gs::dimensions<3>::POINTS_SUBDIVISION) == gs::index<3>({8, 8, 0}, 3));
