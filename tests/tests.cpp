@@ -14,12 +14,14 @@
 int main(int, char* argv[]) {
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
+    error += test_point_convert_tolocal_sub2ind();
+    error += test_point_convert_tolocal_ind2sub();
     error += test_point_convert_topoints_sub2ind();
+    error += test_point_convert_topoints_ind2sub();
     error += test_point_convert_toboxes_sub2ind();
     error += test_point_convert_toboxes_ind2sub();
-    error += test_bdi_boxes_2D();
-    error += test_point_convert_topoints_ind2sub();
     error += test_bdi_point_boxes();
+    error += test_bdi_boxes_2D();
     error += test_bdi_boxes_1D();
     error += test_box_parents_2d();
     error += test_box_parents_3d();

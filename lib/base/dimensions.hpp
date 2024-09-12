@@ -255,19 +255,17 @@ class dimensions {
         std::array<T, N> indices;
         for ( T i = 1; i <= N; ++i ) {
             indices[N-i] = (ind / coef) % levelDims[N-i];
-            switch ( conv ) {
+            switch (conv) {
             case dimensions<N, T>::POINTS_CONV:
-                if (subDiv == dimensions<N, T>::BOXES_SUBDIVISION) {
-                    indices[N-i]*=2;
-                }
+                if (subDiv == dimensions<N, T>::BOXES_SUBDIVISION) indices[N-i]*=2;
                 break;
             case dimensions<N, T>::BOXES_CONV:
-                if (subDiv == dimensions<N, T>::BOXES_SUBDIVISION) {
-                    indices[N-i]/=2;
-                }
+                if (subDiv == dimensions<N, T>::BOXES_SUBDIVISION) indices[N-i]/=2;
+                break;
+            case dimensions<N, T>::LOCAL_CONV:
+                indices[N-i]%=2;
                 break;
             case dimensions<N, T>::NO_CONV:
-            case dimensions<N, T>::LOCAL_CONV:
                 break;
             }
             coef *= levelDims[N-i];
@@ -295,6 +293,8 @@ class dimensions {
             levelDims = dimensions<N, T>::level_dims(level, subDiv, dimensions<N, T>::BOXES_MODE);
             break;
         case dimensions<N, T>::LOCAL_CONV:
+            levelDims = dimensions<N, T>::level_dims(level, subDiv, dimensions<N, T>::LOCAL_BOXES);
+            break;
         case dimensions<N, T>::NO_CONV:
             levelDims = dimensions<N, T>::level_dims(level, subDiv, mode);
             break;

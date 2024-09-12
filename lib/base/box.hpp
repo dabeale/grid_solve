@@ -50,7 +50,7 @@ class box: public base_box<N, T> {
                     base_box<N, T>::m_level,
                     m_subdivType,
                     dimensions<N, T>::BOXES_MODE,
-                    dimensions<N, T>::BOXES_CONV
+                    dimensions<N, T>::LOCAL_CONV
                 ),
                 base_box<N, T>::m_level - 1,
                 m_subdivType,
