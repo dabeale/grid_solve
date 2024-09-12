@@ -70,7 +70,7 @@ class box_duel_iterator {
         m_levelDims(dims.level_dims(
             m_iterationLevel,
             dimensions<N, T>::BOXES_SUBDIVISION,
-            dimensions<N, T>::BOXES_MODE
+            dimensions<N, T>::POINTS_MODE
         )),
         m_pastTheEnd(pastTheEnd) {
             // There are one fewer duel boxes in each dimension.

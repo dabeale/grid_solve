@@ -49,7 +49,8 @@ class box: public base_box<N, T> {
                     m_offset,
                     base_box<N, T>::m_level,
                     m_subdivType,
-                    dimensions<N, T>::BOXES_TO_LOCAL_BOXES
+                    dimensions<N, T>::BOXES_MODE,
+                    dimensions<N, T>::BOXES_CONV
                 ),
                 base_box<N, T>::m_level - 1,
                 m_subdivType,
@@ -73,7 +74,8 @@ class box: public base_box<N, T> {
             static_cast<std::array<T, N>>(ind),
             ind.get_level(),
             subdivType,
-            dimensions<N, T>::POINTS_TO_BOXES
+            dimensions<N, T>::POINTS_MODE,
+            dimensions<N, T>::BOXES_CONV
         )
     ) {}
     box(
@@ -90,7 +92,8 @@ class box: public base_box<N, T> {
                     offset,
                     level,
                     subdivType,
-                    dimensions<N, T>::BOXES_TO_POINTS
+                    dimensions<N, T>::BOXES_MODE,
+                    dimensions<N, T>::POINTS_CONV
                 ),
                 level
             )
@@ -115,16 +118,16 @@ class box: public base_box<N, T> {
      * is true and the point is on one of the corners then the method
      * will return false.
      */
-    bool is_inside(index<N, T> ind, const subdivision_type subdivType, const bool strict = false) const {
+    bool is_inside(index<N, T> ind, const bool strict = false) const {
         box<N, T> levelBox(*this);
         // Ensure that the index is the correct level
         if (ind.get_level() < base_box<N, T>::m_level) {
-            ind.set_level(base_box<N, T>::m_level, subdivType);
+            ind.set_level(base_box<N, T>::m_level, m_subdivType);
         } else if ( ind.get_level() > base_box<N, T>::m_level ) {
             for ( size_t i = 0; i < base_box<N, T>::m_nCorners; ++i ) {
                 levelBox.m_corners[i].set_level(
                     ind.get_level(),
-                    subdivType
+                    m_subdivType
                 );
             }
         }

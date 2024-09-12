@@ -2,8 +2,11 @@
 #ifndef TESTS_TEST_ITERATOR_HPP_
 #define TESTS_TEST_ITERATOR_HPP_
 
+#include <utility>
+
 #include "base/box_stack_iterator.hpp"
 #include "base/box_duel_iterator.hpp"
+#include "base/box.hpp"
 
 int test_bsi_points_1D() {
     std::cout << "Test box stack iterator points 1d" << std::endl;
@@ -84,25 +87,25 @@ int test_bdi_boxes_1D() {
     std::cout << "Test box duel iterator boxes 1d" << std::endl;
     int retVal = 0;
 
-    const size_t nLevels = 4;
+    const size_t nLevels = 3;
     const size_t nDims = 1;
     gs::dimensions<nDims> dims(2, nLevels);
 
     std::array< std::pair<size_t, size_t>, 7 > expected {
-        std::pair<size_t, size_t> {1,2},
-        std::pair<size_t, size_t> {3,4},
-        std::pair<size_t, size_t> {5,6},
-        std::pair<size_t, size_t> {7,8},
-        std::pair<size_t, size_t> {9,10},
-        std::pair<size_t, size_t> {11,12},
-        std::pair<size_t, size_t> {13,14}
+        std::pair<size_t, size_t> {1, 2},
+        std::pair<size_t, size_t> {3, 4},
+        std::pair<size_t, size_t> {5, 6},
+        std::pair<size_t, size_t> {7, 8},
+        std::pair<size_t, size_t> {9, 10},
+        std::pair<size_t, size_t> {11, 12},
+        std::pair<size_t, size_t> {13, 14}
     };
     int ind = 0;
     for (
         gs::box_duel_iterator<nDims> it(dims, nLevels);
         it != gs::box_duel_iterator<nDims>(dims, nLevels, true);
         ++it, ++ind
-    ){
+    ) {
         retVal += ASSERT_BOOL( (*it)[0][0] == expected[ind].first );
         retVal += ASSERT_BOOL( (*it)[1][0] == expected[ind].second );
     }
@@ -116,32 +119,61 @@ int test_bdi_boxes_2D() {
     int retVal = 0;
 
     const size_t nDims = 2;
-    const size_t nLevels = 3;
+    const size_t nLevels = 2;
     gs::dimensions<nDims> dims(2, nLevels);
-    gs::box_duel_iterator<nDims> bsi(dims, nLevels);
     size_t expected[9][4][2] {
         {{1, 1}, {1, 2}, {2, 1}, {2, 2}},
-        {{3, 1}, {3, 2}, {4, 1}, {4, 2}}, 
-        {{5, 1}, {5, 2}, {6, 1}, {6, 2}}, 
-        {{1, 3}, {1, 4}, {2, 3}, {2, 4}}, 
-        {{3, 3}, {3, 4}, {4, 3}, {4, 4}}, 
-        {{5, 3}, {5, 4}, {6, 3}, {6, 4}}, 
-        {{1, 5}, {1, 6}, {2, 5}, {2, 6}}, 
-        {{3, 5}, {3, 6}, {4, 5}, {4, 6}}, 
-        {{5, 5}, {5, 6}, {6, 5}, {6, 6}} 
+        {{3, 1}, {3, 2}, {4, 1}, {4, 2}},
+        {{5, 1}, {5, 2}, {6, 1}, {6, 2}},
+        {{1, 3}, {1, 4}, {2, 3}, {2, 4}},
+        {{3, 3}, {3, 4}, {4, 3}, {4, 4}},
+        {{5, 3}, {5, 4}, {6, 3}, {6, 4}},
+        {{1, 5}, {1, 6}, {2, 5}, {2, 6}},
+        {{3, 5}, {3, 6}, {4, 5}, {4, 6}},
+        {{5, 5}, {5, 6}, {6, 5}, {6, 6}}
     };
     int ind = 0;
     for (
-        gs::box_duel_iterator<nDims> it(dims,nLevels);
+        gs::box_duel_iterator<nDims> it(dims, nLevels);
         it != gs::box_duel_iterator<nDims>(dims, nLevels, true);
         ++it, ++ind
-    ){
+    ) {
         for ( size_t i = 0; i < 4u; ++i ) {
             retVal += ASSERT_BOOL( (*it)[i][0] == expected[ind][i][0] );
             retVal += ASSERT_BOOL( (*it)[i][1] == expected[ind][i][1] );
         }
     }
     retVal += ASSERT_BOOL( ind == 9 );
+
+    return retVal;
+}
+
+int test_bdi_point_boxes() {
+    std::cout << "Test duel point boxes" << std::endl;
+    int retVal = 0;
+
+    const size_t nDims = 2;
+    const size_t nLevels = 3;
+    gs::dimensions<nDims> dims(2, nLevels);
+
+    for (
+        gs::box_duel_iterator<nDims> it(dims, nLevels);
+        it != gs::box_duel_iterator<nDims>(dims, nLevels, true);
+        ++it
+    ) {
+        std::array<gs::box<nDims>, 4u> allBoxes {
+            allBoxes[0] = gs::box<nDims>(dims, (*it)[0], gs::dimensions<nDims>::BOXES_SUBDIVISION),
+            allBoxes[1] = gs::box<nDims>(dims, (*it)[1], gs::dimensions<nDims>::BOXES_SUBDIVISION),
+            allBoxes[2] = gs::box<nDims>(dims, (*it)[2], gs::dimensions<nDims>::BOXES_SUBDIVISION),
+            allBoxes[3] = gs::box<nDims>(dims, (*it)[3], gs::dimensions<nDims>::BOXES_SUBDIVISION)
+        };
+        for ( size_t i = 0; i < 4u; ++i ) {
+            retVal += ASSERT_BOOL( allBoxes[i].is_inside((*it)[i], false) );
+            for ( size_t j = i+1; j < 4u; ++j ) {
+                allBoxes[i] != allBoxes[j];
+            }
+        }
+    }
 
     return retVal;
 }
