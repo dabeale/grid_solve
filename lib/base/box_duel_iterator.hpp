@@ -102,8 +102,13 @@ class box_duel_iterator {
     bool operator==(const box_duel_iterator<N, T>& other) const {
         if ( m_pastTheEnd && other.m_pastTheEnd ) {
             return true;
+        } else if (
+            ( m_pastTheEnd && !other.m_pastTheEnd ) ||
+            ( !m_pastTheEnd && other.m_pastTheEnd )
+        ) {
+            return false;
         }
-        for ( T i = 0; i < i < base_box<N, T>::m_nCorners; ++i ) {
+        for ( size_t i = 0; i < base_box<N, T>::m_nCorners; ++i ) {
             if ( m_baseBox[i] != other.m_baseBox[i] ) return false;
         }
         return true;
@@ -138,7 +143,13 @@ template<int N, typename T = uint32_t>
  * \brief Append the iterator to an output stream.
  */
 std::ostream& operator<<(std::ostream& os, const box_duel_iterator<N, T>& it) {
-    os << it.m_baseBox << std::endl;
+    for ( T i = 0; i < base_box<N, T>::m_nCorners; ++i ) {
+        os << (*it)[i].at_level(
+            (*it).get_level(),
+            dimensions<N, T>::BOXES_SUBDIVISION
+        ) << " ";
+    }
+    os << std::endl;
     return os;
 }
 }  // namespace gs
