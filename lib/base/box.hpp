@@ -8,6 +8,7 @@
 #include "base/dimensions.hpp"
 #include "base/index.hpp"
 #include "base/tools.hpp"
+#include "base/base_box.hpp"
 
 namespace gs {
 template<int N, typename T = uint32_t>
@@ -26,14 +27,11 @@ requires std::is_integral<T>::value && std::is_unsigned<T>::value
  *      N - The number of dimensions of the box
  *      T - The integral type.
  */
-class box {
+class box: public base_box<N, T> {
     using subdivision_type = typename dimensions<N, T>::subdivision_type;
 
-    std::array<index<N, T>, pow<2, N>()> m_corners;  ///< The corners.
-    T m_level;  ///< The box level.
     T m_indexInParent;  ///< The index of the box within it's parent.
     T m_offset;  ///< The box index (offset)
-    dimensions<N, T> m_dimensions;  ///< The dimensions of the box.
     subdivision_type m_subdivType;  ///< The subdivision type
 
     /**
@@ -43,14 +41,18 @@ class box {
      * m_indexInParent variable. It is therefore private.
      */
     T compute_index_in_parent() const {
-        if ( m_level > 0 ) {
+        if ( base_box<N, T>::m_level > 0 ) {
             // Convert the index vector into local box coordinate
-            return m_dimensions.sub2ind(
+            return base_box<N, T>::m_dimensions.sub2ind(
                 // Convert the offset into a local box coordinate.
-                m_dimensions.ind2sub(
-                    m_offset, m_level, m_subdivType, dimensions<N, T>::BOXES_TO_LOCAL_BOXES
+                base_box<N, T>::m_dimensions.ind2sub(
+                    m_offset,
+                    base_box<N, T>::m_level,
+                    m_subdivType,
+                    dimensions<N, T>::BOXES_MODE,
+                    dimensions<N, T>::LOCAL_CONV
                 ),
-                m_level - 1,
+                base_box<N, T>::m_level - 1,
                 m_subdivType,
                 dimensions<N, T>::LOCAL_BOXES
             );
@@ -60,61 +62,53 @@ class box {
     }
 
  public:
-    static constexpr T m_nCorners = pow<2, N>();  ///< The number of corners.
-    static constexpr T m_nSubPoints = pow<3, N>();  ///< The number of subpoints.
-
     box(
-        const dimensions<N, T> inDims,
+        const dimensions<N, T> dims,
+        const index<N, T>& ind,
+        const subdivision_type subdivType
+    ) : box<N, T>(
+        dims,
+        ind.get_level(),
+        subdivType,
+        dims.sub2ind(
+            static_cast<std::array<T, N>>(ind),
+            ind.get_level(),
+            subdivType,
+            dimensions<N, T>::POINTS_MODE,
+            dimensions<N, T>::BOXES_CONV
+        )
+    ) {}
+    box(
+        const dimensions<N, T> dims,
         const T level,
         const subdivision_type subdivType,
         const T offset = 0,
         const T indexInParent = static_cast<T>(-1)
-    ):
-        m_level(level),
+    ):  base_box<N, T>(
+            dims,
+            // The start corner point
+            index<N, T>(
+                dims.ind2sub(
+                    offset,
+                    level,
+                    subdivType,
+                    dimensions<N, T>::BOXES_MODE,
+                    dimensions<N, T>::POINTS_CONV
+                ),
+                level
+            )
+        ),
         m_indexInParent(indexInParent),
         m_offset(offset),
-        m_dimensions(inDims),
         m_subdivType(subdivType) {
-        for ( T i = 0; i < m_nCorners; ++i ) {
-            m_corners[i] = (
-                // Add each of the corners a max distance of 1 from the offset.
-                index<N, T>(dimensions<N, T>::unitary(i), level) +
-                // The start corner point
-                index<N, T>(
-                    m_dimensions.ind2sub(
-                        offset,
-                        level,
-                        subdivType,
-                        dimensions<N, T>::BOXES_TO_POINTS
-                    ),
-                    level
-                )
-            );
-        }
+        // Compute the index in parent if it is not available.
         if ( indexInParent == static_cast<T>(-1) ) {
             m_indexInParent = compute_index_in_parent();
         }
     }
 
     T get_offset() const {return m_offset;}  ///< Get the box offset
-    T get_level() const {return m_level;}  ///< Get the current level.
     T index_in_parent() const {return m_indexInParent;}  ///< Get the index of the box within it's parent.
-
-    /**
-     * \brief A neighbour direction of a box.
-     */
-    enum PosNeg {
-        POSITIVE = 1,
-        NEGATIVE = -1
-    };
-    /**
-     * \brief Change the box to its neighbour in the specified dimension.
-     */
-    void to_neighbour(const T dim, const PosNeg direction) {
-        for ( T i = 0; i < m_nCorners; ++i ) {
-            m_corners[i][dim] += static_cast<T>(direction);
-        }
-    }
 
     /**
      * \brief Check whether the given index is inside the box.
@@ -124,16 +118,16 @@ class box {
      * is true and the point is on one of the corners then the method
      * will return false.
      */
-    bool is_inside(index<N, T> ind, const subdivision_type subdivType, const bool strict = false) const {
+    bool is_inside(index<N, T> ind, const bool strict = false) const {
         box<N, T> levelBox(*this);
         // Ensure that the index is the correct level
-        if (ind.get_level() < m_level) {
-            ind.set_level(m_level, subdivType);
-        } else if ( ind.get_level() > m_level ) {
-            for ( size_t i = 0; i < m_nCorners; ++i ) {
+        if (ind.get_level() < base_box<N, T>::m_level) {
+            ind.set_level(base_box<N, T>::m_level, m_subdivType);
+        } else if ( ind.get_level() > base_box<N, T>::m_level ) {
+            for ( size_t i = 0; i < base_box<N, T>::m_nCorners; ++i ) {
                 levelBox.m_corners[i].set_level(
                     ind.get_level(),
-                    subdivType
+                    m_subdivType
                 );
             }
         }
@@ -158,12 +152,12 @@ class box {
      * at level zero, then it is simply the index of the box at level 0.
      */
     box<N, T> neighbour(const T ind) const {
-        if ( m_level > 0 ) {
+        if ( base_box<N, T>::m_level > 0 ) {
             return parent().subbox(ind);
         } else {
             return box<N, T>(
-                m_dimensions,
-                m_level,
+                base_box<N, T>::m_dimensions,
+                base_box<N, T>::m_level,
                 m_subdivType,
                 ind,
                 ind
@@ -178,10 +172,10 @@ class box {
      * tree then return self.
      */
     box<N, T> parent() const {
-        if ( m_level > 0 ) {
-            auto boxIndex = m_dimensions.ind2sub(
+        if ( base_box<N, T>::m_level > 0 ) {
+            auto boxIndex = base_box<N, T>::m_dimensions.ind2sub(
                 m_offset,
-                m_level,
+                base_box<N, T>::m_level,
                 m_subdivType,
                 dimensions<N, T>::BOXES_MODE
             );
@@ -189,12 +183,12 @@ class box {
             // there is always a factor of two more boxes at the next level.
             for ( auto& i : boxIndex ) i /= 2;
             return box<N, T>(
-                m_dimensions,
-                m_level - 1,
+                base_box<N, T>::m_dimensions,
+                base_box<N, T>::m_level - 1,
                 m_subdivType,
-                m_dimensions.sub2ind(
+                base_box<N, T>::m_dimensions.sub2ind(
                     boxIndex,
-                    m_level - 1,
+                    base_box<N, T>::m_level - 1,
                     m_subdivType,
                     dimensions<N, T>::BOXES_MODE
                 )
@@ -212,9 +206,9 @@ class box {
      */
     box<N, T> subbox(const T ind) const {
         // Find the original offset in terms of a box vector
-        auto subp1 = m_dimensions.ind2sub(
+        auto subp1 = base_box<N, T>::m_dimensions.ind2sub(
             m_offset,
-            m_level,
+            base_box<N, T>::m_level,
             m_subdivType,
             dimensions<N, T>::BOXES_MODE
         );
@@ -224,12 +218,14 @@ class box {
         // Return the subbox which is an offset of one in the direction
         // specified by ind
         return box<N, T>(
-            m_dimensions,
-            m_level + 1,
+            base_box<N, T>::m_dimensions,
+            base_box<N, T>::m_level + 1,
             m_subdivType,
-            m_dimensions.sub2ind(
+            base_box<N, T>::m_dimensions.sub2ind(
                 subp1 + dimensions<N, T>::unitary(ind),
-                m_level+1, m_subdivType, dimensions<N, T>::BOXES_MODE
+                base_box<N, T>::m_level+1,
+                m_subdivType,
+                dimensions<N, T>::BOXES_MODE
             ),
             ind
         );
@@ -246,8 +242,8 @@ class box {
      */
     T n_nbrs() const {
         return (
-            m_level == 0 ?
-            m_dimensions.max_ind(
+            base_box<N, T>::m_level == 0 ?
+            base_box<N, T>::m_dimensions.max_ind(
                 0,
                 m_subdivType,
                 dimensions<N, T>::BOXES_MODE
@@ -262,22 +258,23 @@ class box {
      * see the vertices of the box at the lowest level.
      */
     void print(const T level) const {
-        for ( T i = 0; i < m_nCorners; ++i ) {
-            std::cout << m_corners[i].at_level(level, m_subdivType) << " ";
+        for ( T i = 0; i < base_box<N, T>::m_nCorners; ++i ) {
+            std::cout << base_box<N, T>::m_corners[i].at_level(level, m_subdivType) << " ";
         }
         std::cout << std::endl;
     }
 
+    static constexpr uint32_t m_nUniqueSubPoints = (base_box<N, T>::m_nSubPoints - base_box<N, T>::m_nCorners);
     /**
      * \brief Find all of the subpoints after binary subdivision.
      * 
      * This does not include the corners of the box.
      */
-    std::array<index<N, T>, m_nSubPoints - m_nCorners> subpoints() const {
-         std::array<index<N, T>, m_nSubPoints - m_nCorners> innerPoints;
+    std::array<index<N, T>, m_nUniqueSubPoints> subpoints() const {
+         std::array<index<N, T>, m_nUniqueSubPoints> innerPoints;
          std::array<T, N> ternary;
          T k = 0;
-         for ( T i = 0; i < m_nSubPoints; ++i ) {
+         for ( T i = 0; i < base_box<N, T>::m_nSubPoints; ++i ) {
             T acc = 1;
             bool allEdge = true;
             for ( T j = 0; j < N; ++j ) {
@@ -285,10 +282,10 @@ class box {
                 allEdge &= (ternary[j] != 1);
                 acc *= 3;
             }
-            if ( !allEdge && k < m_nSubPoints - m_nCorners ) {
-                innerPoints[k] = m_corners[0];
-                innerPoints[k].set_level(m_level+1, m_subdivType);
-                innerPoints[k] += index<N, T>(ternary, m_level+1);
+            if ( !allEdge && k < m_nUniqueSubPoints ) {
+                innerPoints[k] = base_box<N, T>::m_corners[0];
+                innerPoints[k].set_level(base_box<N, T>::m_level+1, m_subdivType);
+                innerPoints[k] += index<N, T>(ternary, base_box<N, T>::m_level+1);
                 k++;
             }
          }
@@ -296,43 +293,13 @@ class box {
     }
 
     /**
-     * \brief Find the maximum indexes in each dimension.
-     */
-    std::array<T, N> max() const {
-        std::array<T, N> maxArr;
-        maxArr.fill(0);
-        for ( size_t i = 0; i < m_nCorners; ++i ) {
-            maxArr = gs::max(
-                static_cast<std::array<T, N>>(m_corners[i]),
-                maxArr
-            );
-        }
-        return maxArr;
-    }
-
-    /**
-     * \brief Find the minimum indexes in each dimension.
-     */
-    std::array<T, N> min() const {
-        std::array<T, N> minArr;
-        minArr.fill(static_cast<T>(-1));
-        for ( size_t i = 0; i < m_nCorners; ++i ) {
-            minArr = gs::min(
-                static_cast<std::array<T, N>>(m_corners[i]),
-                minArr
-            );
-        }
-        return minArr;
-    }
-
-    /**
      * \brief Return true if the boxes are equal.
      */
     bool operator==(const box<N, T>& other) const {
-        const auto level = std::max(m_level, other.m_level);
+        const auto level = std::max(base_box<N, T>::m_level, other.m_level);
         for ( size_t i = 0; i < pow<2, N>(); ++i ) {
             const index<N, T> cornerSelf(
-                m_corners[i].at_level(level, m_subdivType)
+                base_box<N, T>::m_corners[i].at_level(level, m_subdivType)
             );
             const index<N, T> cornerOther(
                 other.m_corners[i].at_level(level, m_subdivType)
@@ -345,23 +312,7 @@ class box {
         }
         return true;
     }
-    const auto& operator[](const T i) const {return m_corners[i];}  ///< Access the ith corner of the box
-    auto begin() -> decltype(m_corners.begin()) {return m_corners.begin();}  ///< Return a begin iterator into the corners
-    auto end() -> decltype(m_corners.end()) {return m_corners.end();}  ///< Return the end iterator into the corners
-    auto begin() const -> decltype(m_corners.begin()) {return m_corners.begin();}  ///< Return a begin iterator into the corners
-    auto end() const -> decltype(m_corners.end()) {return m_corners.end();}  ///< Return the end iterator into the corners
 };
-
-template<int N, typename T = uint32_t>
-/**
- * \brief Append the box to an output stream.
- */
-std::ostream& operator<<(std::ostream& os, const box<N, T>& boxVar) {
-    for ( auto corner : boxVar ) {
-        os << corner << " ";
-    }
-    return os;
-}
 }  // namespace gs
 
 #endif  // LIB_BASE_BOX_HPP_
