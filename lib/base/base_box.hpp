@@ -11,7 +11,7 @@
 
 namespace gs {
 template<int N, typename T = uint32_t>
-requires std::is_integral<T>::value && std::is_unsigned<T>::value
+requires std::is_integral<T>::value && std::is_unsigned<T>::value && (N > 0)
 /**
  * \brief A box (hypercube) in the grid.
  * 
@@ -30,6 +30,7 @@ class base_box {
     T m_level;  ///< The box level.
 
  public:
+    base_box() {}
     base_box(
         const dimensions<N, T>& dims,
         const std::array<index<N, T>, m_nCorners> corners,

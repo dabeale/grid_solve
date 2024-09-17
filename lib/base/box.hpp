@@ -62,6 +62,7 @@ class box: public base_box<N, T> {
     }
 
  public:
+    box(): base_box<N, T>() { }
     box(
         const dimensions<N, T> dims,
         const index<N, T>& ind,

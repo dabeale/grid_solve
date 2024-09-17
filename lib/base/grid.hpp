@@ -5,12 +5,14 @@
 #include <vector>
 #include <functional>
 
+#include "base/tools.hpp"
 #include "base/dimensions.hpp"
 #include "base/box.hpp"
 #include "base/index.hpp"
 #include "base/concepts.hpp"
 #include "base/pattern.hpp"
 #include "base/box_stack_iterator.hpp"
+#include "base/box_duel_iterator.hpp"
 
 namespace gs {
 template<int N, class GridElement, class BoxElement, class S = uint32_t>
@@ -232,9 +234,36 @@ class grid {
         const auto pastEndIt = box_stack_iterator<N, S>(
             m_dimensions,
             m_subDivType,
-            true);
+            true
+        );
         for (
             auto boxIt = box_stack_iterator<N, S>(m_dimensions, m_subDivType);
+            boxIt < pastEndIt;
+            ++boxIt
+        ) {
+            callable(*boxIt);
+        }
+    }
+
+
+    template<class F>
+    requires std::invocable<F&, const base_box<N, S>&>
+    /**
+     * \brief Iterate over every duel box at the lowest level.
+     * 
+     * This method only works when the subdivision type is boxes
+     * subdivision. The duel space for the point subdivision is
+     * the corner points of boxes.
+     */
+    void iterate(const F& callable) {
+        DEBUG_ASSERT( m_subDivType == (dimensions<N, S>::BOXES_SUBDIVISION) )
+        const auto pastEndIt = box_duel_iterator<N, S>(
+            m_dimensions,
+            m_dimensions.max_level()-1,
+            true
+        );
+        for (
+            auto boxIt = box_duel_iterator<N, S>(m_dimensions, m_dimensions.max_level()-1);
             boxIt < pastEndIt;
             ++boxIt
         ) {

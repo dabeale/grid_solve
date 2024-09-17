@@ -118,8 +118,15 @@ class box_duel_iterator {
      * \brief Partial ordering for the iterator.
      */
     std::partial_ordering operator<=>(
-        const box_stack_iterator<N, T>& other
+        const box_duel_iterator<N, T>& other
     ) const {
+        if ( m_pastTheEnd && !other.m_pastTheEnd ) {
+            return std::partial_ordering::greater;
+        } else if ( !m_pastTheEnd && other.m_pastTheEnd ) {
+            return std::partial_ordering::less;
+        } else if ( m_pastTheEnd && other.m_pastTheEnd ) {
+            return std::partial_ordering::equivalent;
+        }
         // We only need to consider one corner point because
         // the iterations move the whole box by two points in
         // each dimension.
