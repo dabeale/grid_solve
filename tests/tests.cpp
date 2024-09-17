@@ -14,6 +14,8 @@
 int main(int, char* argv[]) {
     std::cout << argv[0] << " test suite" << std::endl;
     int error = 0;
+    error += testq_fmm_exp2_2d();
+    error += testq_fmm_exp2_1d();
     error += test_point_convert_tolocal_sub2ind();
     error += test_point_convert_tolocal_ind2sub();
     error += test_point_convert_topoints_sub2ind();
@@ -25,8 +27,6 @@ int main(int, char* argv[]) {
     error += test_bdi_boxes_1D();
     error += test_box_parents_2d();
     error += test_box_parents_3d();
-    error += testq_fmm_exp2_2d();
-    error += testq_fmm_exp2_1d();
     error += test_exp_estimator();
     error += test_bsi_boxes_1D();
     error += test_bsi_points_1D();

@@ -4,7 +4,7 @@
 
 #include "base/pattern.hpp"
 #include "base/grid.hpp"
-#include "base/box_stack_iterator.hpp"
+#include "base/box_duel_iterator.hpp"
 #include "math/polynomial.hpp"
 
 namespace gs {
@@ -20,7 +20,7 @@ requires(
     std::is_integral<T>::value &&
     std::invocable<
         FTraversal&,
-        const box_stack<N, T>&,
+        const base_box<N, T>&,
         grid<N, GridElement, BoxElement, T>&
     > &&
     std::invocable<
@@ -62,8 +62,7 @@ class fmm {
     using subdivision_type = typename dimensions<N, T>::subdivision_type;
 
     grid<N, GridElement, BoxElement, T> m_grid;  ///< The underlying grid.
-    FTraversal m_fineTraversalFunc;
-        ///< The traversal function for the finest level
+    FTraversal m_fineTraversalFunc;  ///< The traversal function for the finest level
     FBoxWeight m_boxWeightFunc;  ///< The box weight function.
 
  public:
@@ -89,7 +88,7 @@ class fmm {
         m_grid.iterate([&](const box_stack<N, T>& boxElement) {
             m_boxWeightFunc(boxElement, m_grid);
         });
-        m_grid.iterate([&](const box_stack<N, T>& boxElement) {
+        m_grid.iterate([&](const base_box<N, T>& boxElement) {
             m_fineTraversalFunc(boxElement, m_grid);
         });
     }
